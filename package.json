@@ -1,0 +1,22 @@
+{
+	"name": "hyperion",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"lint": "biome check --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
+		"@types/bun": "latest",
+		"@types/rocksdb": "^3.0.5",
+		"@types/sax": "^1.2.7"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"rocksdb": "^5.2.1",
+		"sax": "^1.4.4"
+	}
+}
