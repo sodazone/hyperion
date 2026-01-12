@@ -128,7 +128,7 @@ export async function* ofacParse(path: string): AsyncGenerator<OfacResult> {
 							.replace("Digital Currency Address - ", "")
 							.trim();
 						resultQueue.push({ symbol, address: feature.detail, entity });
-						if (resolveNext) resolveNext(); // notify generator
+						if (resolveNext) resolveNext();
 					}
 				}
 				feature = null;
@@ -142,7 +142,6 @@ export async function* ofacParse(path: string): AsyncGenerator<OfacResult> {
 		text = "";
 	});
 
-	// end/error promises
 	let done = false;
 	let error: unknown = null;
 
@@ -166,7 +165,6 @@ export async function* ofacParse(path: string): AsyncGenerator<OfacResult> {
 		if (error) throw error;
 
 		if (resultQueue.length === 0) {
-			// wait for next item
 			await new Promise<void>((res) => {
 				resolveNext = res;
 			});

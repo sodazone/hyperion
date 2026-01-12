@@ -16,6 +16,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"bs58": "^6.0.0",
 		"rocksdb": "^5.2.1",
 		"sax": "^1.4.4"
 	}

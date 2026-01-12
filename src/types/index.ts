@@ -1,4 +1,4 @@
-import type RocksDB from "rocksdb";
+import type { AsyncRocksDB } from "@/db";
 
 export type Tag = {
 	name: string;
@@ -40,15 +40,15 @@ export const KeyFamily = {
 } as const;
 
 export type KeyFamily = (typeof KeyFamily)[keyof typeof KeyFamily];
-export type CryptoAddressKey = Uint8Array;
+export type CryptoAddressKey = Buffer<ArrayBufferLike>;
 
 export interface SourceParser<T = unknown> {
 	name: string;
 	parse(path: string): Promise<T[]>;
 }
 
-export type Database = RocksDB;
+export type Database = AsyncRocksDB;
 export type HyperionRecord = {
-	key: Uint8Array;
-	value: Uint8Array;
+	key: Buffer<ArrayBufferLike>;
+	value: Buffer<ArrayBufferLike>;
 };

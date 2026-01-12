@@ -37,6 +37,9 @@ const NetworkURNMap: Record<string, number> = {
 
 	// Litecoin
 	"urn:ocn:litecoin:0": 0x0500,
+
+	//Tron
+	"urn:ocn:tron:0": 0x0600,
 } as const;
 
 const NetworkURNMapReverse: Record<number, string> = Object.fromEntries(

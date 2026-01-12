@@ -1,4 +1,7 @@
-import type { HyperionRecord } from "@/types";
+import { encodeCategorizedKey } from "@/db/encoding/codec";
+import { addressTo32Bytes } from "@/maps/address";
+import { NetworkMap } from "@/maps/networks";
+import { type HyperionRecord, KeyFamily } from "@/types";
 import type { OfacResult } from "./parser";
 
 // TODO map properly!
@@ -9,21 +12,21 @@ const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {
 	BSV: "urn:ocn:bitcoin-sv:0",
 	XVG: "urn:ocn:verge:0",
 	LTC: "urn:ocn:litecoin:0",
-	ETH: "urn:ocn:ethereum:0",
+	ETH: "urn:ocn:ethereum:1",
 	XMR: "urn:ocn:monero:0",
 	ETC: "urn:ocn:ethereum-classic:0",
 	DASH: "urn:ocn:dash:0",
 	ZEC: "urn:ocn:zcash:0",
 	XRP: "urn:ocn:ripple:0",
 	TRX: "urn:ocn:tron:0",
-	ARB: "urn:ocn:ethereum:xxx",
-	BSC: "urn:ocn:ethereum:xxx",
+	ARB: "urn:ocn:ethereum:1",
+	BSC: "urn:ocn:ethereum:1",
 	USDC: {
-		ERC20: "urn:ocn:ethereum:0",
+		ERC20: "urn:ocn:ethereum:1",
 	},
 	SOL: "urn:ocn:solana:0",
 	USDT: {
-		ERC20: "urn:ocn:ethereum:0",
+		ERC20: "urn:ocn:ethereum:1",
 		TRC20: "urn:ocn:tron:0",
 		OMNI: "urn:ocn:bitcoin:0",
 	},
@@ -58,6 +61,33 @@ function getNetworkForSymbol({
 	throw new Error(`Unsupported address format for symbol ${symbol} ${address}`);
 }
 
+export function ofacToHyperionKey(r: OfacResult) {
+	const network = getNetworkForSymbol({ symbol: r.symbol, address: r.address });
+	if (!network) throw new Error(`Unsupported symbol ${r.symbol}`);
+
+	const networkId = NetworkMap.fromURN(network);
+	if (networkId === undefined) throw new Error(`Unknown network ${network}`);
+
+	const addressBytes = addressTo32Bytes(r.address);
+	const family = KeyFamily.CategorizedPublic;
+	const categoryCode = 0x0004;
+	const subcategoryCode = 0x00010;
+
+	return encodeCategorizedKey(
+		family,
+		addressBytes,
+		networkId,
+		categoryCode,
+		subcategoryCode,
+	);
+}
+
+const encoder = new TextEncoder();
+export function ofacToHyperionValue(r: OfacResult): Buffer<ArrayBufferLike> {
+	const json = JSON.stringify(r);
+	return Buffer.from(encoder.encode(json));
+}
+
 export function ofacToHyperion(r: OfacResult): HyperionRecord {
 	const network = getNetworkForSymbol({ symbol: r.symbol, address: r.address });
 
@@ -65,10 +95,8 @@ export function ofacToHyperion(r: OfacResult): HyperionRecord {
 		throw new Error(`Unsupported symbol ${r.symbol}`);
 	}
 
-	// TODO resolve real bytes!
-	console.log([network, r.address, r.symbol].join(":"));
 	return {
-		key: Buffer.from([network, r.address, r.symbol].join(":")),
-		value: Buffer.from(JSON.stringify(r)),
+		key: ofacToHyperionKey(r),
+		value: ofacToHyperionValue(r),
 	};
 }
