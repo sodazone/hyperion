@@ -11,6 +11,7 @@ export type OfacResult = {
 	entity: OfacEntity;
 	symbol: string;
 	address: string;
+	updated: number;
 };
 
 export async function* ofacParse(path: string): AsyncGenerator<OfacResult> {
@@ -127,7 +128,12 @@ export async function* ofacParse(path: string): AsyncGenerator<OfacResult> {
 						const symbol = label
 							.replace("Digital Currency Address - ", "")
 							.trim();
-						resultQueue.push({ symbol, address: feature.detail, entity });
+						resultQueue.push({
+							symbol,
+							address: feature.detail,
+							entity,
+							updated: Date.now(),
+						});
 						if (resolveNext) resolveNext();
 					}
 				}

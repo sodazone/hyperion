@@ -33,3 +33,9 @@ categories.add(0x0005, 0x0000, "Compliance");
 categories.add(0x0005, 0x0001, "FATF AML Monitoring");
 categories.add(0x0005, 0x0002, "KYC Provider");
 categories.add(0x0005, 0x0003, "Risk / Compliance Service");
+
+export const CategoriesMap = {
+	getLabel(cat: number, sub: number = 0x0) {
+		return categories.getLabel(cat, sub);
+	},
+};

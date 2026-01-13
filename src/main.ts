@@ -1,8 +1,7 @@
-import { AsyncRocksDB } from "./db";
+import { createDatabase } from "./db";
 import { ofac } from "./providers";
 
-const db = new AsyncRocksDB("./.db/current");
-await db.open();
+const db = createDatabase("./.db/current");
 
 const t0 = performance.now();
 

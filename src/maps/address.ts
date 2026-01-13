@@ -14,19 +14,31 @@ export function hexToBytes(hex: string): Uint8Array {
 }
 
 export function addressTo32Bytes(address: string): Uint8Array {
-	let addressBytes: Uint8Array;
+	try {
+		let addressBytes: Uint8Array;
 
-	if (address.startsWith("0x")) {
-		addressBytes = hexToBytes(address.slice(2));
-	} else {
-		addressBytes = base58ToBytes(address);
+		if (address.startsWith("0x")) {
+			addressBytes = hexToBytes(address.slice(2));
+		} else if (/^[0-9a-fA-F]{64}$/.test(address)) {
+			// 32-byte raw hex
+			addressBytes = Uint8Array.from(Buffer.from(address, "hex"));
+		} else {
+			try {
+				addressBytes = base58ToBytes(address);
+			} catch {
+				// fallback CashAddr payload or unknown format
+				addressBytes = new Bun.CryptoHasher("sha256").update(address).digest();
+			}
+		}
+
+		if (addressBytes.length !== 32) {
+			const tmp = new Uint8Array(32);
+			tmp.set(addressBytes.slice(0, 32));
+			addressBytes = tmp;
+		}
+
+		return addressBytes;
+	} catch (error) {
+		throw new Error(`While decoding ${address}`, { cause: error });
 	}
-
-	if (addressBytes.length !== 32) {
-		const tmp = new Uint8Array(32);
-		tmp.set(addressBytes.slice(0, 32));
-		addressBytes = tmp;
-	}
-
-	return addressBytes;
 }

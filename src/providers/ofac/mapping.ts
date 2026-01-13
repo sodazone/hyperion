@@ -1,4 +1,4 @@
-import { encodeCategorizedKey } from "@/db/encoding/codec";
+import { encodeCategorizedKey, encodeValue } from "@/db/encoding/codec";
 import { addressTo32Bytes } from "@/maps/address";
 import { NetworkMap } from "@/maps/networks";
 import { type HyperionRecord, KeyFamily } from "@/types";
@@ -14,13 +14,13 @@ const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {
 	LTC: "urn:ocn:litecoin:0",
 	ETH: "urn:ocn:ethereum:1",
 	XMR: "urn:ocn:monero:0",
-	ETC: "urn:ocn:ethereum-classic:0",
+	ETC: "urn:ocn:ethereum-classic:61",
 	DASH: "urn:ocn:dash:0",
 	ZEC: "urn:ocn:zcash:0",
 	XRP: "urn:ocn:ripple:0",
 	TRX: "urn:ocn:tron:0",
-	ARB: "urn:ocn:ethereum:1",
-	BSC: "urn:ocn:ethereum:1",
+	ARB: "urn:ocn:ethereum:42161",
+	BSC: "urn:ocn:ethereum:56",
 	USDC: {
 		ERC20: "urn:ocn:ethereum:1",
 	},
@@ -68,24 +68,18 @@ export function ofacToHyperionKey(r: OfacResult) {
 	const networkId = NetworkMap.fromURN(network);
 	if (networkId === undefined) throw new Error(`Unknown network ${network}`);
 
-	const addressBytes = addressTo32Bytes(r.address);
+	const address = addressTo32Bytes(r.address);
 	const family = KeyFamily.CategorizedPublic;
 	const categoryCode = 0x0004;
-	const subcategoryCode = 0x00010;
+	const subcategoryCode = 0x0001;
 
-	return encodeCategorizedKey(
+	return encodeCategorizedKey({
 		family,
-		addressBytes,
+		address,
 		networkId,
 		categoryCode,
 		subcategoryCode,
-	);
-}
-
-const encoder = new TextEncoder();
-export function ofacToHyperionValue(r: OfacResult): Buffer<ArrayBufferLike> {
-	const json = JSON.stringify(r);
-	return Buffer.from(encoder.encode(json));
+	});
 }
 
 export function ofacToHyperion(r: OfacResult): HyperionRecord {
@@ -97,6 +91,6 @@ export function ofacToHyperion(r: OfacResult): HyperionRecord {
 
 	return {
 		key: ofacToHyperionKey(r),
-		value: ofacToHyperionValue(r),
+		value: encodeValue(r),
 	};
 }

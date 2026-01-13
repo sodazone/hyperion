@@ -6,7 +6,6 @@ export class LabeledBimap {
 	private labels: Label[] = [];
 	private keyToIndex = new Map<number, number>();
 	private labelToIndex = new Map<Label, number>();
-	private subToCat = new Map<SubcategoryID, CategoryID>();
 
 	private makeKey(cat: CategoryID, sub: SubcategoryID) {
 		return ((cat & 0xffff) << 16) | (sub & 0xffff);
@@ -24,13 +23,6 @@ export class LabeledBimap {
 		this.labels.push(label);
 		this.keyToIndex.set(key, index);
 		this.labelToIndex.set(label, index);
-
-		if (sub !== 0x0000) {
-			if (this.subToCat.has(sub)) {
-				throw new Error(`Subcategory ID ${sub} already assigned to a category`);
-			}
-			this.subToCat.set(sub, cat);
-		}
 	}
 
 	getLabel(cat: CategoryID, sub: SubcategoryID): Label | undefined {
@@ -46,9 +38,5 @@ export class LabeledBimap {
 			if (i === index) return [(key >>> 16) & 0xffff, key & 0xffff];
 		}
 		return undefined;
-	}
-
-	getCategoryOfSub(sub: SubcategoryID): CategoryID | undefined {
-		return this.subToCat.get(sub);
 	}
 }

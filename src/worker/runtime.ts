@@ -24,6 +24,7 @@ export function startWorker<T, R>(handlers: HandlerMap<T, R>) {
 		if (ev.data === "ack" && awaitingAck) {
 			awaitingAck();
 			awaitingAck = null;
+			return;
 		}
 
 		if (typeof ev.data === "string") {

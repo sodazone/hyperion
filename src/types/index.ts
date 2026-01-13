@@ -1,4 +1,4 @@
-import type { AsyncRocksDB } from "@/db";
+import type { RootDatabase } from "lmdb";
 
 export type Tag = {
 	name: string;
@@ -40,15 +40,45 @@ export const KeyFamily = {
 } as const;
 
 export type KeyFamily = (typeof KeyFamily)[keyof typeof KeyFamily];
-export type CryptoAddressKey = Buffer<ArrayBufferLike>;
+export type CryptoAddressKey = Uint8Array;
+export type TaggedKey = {
+	family: KeyFamily;
+	address: Uint8Array;
+	networkId: number;
+	tagCode: Uint8Array;
+};
+export type CategorizedKey = {
+	family: KeyFamily;
+	address: Uint8Array;
+	networkId: number;
+	categoryCode: number;
+	subcategoryCode: number;
+};
 
 export interface SourceParser<T = unknown> {
 	name: string;
 	parse(path: string): Promise<T[]>;
 }
 
-export type Database = AsyncRocksDB;
+export type Database = RootDatabase<Uint8Array, Uint8Array>;
 export type HyperionRecord = {
-	key: Buffer<ArrayBufferLike>;
-	value: Buffer<ArrayBufferLike>;
+	key: Uint8Array;
+	value: Uint8Array;
 };
+
+/**
+ * value:
+ * - sources: [
+ *   - id: ofac
+ *   - raw ...
+ *   - confidence: xxx
+ *   - updated: ts
+ * ]
+ *
+ * Qs
+ * is it an address beloging to a Sanction Entity? and in which jurisdiction, depends on the source...?
+ * is it an address of interest? ---> custom category or tag?
+ * -> address, network => map address to 32 bytes and network urn to 2 byte -> all categories
+ * -> ^+ cat, subcat   => ...
+ *
+ */
