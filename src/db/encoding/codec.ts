@@ -70,7 +70,7 @@ export function encodeTaggedKey({
 /**
  * Decode a categorized key
  */
-function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
+export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 	if (!key || key.length !== CATEGORIZED_KEY_LENGTH)
 		throw new Error("Invalid categorized key length");
 
@@ -87,7 +87,7 @@ function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 /**
  * Decode a tagged key
  */
-function decodeTaggedKey(key: Uint8Array): TaggedKey {
+export function decodeTaggedKey(key: Uint8Array): TaggedKey {
 	if (!key || key.length < 35) throw new Error("Invalid tagged key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);

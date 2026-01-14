@@ -65,13 +65,34 @@ Bun.serve({
 						});
 					}
 
-					const exists = api.existsInCategory({
+					const result = api.existsInCategory({
 						address,
 						network,
 						categoryCode: 0x0004,
 					});
 
-					return new Response(JSON.stringify({ exists }), {
+					return new Response(JSON.stringify({ result }), {
+						status: 200,
+						headers: { "Content-Type": "application/json" },
+					});
+				}
+
+				case "cats": {
+					const network = parts[1];
+					const address = parts[2];
+
+					if (!network || !address) {
+						return new Response("Missing or invalid network/address\n", {
+							status: 400,
+						});
+					}
+
+					const result = api.getAllCategories({
+						address,
+						network,
+					});
+
+					return new Response(JSON.stringify({ result }), {
 						status: 200,
 						headers: { "Content-Type": "application/json" },
 					});
