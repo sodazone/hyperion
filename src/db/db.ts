@@ -54,7 +54,8 @@ function asCatKey({
 }) {
 	const networkId =
 		typeof network === "string" ? NetworkMap.fromURN(network) : network;
-	if (!networkId) {
+	if (networkId === undefined) {
+		// TODO not a server error...
 		throw new Error("Invalid network");
 	}
 	const addressBytes =
@@ -70,6 +71,7 @@ function asCatKey({
 }
 
 type AddressCat = {
+	networkId: number;
 	category: { code: number; label: string };
 	subcategory: { code: number; label: string };
 };
@@ -93,13 +95,14 @@ export function createHyperionApi(db: Database) {
 				subcategoryCode: 0,
 			});
 
-			const endKey = makeEndKey(prefixKey, 4);
+			const endKey = makeEndKey(prefixKey, network === 0 ? 6 : 4);
 
 			const categories: Array<AddressCat> = [];
 
 			for (const { key } of db.getRange({ start: prefixKey, end: endKey })) {
 				const decoded = decodeCategorizedKey(key);
 				categories.push({
+					networkId: decoded.networkId,
 					category: {
 						code: decoded.categoryCode,
 						label: CategoriesMap.getLabel(decoded.categoryCode) ?? "",

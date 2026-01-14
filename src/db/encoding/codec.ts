@@ -112,7 +112,6 @@ export function decodeValue<T>(v: Uint8Array): T {
 }
 
 export function decodeKey(k: Uint8Array) {
-	console.log(typeof k, k);
 	const f = k.at(0);
 	if (f === KeyFamily.CategorizedPublic || f === KeyFamily.CategorizedPrivate) {
 		return decodeCategorizedKey(k);

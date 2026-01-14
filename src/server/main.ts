@@ -78,6 +78,7 @@ Bun.serve({
 				}
 
 				case "cats": {
+					// TODO coerce network, numeric, "*" or URN
 					const network = parts[1];
 					const address = parts[2];
 
@@ -89,7 +90,7 @@ Bun.serve({
 
 					const result = api.getAllCategories({
 						address,
-						network,
+						network: network === "*" ? 0 : network,
 					});
 
 					return new Response(JSON.stringify({ result }), {

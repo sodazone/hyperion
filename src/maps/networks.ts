@@ -1,20 +1,22 @@
 const NetworkURNMap: Record<string, number> = {
+	any: 0x0000,
+	// TODO: review ranges... maybe bigger? :D
 	// ─────────────────────────────────────────────
-	// Polkadot ecosystem (0x0000–0x00FF)
+	// Polkadot ecosystem (0x0001–0x00FF)
 	// ─────────────────────────────────────────────
-	"urn:ocn:polkadot:0": 0x0000,
-	"urn:ocn:polkadot:1000": 0x0001,
-	"urn:ocn:polkadot:1002": 0x0002,
-	"urn:ocn:polkadot:1005": 0x0003,
-	"urn:ocn:polkadot:2000": 0x0004,
-	"urn:ocn:polkadot:2004": 0x0005,
-	"urn:ocn:polkadot:2006": 0x0006,
-	"urn:ocn:polkadot:2030": 0x0007,
-	"urn:ocn:polkadot:2031": 0x0008,
-	"urn:ocn:polkadot:2032": 0x0009,
-	"urn:ocn:polkadot:2034": 0x000a,
-	"urn:ocn:polkadot:3367": 0x000b,
-	"urn:ocn:polkadot:3369": 0x000c,
+	"urn:ocn:polkadot:0": 0x0001,
+	"urn:ocn:polkadot:1000": 0x0002,
+	"urn:ocn:polkadot:1002": 0x0003,
+	"urn:ocn:polkadot:1005": 0x0004,
+	"urn:ocn:polkadot:2000": 0x0005,
+	"urn:ocn:polkadot:2004": 0x0006,
+	"urn:ocn:polkadot:2006": 0x0007,
+	"urn:ocn:polkadot:2030": 0x0008,
+	"urn:ocn:polkadot:2031": 0x0009,
+	"urn:ocn:polkadot:2032": 0x000a,
+	"urn:ocn:polkadot:2034": 0x000b,
+	"urn:ocn:polkadot:3367": 0x000c,
+	"urn:ocn:polkadot:3369": 0x000d,
 
 	// ─────────────────────────────────────────────
 	// Kusama ecosystem (0x0100–0x01FF)
