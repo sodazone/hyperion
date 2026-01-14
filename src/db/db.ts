@@ -1,14 +1,20 @@
-import { open } from "lmdb";
+import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { NetworkMap } from "@/maps";
 import { addressTo32Bytes } from "@/maps/address";
 import { type CategoryFamily, type Database, KeyFamily } from "@/types";
 import { encodeCategorizedKey } from "./encoding/codec";
 
-export function createDatabase(path: string) {
+export function createDatabase(
+	path: string,
+	// TODO
+	options?: RootDatabaseOptionsWithPath,
+) {
 	const db = open<Uint8Array, Uint8Array>({
 		path,
 		compression: true,
 		useVersions: false,
+		// TODO for clustering
+		readOnly: true,
 	});
 
 	return db;
@@ -17,7 +23,7 @@ export function createDatabase(path: string) {
 function makeEndKey(prefixKey: Uint8Array): Uint8Array {
 	const endKey = new Uint8Array(prefixKey.length);
 	endKey.set(prefixKey);
-	endKey[endKey.length - 1] = 0xff; // largest possible byte
+	endKey[endKey.length - 1] = 0xff;
 	return endKey;
 }
 
@@ -87,3 +93,5 @@ export function createHyperionApi(db: Database) {
 		},
 	};
 }
+
+export type HyperionApi = ReturnType<typeof createHyperionApi>;
