@@ -1,5 +1,4 @@
 import { createDatabase, createHyperionApi } from "@/db";
-import { CategoriesMap } from "@/maps";
 import { VERSION } from "@/version";
 import { coercePublicCategoryParams } from "./path";
 
@@ -22,9 +21,14 @@ const listener = Bun.serve({
 				return Response.json({ ok: true, uptime: process.uptime() });
 			},
 		},
-		"/meta/cats": {
+		"/meta/networks": {
 			GET: () => {
-				return Response.json(CategoriesMap.entries());
+				return Response.json(api.getNetworksMeta());
+			},
+		},
+		"/meta/categories": {
+			GET: () => {
+				return Response.json(api.getCategoriesMeta());
 			},
 		},
 		"/pub/cat/:cat/:subcat/:address/:network/data": {
@@ -92,5 +96,5 @@ process.on("SIGINT", () => shutdown("SIGINT")); // Ctrl+C
 process.on("SIGTERM", () => shutdown("SIGTERM")); // Docker / systemd
 
 console.log(
-	`Hyperion HTTP server running on ${listener.hostname}:${listener.port}`,
+	`Hyperion HTTP server running on ${listener.protocol}://${listener.hostname}:${listener.port}`,
 );

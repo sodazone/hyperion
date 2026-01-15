@@ -81,4 +81,7 @@ export const NetworkMap = {
 	toURN(networkId: number): string | undefined {
 		return NetworkURNMapReverse[networkId];
 	},
+	entries() {
+		return NetworkURNMap;
+	},
 };

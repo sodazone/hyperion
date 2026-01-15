@@ -1,5 +1,5 @@
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
-import { CategoriesMap } from "@/maps";
+import { CategoriesMap, NetworkMap } from "@/maps";
 import { addressTo32Bytes } from "@/maps/address";
 import { type CategoryFamily, type Database, KeyFamily } from "@/types";
 import { decodeCategorizedKey, encodeCategorizedKey } from "./encoding/codec";
@@ -72,6 +72,12 @@ type AddressCat = {
 
 export function createHyperionApi(db: Database) {
 	return {
+		getCategoriesMeta: () => {
+			return CategoriesMap.entries();
+		},
+		getNetworksMeta: () => {
+			return NetworkMap.entries();
+		},
 		getCategories: ({
 			family,
 			networkId,
