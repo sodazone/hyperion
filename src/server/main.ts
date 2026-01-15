@@ -3,7 +3,7 @@ import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { coercePublicCategoryParams } from "./path";
 
-const redocHtml = Bun.file("./src/static/redoc.html");
+const scalarHtml = Bun.file("./src/static/scalar.html");
 
 const db = createDatabase("./.db/current");
 const api = createHyperionApi(db);
@@ -26,7 +26,7 @@ const listener = Bun.serve({
 		},
 		"/docs": {
 			GET: () =>
-				new Response(redocHtml, { headers: { "Content-Type": "text/html" } }),
+				new Response(scalarHtml, { headers: { "Content-Type": "text/html" } }),
 		},
 		"/openapi.json": {
 			GET: () =>
