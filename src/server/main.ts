@@ -5,7 +5,7 @@ import { coercePublicCategoryParams } from "./path";
 
 const scalarHtml = Bun.file("./src/static/scalar.html");
 
-const db = createDatabase("./.db/current");
+const db = await createDatabase("./.db/current");
 const api = createHyperionApi(db);
 
 const listener = Bun.serve({
@@ -33,6 +33,11 @@ const listener = Bun.serve({
 				Response.json(openapi, {
 					headers: { "Cache-Control": "public, max-age=3600" },
 				}),
+		},
+		"/db/stats": {
+			GET: () => {
+				return Response.json(db.getStats());
+			},
 		},
 		"/meta/networks": {
 			GET: () => {

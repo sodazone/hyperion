@@ -7,11 +7,13 @@ import {
 } from "@/types";
 
 const BE = false;
-const CATEGORIZED_KEY_LENGTH = 39;
+const CATEGORIZED_KEY_LENGTH = 71;
+const TAG_KEY_PREFIX_LENGTH = 67;
 
 /**
  * Encode a categorized key
  * Schema:
+ * 32 byte Owner
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
@@ -19,22 +21,25 @@ const CATEGORIZED_KEY_LENGTH = 39;
  * 2 bytes Subcategory Code (BE)
  */
 export function encodeCategorizedKey({
+	owner,
 	family,
 	address,
 	networkId,
 	categoryCode,
 	subcategoryCode,
 }: CategorizedKey): CryptoAddressKey {
+	if (owner.length !== 32) throw new Error("Owner must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
 
 	const key = new Uint8Array(CATEGORIZED_KEY_LENGTH);
-	key[0] = family;
-	key.set(address, 1);
+	key.set(owner, 0);
+	key[32] = family;
+	key.set(address, 33);
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	dv.setUint16(33, networkId, BE);
-	dv.setUint16(35, categoryCode, BE);
-	dv.setUint16(37, subcategoryCode, BE);
+	dv.setUint16(65, networkId, BE);
+	dv.setUint16(67, categoryCode, BE);
+	dv.setUint16(69, subcategoryCode, BE);
 
 	return key;
 }
@@ -42,28 +47,32 @@ export function encodeCategorizedKey({
 /**
  * Encode a tagged key
  * Schema:
+ * 32 byte Owner
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
  * Tag code (variable, max 100 bytes)
  */
 export function encodeTaggedKey({
+	owner,
 	address,
 	tagCode,
 	family,
 	networkId,
 }: TaggedKey): CryptoAddressKey {
+	if (owner.length !== 32) throw new Error("Owner hash must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
 	if (tagCode.length > 100) throw new Error("Tag code max length is 100 bytes");
 
-	const key = new Uint8Array(35 + tagCode.length);
-	key[0] = family;
-	key.set(address, 1);
+	const key = new Uint8Array(TAG_KEY_PREFIX_LENGTH + tagCode.length);
+	key.set(owner, 0);
+	key[32] = family;
+	key.set(address, 33);
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	dv.setUint16(33, networkId, BE);
+	dv.setUint16(65, networkId, BE);
 
-	key.set(tagCode, 35);
+	key.set(tagCode, 67);
 	return key;
 }
 
@@ -75,28 +84,38 @@ export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 		throw new Error("Invalid categorized key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	const family = key[0] as KeyFamily;
-	const address = key.subarray(1, 33);
-	const networkId = dv.getUint16(33, BE);
-	const categoryCode = dv.getUint16(35, BE);
-	const subcategoryCode = dv.getUint16(37, BE);
+	const owner = key.subarray(0, 32);
+	const family = key[32] as KeyFamily;
+	const address = key.subarray(33, 65);
+	const networkId = dv.getUint16(65, BE);
+	const categoryCode = dv.getUint16(67, BE);
+	const subcategoryCode = dv.getUint16(69, BE);
 
-	return { family, address, networkId, categoryCode, subcategoryCode };
+	return {
+		owner,
+		family,
+		address,
+		networkId,
+		categoryCode,
+		subcategoryCode,
+	};
 }
 
 /**
  * Decode a tagged key
  */
 export function decodeTaggedKey(key: Uint8Array): TaggedKey {
-	if (!key || key.length < 35) throw new Error("Invalid tagged key length");
+	if (!key || key.length < TAG_KEY_PREFIX_LENGTH)
+		throw new Error("Invalid tagged key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	const family = key[0] as KeyFamily;
-	const address = key.subarray(1, 33);
-	const networkId = dv.getUint16(33, BE);
-	const tagCode = key.subarray(35);
+	const owner = key.subarray(0, 32);
+	const family = key[32] as KeyFamily;
+	const address = key.subarray(33, 65);
+	const networkId = dv.getUint16(65, BE);
+	const tagCode = key.subarray(67);
 
-	return { family, address, networkId, tagCode };
+	return { owner, family, address, networkId, tagCode };
 }
 
 const encoder = new TextEncoder();
@@ -112,10 +131,10 @@ export function decodeValue<T>(v: Uint8Array): T {
 }
 
 export function decodeKey(k: Uint8Array) {
-	const f = k.at(0);
-	if (f === KeyFamily.CategorizedPublic || f === KeyFamily.CategorizedPrivate) {
+	const f = k.at(32);
+	if (f === KeyFamily.Categorized) {
 		return decodeCategorizedKey(k);
-	} else if (f === KeyFamily.TaggedPublic || f === KeyFamily.TaggedPrivate) {
+	} else if (f === KeyFamily.Tagged) {
 		return decodeTaggedKey(k);
 	}
 }

@@ -1,4 +1,4 @@
-import { NetworkMap } from "@/maps";
+import { NetworkMap } from "@/mapping";
 
 type PublicCategoryParams = {
 	address: string;

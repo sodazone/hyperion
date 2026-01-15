@@ -3,7 +3,6 @@ import type { RootDatabase } from "lmdb";
 export type Tag = {
 	name: string;
 	source: string;
-	owner: string;
 	confidence: number;
 };
 
@@ -18,7 +17,6 @@ export type Category = Classifier & {
 export type Entity = {
 	id: string;
 	source: string;
-	owner: string;
 	confidence: number;
 	name?: string;
 	aliases?: string[];
@@ -33,10 +31,8 @@ export type CryptoAddressEntry = {
 };
 
 export const KeyFamily = {
-	CategorizedPublic: 0x01,
-	CategorizedPrivate: 0x02,
-	TaggedPublic: 0x03,
-	TaggedPrivate: 0x04,
+	Categorized: 0x01,
+	Tagged: 0x02,
 } as const;
 
 export type KeyFamily = (typeof KeyFamily)[keyof typeof KeyFamily];
@@ -44,12 +40,14 @@ export type CategoryFamily = 1 | 2;
 export type TagFamily = 3 | 4;
 export type CryptoAddressKey = Uint8Array;
 export type TaggedKey = {
+	owner: Uint8Array;
 	family: KeyFamily;
 	address: Uint8Array;
 	networkId: number;
 	tagCode: Uint8Array;
 };
 export type CategorizedKey = {
+	owner: Uint8Array;
 	family: KeyFamily;
 	address: Uint8Array;
 	networkId: number;
@@ -67,20 +65,3 @@ export type HyperionRecord = {
 	key: Uint8Array;
 	value: Uint8Array;
 };
-
-/**
- * value:
- * - sources: [
- *   - id: ofac
- *   - raw ...
- *   - confidence: xxx
- *   - updated: ts
- * ]
- *
- * Qs
- * is it an address beloging to a Sanction Entity? and in which jurisdiction, depends on the source...?
- * is it an address of interest? ---> custom category or tag?
- * -> address, network => map address to 32 bytes and network urn to 2 byte -> all categories
- * -> ^+ cat, subcat   => ...
- *
- */
