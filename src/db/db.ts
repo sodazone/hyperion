@@ -1,5 +1,5 @@
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
-import { CategoriesMap, NetworkMap } from "@/maps";
+import { CategoriesMap } from "@/maps";
 import { addressTo32Bytes } from "@/maps/address";
 import { type CategoryFamily, type Database, KeyFamily } from "@/types";
 import { decodeCategorizedKey, encodeCategorizedKey } from "./encoding/codec";
@@ -14,7 +14,7 @@ export function createDatabase(
 		compression: true,
 		useVersions: false,
 		// TODO for clustering
-		// readOnly: true,
+		readOnly: true,
 	});
 
 	return db;
@@ -41,23 +41,17 @@ function makeEndKey(
 
 function asCatKey({
 	family,
-	network,
+	networkId,
 	address,
 	categoryCode,
 	subcategoryCode,
 }: {
 	family?: CategoryFamily;
-	network: number | string;
+	networkId: number;
 	address: string;
 	categoryCode: number;
 	subcategoryCode?: number;
 }) {
-	const networkId =
-		typeof network === "string" ? NetworkMap.fromURN(network) : network;
-	if (networkId === undefined) {
-		// TODO not a server error...
-		throw new Error("Invalid network");
-	}
 	const addressBytes =
 		typeof address === "string" ? addressTo32Bytes(address) : address;
 
@@ -78,24 +72,28 @@ type AddressCat = {
 
 export function createHyperionApi(db: Database) {
 	return {
-		getAllCategories: ({
+		getCategories: ({
 			family,
-			network,
+			networkId,
 			address,
+			categoryCode,
+			subcategoryCode,
 		}: {
 			family?: CategoryFamily;
-			network: number | string;
+			networkId: number;
 			address: string;
+			categoryCode?: number;
+			subcategoryCode?: number;
 		}): Array<AddressCat> => {
 			const prefixKey = asCatKey({
 				family,
-				network,
+				networkId,
 				address,
-				categoryCode: 0,
-				subcategoryCode: 0,
+				categoryCode: categoryCode ?? 0,
+				subcategoryCode: subcategoryCode ?? 0,
 			});
 
-			const endKey = makeEndKey(prefixKey, network === 0 ? 6 : 4);
+			const endKey = makeEndKey(prefixKey, networkId === 0 ? 6 : 4);
 
 			const categories: Array<AddressCat> = [];
 
@@ -122,20 +120,20 @@ export function createHyperionApi(db: Database) {
 		},
 		existsInCategory: ({
 			family,
-			network,
+			networkId,
 			address,
 			categoryCode,
 			subcategoryCode,
 		}: {
 			family?: CategoryFamily;
-			network: number | string;
+			networkId: number;
 			address: string;
 			categoryCode: number;
 			subcategoryCode?: number;
 		}): boolean => {
 			const key = asCatKey({
 				family,
-				network,
+				networkId,
 				address,
 				categoryCode,
 				subcategoryCode,

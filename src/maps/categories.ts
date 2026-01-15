@@ -38,4 +38,5 @@ export const CategoriesMap = {
 	getLabel(cat: number, sub: number = 0x0) {
 		return categories.getLabel(cat, sub);
 	},
+	entries: categories.entries,
 };

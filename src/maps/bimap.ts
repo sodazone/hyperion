@@ -2,10 +2,19 @@ type CategoryID = number;
 type SubcategoryID = number;
 type Label = string;
 
+type Entry = {
+	category: number;
+	subcategory: number;
+	label: string;
+};
+
 export class LabeledBimap {
 	private labels: Label[] = [];
 	private keyToIndex = new Map<number, number>();
 	private labelToIndex = new Map<Label, number>();
+
+	private cachedEntries?: { entries: Entry[] };
+	private dirty = true;
 
 	private makeKey(cat: CategoryID, sub: SubcategoryID) {
 		return ((cat & 0xffff) << 16) | (sub & 0xffff);
@@ -23,6 +32,8 @@ export class LabeledBimap {
 		this.labels.push(label);
 		this.keyToIndex.set(key, index);
 		this.labelToIndex.set(label, index);
+
+		this.dirty = true;
 	}
 
 	getLabel(cat: CategoryID, sub: SubcategoryID): Label | undefined {
@@ -35,8 +46,32 @@ export class LabeledBimap {
 		if (index === undefined) return undefined;
 
 		for (const [key, i] of this.keyToIndex.entries()) {
-			if (i === index) return [(key >>> 16) & 0xffff, key & 0xffff];
+			if (i === index) {
+				return [(key >>> 16) & 0xffff, key & 0xffff];
+			}
 		}
 		return undefined;
+	}
+
+	entries() {
+		if (!this.dirty && this.cachedEntries) {
+			return this.cachedEntries;
+		}
+
+		const entries: Entry[] = new Array(this.labels.length);
+
+		let i = 0;
+		for (const [key, index] of this.keyToIndex.entries()) {
+			entries[i++] = {
+				category: (key >>> 16) & 0xffff,
+				subcategory: key & 0xffff,
+				label: this.labels[index] ?? "<unknown>",
+			};
+		}
+
+		this.cachedEntries = { entries };
+		this.dirty = false;
+
+		return this.cachedEntries;
 	}
 }
