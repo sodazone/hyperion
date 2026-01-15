@@ -13,7 +13,7 @@ const TAG_KEY_PREFIX_LENGTH = 67;
 /**
  * Encode a categorized key
  * Schema:
- * 32 byte Owner
+ * 32 bytes Owner
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
@@ -47,7 +47,7 @@ export function encodeCategorizedKey({
 /**
  * Encode a tagged key
  * Schema:
- * 32 byte Owner
+ * 32 bytes Owner
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
