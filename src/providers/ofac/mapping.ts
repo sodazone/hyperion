@@ -1,6 +1,6 @@
+import { PUBLIC_OWNER } from "@/db";
 import { encodeCategorizedKey, encodeValue } from "@/db/encoding/codec";
-import { addressTo32Bytes } from "@/maps/address";
-import { NetworkMap } from "@/maps/networks";
+import { addressTo32Bytes, NetworkMap } from "@/mapping";
 import { type HyperionRecord, KeyFamily } from "@/types";
 import type { OfacResult } from "./parser";
 
@@ -69,11 +69,12 @@ export function ofacToHyperionKey(r: OfacResult) {
 	if (networkId === undefined) throw new Error(`Unknown network ${network}`);
 
 	const address = addressTo32Bytes(r.address);
-	const family = KeyFamily.CategorizedPublic;
+	const family = KeyFamily.Categorized;
 	const categoryCode = 0x0004;
 	const subcategoryCode = 0x0001;
 
 	return encodeCategorizedKey({
+		owner: PUBLIC_OWNER,
 		family,
 		address,
 		networkId,

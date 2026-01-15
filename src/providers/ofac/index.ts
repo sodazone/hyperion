@@ -1,5 +1,6 @@
 import { config } from "@/config";
-import type { Database, HyperionRecord } from "@/types";
+import type { HyperionApi } from "@/db";
+import type { HyperionRecord } from "@/types";
 import { safePath } from "@/utils";
 import { runWorker } from "@/worker";
 import { updateData } from "../update";
@@ -12,7 +13,7 @@ export const ofac = {
 		const scriptPath = safePath(import.meta.url, "./update.sh");
 		return updateData({ scriptPath, dataDir });
 	},
-	run: async (db: Database) => {
+	run: async (api: HyperionApi) => {
 		//const updated = await ofac.update();
 		//if (updated) {
 		await runWorker<HyperionRecord>(
@@ -20,11 +21,7 @@ export const ofac = {
 			{ path: `${dataDir}/SDN_ADVANCED.XML` },
 			async (batch) => {
 				console.log("Writing batch of", batch.length, "records");
-				await db.batch(() => {
-					for (const { key, value } of batch) {
-						db.put(key, value);
-					}
-				});
+				await api.batch(batch);
 				console.log("Batch written");
 			},
 		);
