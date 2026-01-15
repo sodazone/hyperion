@@ -1,6 +1,9 @@
 import { createDatabase, createHyperionApi } from "@/db";
+import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { coercePublicCategoryParams } from "./path";
+
+const redocHtml = Bun.file("./src/static/redoc.html");
 
 const db = createDatabase("./.db/current");
 const api = createHyperionApi(db);
@@ -20,6 +23,16 @@ const listener = Bun.serve({
 			GET: () => {
 				return Response.json({ ok: true, uptime: process.uptime() });
 			},
+		},
+		"/docs": {
+			GET: () =>
+				new Response(redocHtml, { headers: { "Content-Type": "text/html" } }),
+		},
+		"/openapi.json": {
+			GET: () =>
+				Response.json(openapi, {
+					headers: { "Cache-Control": "public, max-age=3600" },
+				}),
 		},
 		"/meta/networks": {
 			GET: () => {
