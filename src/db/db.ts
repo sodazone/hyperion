@@ -2,17 +2,25 @@ import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { addressTo32Bytes } from "@/mapping/address";
+import { type Database, type HyperionRecord, KeyFamily } from "@/types";
 import {
-	type CategoryFamily,
-	type Database,
-	type HyperionRecord,
-	KeyFamily,
-} from "@/types";
-import { decodeCategorizedKey, encodeCategorizedKey } from "./encoding/codec";
+	decodeCategorizedKey,
+	encodeCategorizedKey,
+	encodeValue,
+} from "./encoding/codec";
 
 export const PUBLIC_OWNER = new Uint8Array(
-	new Bun.CryptoHasher("sha256").update("HYPERION.PUBLIC").digest(),
+	Bun.CryptoHasher.hash("sha256", "HYPERION.PUBLIC"),
 );
+
+export function isPublicOwner(owner: Uint8Array): boolean {
+	if (owner.byteLength !== PUBLIC_OWNER.byteLength) return false;
+
+	for (let i = 0; i < 32; i++) {
+		if (owner[i] !== PUBLIC_OWNER[i]) return false;
+	}
+	return true;
+}
 
 export async function createDatabase(
 	path: string,
@@ -54,14 +62,12 @@ function makeEndKey(
 
 function asCatKey({
 	owner,
-	family,
 	networkId,
 	address,
 	categoryCode,
 	subcategoryCode,
 }: {
-	owner?: string;
-	family?: CategoryFamily;
+	owner?: string | Uint8Array;
 	networkId: number;
 	address: string;
 	categoryCode: number;
@@ -71,11 +77,42 @@ function asCatKey({
 		typeof address === "string" ? addressTo32Bytes(address) : address;
 
 	return encodeCategorizedKey({
-		owner: owner ? addressTo32Bytes(owner) : PUBLIC_OWNER,
-		family: family ?? KeyFamily.Categorized,
+		owner: owner
+			? typeof owner === "string"
+				? addressTo32Bytes(owner)
+				: owner
+			: PUBLIC_OWNER,
+		family: KeyFamily.Categorized,
 		networkId,
 		address: addressBytes,
 		categoryCode,
+		subcategoryCode: subcategoryCode ?? 0,
+	});
+}
+
+function asOwnedCatKey({
+	address,
+	networkId,
+	owner,
+	categoryCode,
+	subcategoryCode,
+}: {
+	owner: Uint8Array;
+	networkId: number;
+	address: Uint8Array | string;
+	categoryCode: number;
+	subcategoryCode?: number;
+}) {
+	if (isPublicOwner(owner)) {
+		throw new Error("Writes to public owner space are forbidden");
+	}
+
+	return encodeCategorizedKey({
+		owner,
+		family: KeyFamily.Categorized,
+		networkId,
+		address: typeof address === "string" ? addressTo32Bytes(address) : address,
+		categoryCode: categoryCode,
 		subcategoryCode: subcategoryCode ?? 0,
 	});
 }
@@ -89,14 +126,14 @@ type AddressCat = {
 export function createHyperionApi(db: Database) {
 	return {
 		batch: async (batch: Array<HyperionRecord>) => {
-			await db.batch(() => {
+			return await db.batch(() => {
 				for (const { key, value } of batch) {
 					db.put(key, value);
 				}
 			});
 		},
 		put: async ({ key, value }: HyperionRecord) => {
-			await db.put(key, value);
+			return await db.put(key, value);
 		},
 		get: (key: Uint8Array): HyperionRecord | null => {
 			const value = db.get(key);
@@ -119,16 +156,63 @@ export function createHyperionApi(db: Database) {
 		getNetworksMeta: () => {
 			return NetworkMap.entries();
 		},
-		getCategories: ({
+		deleteCategory: async ({
 			owner,
-			family,
 			networkId,
 			address,
 			categoryCode,
 			subcategoryCode,
 		}: {
-			owner?: string;
-			family?: CategoryFamily;
+			owner: Uint8Array;
+			networkId: number;
+			address: string;
+			categoryCode: number;
+			subcategoryCode: number;
+		}) => {
+			const key = asOwnedCatKey({
+				owner,
+				networkId,
+				address,
+				categoryCode,
+				subcategoryCode,
+			});
+
+			return await db.remove(key);
+		},
+		putCategory: async (
+			{
+				owner,
+				networkId,
+				address,
+				categoryCode,
+				subcategoryCode,
+			}: {
+				owner: Uint8Array;
+				networkId: number;
+				address: string;
+				categoryCode: number;
+				subcategoryCode: number;
+			},
+			value: unknown,
+		) => {
+			const key = asOwnedCatKey({
+				owner,
+				networkId,
+				address,
+				categoryCode,
+				subcategoryCode,
+			});
+
+			return await db.put(key, encodeValue(value));
+		},
+		getCategories: ({
+			owner,
+			networkId,
+			address,
+			categoryCode,
+			subcategoryCode,
+		}: {
+			owner?: Uint8Array | string;
 			networkId: number;
 			address: string;
 			categoryCode?: number;
@@ -136,7 +220,6 @@ export function createHyperionApi(db: Database) {
 		}): Array<AddressCat> => {
 			const prefixKey = asCatKey({
 				owner,
-				family,
 				networkId,
 				address,
 				categoryCode: categoryCode ?? 0,
@@ -170,14 +253,12 @@ export function createHyperionApi(db: Database) {
 		},
 		existsInCategory: ({
 			owner,
-			family,
 			networkId,
 			address,
 			categoryCode,
 			subcategoryCode,
 		}: {
-			owner?: string;
-			family?: CategoryFamily;
+			owner?: Uint8Array | string;
 			networkId: number;
 			address: string;
 			categoryCode: number;
@@ -185,7 +266,6 @@ export function createHyperionApi(db: Database) {
 		}): boolean => {
 			const key = asCatKey({
 				owner,
-				family,
 				networkId,
 				address,
 				categoryCode,

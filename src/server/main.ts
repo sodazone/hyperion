@@ -1,12 +1,15 @@
 import { createDatabase, createHyperionApi } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
-import { coercePublicCategoryParams } from "./path";
+import { getOwnerHashFromRequest, loadJWKS } from "./auth";
+import { coerceCategoryParams } from "./path";
 
 const scalarHtml = Bun.file("./src/static/scalar.html");
 
 const db = await createDatabase("./.db/current");
 const api = createHyperionApi(db);
+
+await loadJWKS();
 
 const listener = Bun.serve({
 	hostname: "localhost",
@@ -49,10 +52,10 @@ const listener = Bun.serve({
 				return Response.json(api.getCategoriesMeta());
 			},
 		},
-		"/pub/cat/:cat/:subcat/:address/:network/data": {
+		"/public/category/:cat/:subcat/:address/:network/entries": {
 			GET: (req) => {
 				try {
-					const params = coercePublicCategoryParams(req.params);
+					const params = coerceCategoryParams(req.params);
 					if (params instanceof Response) return params;
 
 					const entries = api.getCategories(params);
@@ -70,10 +73,10 @@ const listener = Bun.serve({
 				}
 			},
 		},
-		"/pub/cat/:cat/:subcat/:address/:network": {
+		"/public/category/:cat/:subcat/:address/:network": {
 			GET: (req) => {
 				try {
-					const params = coercePublicCategoryParams(req.params);
+					const params = coerceCategoryParams(req.params);
 					if (params instanceof Response) return params;
 
 					return new Response(null, {
@@ -82,6 +85,87 @@ const listener = Bun.serve({
 				} catch (err) {
 					console.error("Route error:", err);
 					return new Response("Internal Server Error\n", { status: 500 });
+				}
+			},
+		},
+		"/me": {
+			GET: async (req) => {
+				const ownerHash = await getOwnerHashFromRequest(req);
+				if (ownerHash === null)
+					return new Response("Unauthorized", { status: 401 });
+				return Response.json({
+					hash: Buffer.from(ownerHash).toString("hex"),
+				});
+			},
+		},
+		"/me/categories/:cat/:subcat/:address/:network": {
+			GET: async (req) => {
+				const ownerHash = await getOwnerHashFromRequest(req);
+				if (ownerHash === null)
+					return new Response("Unauthorized", { status: 401 });
+
+				const params = coerceCategoryParams(req.params);
+				if (params instanceof Response) return params;
+
+				return new Response(null, {
+					status: api.existsInCategory({ ...params, owner: ownerHash })
+						? 204
+						: 404,
+				});
+			},
+			POST: async (req) => {
+				const ownerHash = await getOwnerHashFromRequest(req);
+				if (ownerHash === null)
+					return new Response("Unauthorized", { status: 401 });
+
+				const params = coerceCategoryParams(req.params);
+				if (params instanceof Response) return params;
+
+				const body = await req.json();
+				if (body instanceof Response) return body;
+
+				const result = await api.putCategory(
+					{ ...params, owner: ownerHash },
+					body,
+				);
+
+				return Response.json({ result });
+			},
+			DELETE: async (req) => {
+				const ownerHash = await getOwnerHashFromRequest(req);
+				if (ownerHash === null)
+					return new Response("Unauthorized", { status: 401 });
+
+				const params = coerceCategoryParams(req.params);
+				if (params instanceof Response) return params;
+
+				const result = await api.deleteCategory({
+					...params,
+					owner: ownerHash,
+				});
+
+				return Response.json({ result });
+			},
+		},
+		"/me/categories/:cat/:subcat/:address/:network/entries": {
+			GET: async (req) => {
+				const ownerHash = await getOwnerHashFromRequest(req);
+				if (ownerHash === null)
+					return new Response("Unauthorized", { status: 401 });
+
+				const params = coerceCategoryParams(req.params);
+				if (params instanceof Response) return params;
+
+				const entries = api.getCategories({
+					...params,
+					owner: ownerHash,
+				});
+				if (entries) {
+					return Response.json({ entries });
+				} else {
+					return new Response(null, {
+						status: 404,
+					});
 				}
 			},
 		},

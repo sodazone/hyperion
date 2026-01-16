@@ -8,6 +8,15 @@ export const openapi = {
 		description:
 			"Hyperion public API for address categorization. Use 0 as wildcard for cat, subcat, or network where supported.",
 	},
+	components: {
+		securitySchemes: {
+			bearerAuth: {
+				type: "http",
+				scheme: "bearer",
+				bearerFormat: "JWT",
+			},
+		},
+	},
 	servers: [{ url: "http://localhost:8080" }],
 	paths: {
 		"/": {
@@ -26,6 +35,39 @@ export const openapi = {
 							},
 						},
 					},
+				},
+			},
+		},
+		"/me": {
+			get: {
+				summary: "Get current user",
+				description:
+					"Returns information about the user associated with the Bearer token.",
+				security: [
+					{
+						bearerAuth: [],
+					},
+				],
+				responses: {
+					"200": {
+						description: "Authenticated user info",
+						content: {
+							"application/json": {
+								schema: {
+									type: "object",
+									properties: {
+										ownerHash: {
+											type: "string",
+											description: "32-byte owner hash derived from JWT sub",
+											example:
+												"3f8a1d9e5b7c4d2a1e6f8b0c9d7e2a1f3c4b5a6d7e8f9c0a1b2c3d4e5f6a7b8c",
+										},
+									},
+								},
+							},
+						},
+					},
+					"401": { description: "Unauthorized: missing or invalid token" },
 				},
 			},
 		},
@@ -72,7 +114,7 @@ export const openapi = {
 				},
 			},
 		},
-		"/pub/cat/{cat}/{subcat}/{address}/{network}/data": {
+		"/category/{cat}/{subcat}/{address}/{network}/entries": {
 			get: {
 				summary: "Get all entries for an address",
 				description:
@@ -136,7 +178,7 @@ export const openapi = {
 				},
 			},
 		},
-		"/pub/cat/{cat}/{subcat}/{address}/{network}": {
+		"/category/{cat}/{subcat}/{address}/{network}": {
 			get: {
 				summary: "Check if an address exists in a category/subcategory",
 				description:

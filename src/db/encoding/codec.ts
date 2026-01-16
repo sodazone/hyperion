@@ -8,7 +8,7 @@ import {
 
 const BE = false;
 const CATEGORIZED_KEY_LENGTH = 71;
-const TAG_KEY_PREFIX_LENGTH = 67;
+const TAG_KEY_LENGTH = 99;
 
 /**
  * Encode a categorized key
@@ -51,7 +51,7 @@ export function encodeCategorizedKey({
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
- * Tag code (variable, max 100 bytes)
+ * 32 bytes Hash Tag
  */
 export function encodeTaggedKey({
 	owner,
@@ -62,9 +62,9 @@ export function encodeTaggedKey({
 }: TaggedKey): CryptoAddressKey {
 	if (owner.length !== 32) throw new Error("Owner hash must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
-	if (tagCode.length > 100) throw new Error("Tag code max length is 100 bytes");
+	if (tagCode.length !== 32) throw new Error("Tag code must be 32 bytes");
 
-	const key = new Uint8Array(TAG_KEY_PREFIX_LENGTH + tagCode.length);
+	const key = new Uint8Array(TAG_KEY_LENGTH);
 	key.set(owner, 0);
 	key[32] = family;
 	key.set(address, 33);
@@ -105,7 +105,7 @@ export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
  * Decode a tagged key
  */
 export function decodeTaggedKey(key: Uint8Array): TaggedKey {
-	if (!key || key.length < TAG_KEY_PREFIX_LENGTH)
+	if (!key || key.length < TAG_KEY_LENGTH)
 		throw new Error("Invalid tagged key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
@@ -113,7 +113,7 @@ export function decodeTaggedKey(key: Uint8Array): TaggedKey {
 	const family = key[32] as KeyFamily;
 	const address = key.subarray(33, 65);
 	const networkId = dv.getUint16(65, BE);
-	const tagCode = key.subarray(67);
+	const tagCode = key.subarray(67, 99);
 
 	return { owner, family, address, networkId, tagCode };
 }

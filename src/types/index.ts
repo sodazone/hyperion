@@ -36,8 +36,6 @@ export const KeyFamily = {
 } as const;
 
 export type KeyFamily = (typeof KeyFamily)[keyof typeof KeyFamily];
-export type CategoryFamily = 1 | 2;
-export type TagFamily = 3 | 4;
 export type CryptoAddressKey = Uint8Array;
 export type TaggedKey = {
 	owner: Uint8Array;

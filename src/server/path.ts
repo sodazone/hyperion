@@ -1,15 +1,15 @@
 import { NetworkMap } from "@/mapping";
 
-type PublicCategoryParams = {
+type CategoryParams = {
 	address: string;
 	categoryCode: number;
 	subcategoryCode: number;
 	networkId: number;
 };
 
-export function coercePublicCategoryParams(
+export function coerceCategoryParams(
 	params: Record<string, string>,
-): PublicCategoryParams | Response {
+): CategoryParams | Response {
 	const { cat, subcat, address, network } = params;
 
 	const categoryCode = Number(cat);

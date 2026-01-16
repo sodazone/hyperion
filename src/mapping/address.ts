@@ -27,7 +27,7 @@ export function addressTo32Bytes(address: string): Uint8Array {
 				addressBytes = base58ToBytes(address);
 			} catch {
 				// fallback CashAddr payload or unknown format
-				addressBytes = new Bun.CryptoHasher("sha256").update(address).digest();
+				addressBytes = Bun.CryptoHasher.hash("sha256", address);
 			}
 		}
 
