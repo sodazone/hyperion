@@ -52,36 +52,28 @@ const listener = Bun.serve({
 				return Response.json(api.getCategoriesMeta());
 			},
 		},
-		"/public/category/:cat/:subcat/:address/:network/entries": {
-			GET: (req) => {
-				try {
-					const params = coerceCategoryParams(req.params);
-					if (params instanceof Response) return params;
-
-					const entries = api.getCategories(params);
-
-					if (entries) {
-						return Response.json({ entries });
-					} else {
-						return new Response(null, {
-							status: 404,
-						});
-					}
-				} catch (err) {
-					console.error("Route error:", err);
-					return new Response("Internal Server Error\n", { status: 500 });
-				}
-			},
-		},
 		"/public/category/:cat/:subcat/:address/:network": {
 			GET: (req) => {
 				try {
 					const params = coerceCategoryParams(req.params);
 					if (params instanceof Response) return params;
 
-					return new Response(null, {
-						status: api.existsInCategory(params) ? 204 : 404,
-					});
+					const url = new URL(req.url);
+					const check = url.searchParams.get("check") === "true";
+
+					if (check) {
+						return new Response(null, {
+							status: api.existsInCategory(params) ? 204 : 404,
+						});
+					}
+
+					const entries = api.getCategories(params);
+
+					if (!entries || entries.length === 0) {
+						return new Response(null, { status: 404 });
+					}
+
+					return Response.json({ entries });
 				} catch (err) {
 					console.error("Route error:", err);
 					return new Response("Internal Server Error\n", { status: 500 });
@@ -100,18 +92,41 @@ const listener = Bun.serve({
 		},
 		"/me/categories/:cat/:subcat/:address/:network": {
 			GET: async (req) => {
-				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null)
-					return new Response("Unauthorized", { status: 401 });
+				try {
+					const ownerHash = await getOwnerHashFromRequest(req);
+					if (ownerHash === null)
+						return new Response("Unauthorized", { status: 401 });
 
-				const params = coerceCategoryParams(req.params);
-				if (params instanceof Response) return params;
+					const params = coerceCategoryParams(req.params);
+					if (params instanceof Response) return params;
 
-				return new Response(null, {
-					status: api.existsInCategory({ ...params, owner: ownerHash })
-						? 204
-						: 404,
-				});
+					const url = new URL(req.url);
+					const check = url.searchParams.get("check") === "true";
+
+					if (check) {
+						return new Response(null, {
+							status: api.existsInCategory({ ...params, owner: ownerHash })
+								? 204
+								: 404,
+						});
+					}
+
+					const entries = api.getCategories({
+						...params,
+						owner: ownerHash,
+					});
+
+					if (entries) {
+						return Response.json({ entries });
+					} else {
+						return new Response(null, {
+							status: 404,
+						});
+					}
+				} catch (err) {
+					console.error("Route error:", err);
+					return new Response("Internal Server Error\n", { status: 500 });
+				}
 			},
 			POST: async (req) => {
 				const ownerHash = await getOwnerHashFromRequest(req);
@@ -145,28 +160,6 @@ const listener = Bun.serve({
 				});
 
 				return Response.json({ result });
-			},
-		},
-		"/me/categories/:cat/:subcat/:address/:network/entries": {
-			GET: async (req) => {
-				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null)
-					return new Response("Unauthorized", { status: 401 });
-
-				const params = coerceCategoryParams(req.params);
-				if (params instanceof Response) return params;
-
-				const entries = api.getCategories({
-					...params,
-					owner: ownerHash,
-				});
-				if (entries) {
-					return Response.json({ entries });
-				} else {
-					return new Response(null, {
-						status: 404,
-					});
-				}
 			},
 		},
 	},
