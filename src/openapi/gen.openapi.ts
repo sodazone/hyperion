@@ -114,11 +114,13 @@ export const openapi = {
 				},
 			},
 		},
-		"/category/{cat}/{subcat}/{address}/{network}/entries": {
+		"/category/{cat}/{subcat}/{address}/{network}": {
 			get: {
-				summary: "Get all entries for an address",
+				summary: "Query categories for an address",
 				description:
-					"Returns all categories/subcategories for a given address and network. Use 0 for cat, subcat, or network to act as wildcard.",
+					"Returns all categories/subcategories for a given address and network. " +
+					"Use 0 for cat, subcat, or network as a wildcard. " +
+					"If `check=true` is provided, only checks for existence and returns no body.",
 				parameters: [
 					{
 						name: "cat",
@@ -148,6 +150,15 @@ export const openapi = {
 						schema: { type: "string" },
 						description: "Network URN or numeric ID, 0 = any",
 					},
+					{
+						name: "check",
+						in: "query",
+						required: false,
+						schema: { type: "boolean" },
+						description:
+							"If true, performs an existence check only. " +
+							"Returns 204 if the address exists in the category, 404 otherwise.",
+					},
 				],
 				responses: {
 					"200": {
@@ -162,9 +173,21 @@ export const openapi = {
 											items: {
 												type: "object",
 												properties: {
-													category: { type: "integer" },
-													subcategory: { type: "integer" },
-													label: { type: "string" },
+													networkId: { type: "integer" },
+													category: {
+														type: "object",
+														properties: {
+															code: { type: "integer" },
+															label: { type: "string" },
+														},
+													},
+													subcategory: {
+														type: "object",
+														properties: {
+															code: { type: "integer" },
+															label: { type: "string" },
+														},
+													},
 												},
 											},
 										},
@@ -173,46 +196,15 @@ export const openapi = {
 							},
 						},
 					},
-					"404": { description: "No entries found" },
-					"400": { description: "Invalid parameters" },
-				},
-			},
-		},
-		"/category/{cat}/{subcat}/{address}/{network}": {
-			get: {
-				summary: "Check if an address exists in a category/subcategory",
-				description:
-					"Returns 204 if the address exists, 404 if not. Use 0 as wildcard for cat, subcat, or network.",
-				parameters: [
-					{
-						name: "cat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
+					"204": {
+						description: "Exists (only returned when check=true)",
 					},
-					{
-						name: "subcat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
+					"404": {
+						description: "Not found / no entries",
 					},
-					{
-						name: "address",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
+					"400": {
+						description: "Invalid parameters",
 					},
-					{
-						name: "network",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
-					},
-				],
-				responses: {
-					"204": { description: "Exists" },
-					"404": { description: "Not found" },
-					"400": { description: "Invalid parameters" },
 				},
 			},
 		},
