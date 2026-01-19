@@ -1,14 +1,17 @@
 import {
 	type CategorizedKey,
 	type CryptoAddressKey,
+	type HyperionMetadata,
 	type HyperionRecord,
+	type HyperionValue,
 	KeyFamily,
 	type TaggedKey,
 } from "@/types";
 
 const BE = false;
 const CATEGORIZED_KEY_LENGTH = 71;
-const TAG_KEY_LENGTH = 99;
+const TAG_KEY_MIN_LENGTH = 67;
+const TAG_KEY_MAX_LENGTH = 99;
 
 /**
  * Encode a categorized key
@@ -45,13 +48,13 @@ export function encodeCategorizedKey({
 }
 
 /**
- * Encode a tagged key
+ * Encode a tagged key (fixed 32-byte tagCode)
  * Schema:
  * 32 bytes Owner
  * 1 byte  Key Family
  * 32 bytes Address
  * 2 bytes Network ID (BE)
- * 32 bytes Hash Tag
+ * 32 bytes Tag Code (padded with zeros if shorter)
  */
 export function encodeTaggedKey({
 	owner,
@@ -62,9 +65,9 @@ export function encodeTaggedKey({
 }: TaggedKey): CryptoAddressKey {
 	if (owner.length !== 32) throw new Error("Owner hash must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
-	if (tagCode.length !== 32) throw new Error("Tag code must be 32 bytes");
+	if (tagCode.length > 32) throw new Error("Tag code must be at most 32 bytes");
 
-	const key = new Uint8Array(TAG_KEY_LENGTH);
+	const key = new Uint8Array(TAG_KEY_MAX_LENGTH);
 	key.set(owner, 0);
 	key[32] = family;
 	key.set(address, 33);
@@ -72,8 +75,35 @@ export function encodeTaggedKey({
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
 	dv.setUint16(65, networkId, BE);
 
+	// right-padded with 0x00
 	key.set(tagCode, 67);
+
 	return key;
+}
+
+/**
+ * Prefix for querying all tags of a given owner/address/network
+ */
+export function makeTagPrefix({
+	owner,
+	address,
+	networkId,
+	family = KeyFamily.Tagged,
+}: {
+	owner: Uint8Array;
+	address: Uint8Array;
+	networkId: number;
+	family?: number;
+}) {
+	const prefix = new Uint8Array(TAG_KEY_MIN_LENGTH);
+	prefix.set(owner, 0);
+	prefix[32] = family;
+	prefix.set(address, 33);
+
+	const dv = new DataView(prefix.buffer);
+	dv.setUint16(65, networkId, BE);
+
+	return prefix;
 }
 
 /**
@@ -105,7 +135,11 @@ export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
  * Decode a tagged key
  */
 export function decodeTaggedKey(key: Uint8Array): TaggedKey {
-	if (!key || key.length < TAG_KEY_LENGTH)
+	if (
+		!key ||
+		key.length < TAG_KEY_MIN_LENGTH ||
+		key.length > TAG_KEY_MAX_LENGTH
+	)
 		throw new Error("Invalid tagged key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
@@ -113,7 +147,7 @@ export function decodeTaggedKey(key: Uint8Array): TaggedKey {
 	const family = key[32] as KeyFamily;
 	const address = key.subarray(33, 65);
 	const networkId = dv.getUint16(65, BE);
-	const tagCode = key.subarray(67, 99);
+	const tagCode = key.subarray(67);
 
 	return { owner, family, address, networkId, tagCode };
 }
@@ -121,12 +155,15 @@ export function decodeTaggedKey(key: Uint8Array): TaggedKey {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-export function encodeValue(v: unknown): Uint8Array {
-	const json = JSON.stringify(v);
+export function encodeValue(
+	metadata: HyperionMetadata,
+	value: unknown,
+): Uint8Array {
+	const json = JSON.stringify({ metadata, value });
 	return encoder.encode(json);
 }
 
-export function decodeValue<T>(v: Uint8Array): T {
+export function decodeValue<T>(v: Uint8Array): HyperionValue<T> {
 	return JSON.parse(decoder.decode(v));
 }
 
@@ -144,6 +181,6 @@ export function decodeRecord<K = CategorizedKey | TaggedKey, V = unknown>(
 ) {
 	return {
 		key: decodeKey(r.key) as K,
-		value: decodeValue(r.value) as V,
+		value: decodeValue(r.value) as HyperionValue<V>,
 	};
 }

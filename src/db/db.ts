@@ -2,12 +2,18 @@ import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { addressTo32Bytes } from "@/mapping/address";
+import { hashTag } from "@/mapping/tags";
 import { type Database, type HyperionRecord, KeyFamily } from "@/types";
 import {
 	decodeCategorizedKey,
+	decodeValue,
 	encodeCategorizedKey,
+	encodeTaggedKey,
 	encodeValue,
+	makeTagPrefix,
 } from "./encoding/codec";
+
+export const METADATA_VERSION = 0;
 
 export const PUBLIC_OWNER = new Uint8Array(
 	Bun.CryptoHasher.hash("sha256", "HYPERION.PUBLIC"),
@@ -58,6 +64,33 @@ function makeEndKey(
 	}
 
 	return endKey;
+}
+
+function asTagKey({
+	owner,
+	networkId,
+	address,
+	tag,
+}: {
+	owner?: string | Uint8Array;
+	networkId: number;
+	address: string;
+	tag: string;
+}) {
+	const addressBytes =
+		typeof address === "string" ? addressTo32Bytes(address) : address;
+
+	return encodeTaggedKey({
+		owner: owner
+			? typeof owner === "string"
+				? addressTo32Bytes(owner)
+				: owner
+			: PUBLIC_OWNER,
+		family: KeyFamily.Tagged,
+		networkId,
+		address: addressBytes,
+		tagCode: hashTag(tag),
+	});
 }
 
 function asCatKey({
@@ -203,7 +236,17 @@ export function createHyperionApi(db: Database) {
 				subcategoryCode,
 			});
 
-			return await db.put(key, encodeValue(value));
+			return await db.put(
+				key,
+				encodeValue(
+					{
+						source: "owner",
+						timestamp: Date.now(),
+						version: METADATA_VERSION,
+					},
+					value,
+				),
+			);
 		},
 		getCategories: ({
 			owner,
@@ -282,6 +325,82 @@ export function createHyperionApi(db: Database) {
 			} else {
 				return db.doesExist(key);
 			}
+		},
+		hasTag: ({
+			owner,
+			networkId,
+			address,
+			tag,
+		}: {
+			owner?: Uint8Array | string;
+			networkId: number;
+			address: string;
+			tag: string;
+		}): boolean => {
+			const key = asTagKey({
+				owner,
+				networkId,
+				address,
+				tag,
+			});
+			return db.doesExist(key);
+		},
+		getTag: ({
+			owner,
+			networkId,
+			address,
+			tag,
+		}: {
+			owner?: Uint8Array | string;
+			networkId: number;
+			address: string;
+			tag: string;
+		}) => {
+			const key = asTagKey({
+				owner,
+				networkId,
+				address,
+				tag,
+			});
+			const encoded = db.get(key);
+			return encoded === undefined ? undefined : decodeValue(encoded);
+		},
+		getTags: ({
+			owner,
+			networkId,
+			address,
+		}: {
+			owner?: Uint8Array | string;
+			networkId: number;
+			address: string;
+		}) => {
+			const ownerBytes =
+				owner instanceof Uint8Array
+					? owner
+					: typeof owner === "string"
+						? addressTo32Bytes(owner)
+						: PUBLIC_OWNER;
+
+			const addressBytes = addressTo32Bytes(address);
+			const startKey = makeTagPrefix({
+				owner: ownerBytes,
+				networkId,
+				address: addressBytes,
+			});
+			const endKey = makeEndKey(startKey, 32);
+			const tags: Array<unknown> = [];
+
+			for (const { value } of db.getRange({
+				start: startKey,
+				end: endKey,
+			})) {
+				tags.push({
+					networkId,
+					address,
+					tag: decodeValue(value),
+				});
+			}
+			return tags;
 		},
 	};
 }

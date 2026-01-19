@@ -2,14 +2,14 @@ import { spawn } from "bun";
 
 export async function updateData({
 	scriptPath,
-	dataDir,
+	env,
 }: {
 	scriptPath: string;
-	dataDir: string;
+	env?: Record<string, string | undefined>;
 }) {
 	const proc = spawn({
 		cmd: ["bash", scriptPath],
-		env: { DATA_DIR: dataDir },
+		env,
 		stdout: "inherit",
 		stderr: "inherit",
 	});

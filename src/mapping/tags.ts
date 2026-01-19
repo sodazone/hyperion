@@ -1,4 +1,27 @@
-export function encodeTag(tag: string, seed: Uint8Array | bigint) {
+function bigintToUint8ArrayBE(value: bigint): Uint8Array {
+	if (value === 0n) return new Uint8Array([0]);
+
+	const bytes: number[] = [];
+	while (value > 0n) {
+		bytes.push(Number(value & 0xffn));
+		value >>= 8n;
+	}
+
+	bytes.reverse();
+	return Uint8Array.from(bytes);
+}
+
+export function createTag(type: string, name: string) {
+	return {
+		tagCode: hashTag(`${type}:${name}`),
+		tagValue: {
+			name,
+			type,
+		},
+	};
+}
+
+export function hashTag(tag: string, seed: Uint8Array | bigint = BigInt(0)) {
 	let bigintSeed: bigint;
 
 	if (typeof seed === "bigint") {
@@ -11,5 +34,5 @@ export function encodeTag(tag: string, seed: Uint8Array | bigint) {
 		bigintSeed = view.getBigUint64(0, false);
 	}
 
-	return Bun.hash.wyhash(tag, bigintSeed);
+	return bigintToUint8ArrayBE(Bun.hash.wyhash(tag, bigintSeed));
 }

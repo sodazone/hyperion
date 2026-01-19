@@ -5,10 +5,10 @@ function createCategoriesMap() {
 
 	// Category 0x0001 - Centralized Exchange
 	categories.add(0x0001, 0x0000, "Exchange");
-	categories.add(0x0001, 0x0001, "User Wallet");
-	categories.add(0x0001, 0x0002, "Hot Wallet");
-	categories.add(0x0001, 0x0003, "Cold Wallet");
-	categories.add(0x0001, 0x0004, "Staking Wallet");
+	categories.add(0x0001, 0x0001, "Mandatory KYC and AML");
+	categories.add(0x0001, 0x0002, "Optional KYC and AML");
+	categories.add(0x0001, 0x0003, "Inactive");
+	categories.add(0x0001, 0x0004, "OTC");
 
 	// Category 0x0002 - DeFi Protocol
 	categories.add(0x0002, 0x0000, "DeFi Protocol");
@@ -29,11 +29,20 @@ function createCategoriesMap() {
 	categories.add(0x0004, 0x0001, "OFAC Sanctioned Entity");
 	categories.add(0x0004, 0x0002, "EU Sanctioned Entity");
 
-	// Category 0x0005 - Compliance
-	categories.add(0x0005, 0x0000, "Compliance");
-	categories.add(0x0005, 0x0001, "FATF AML Monitoring");
+	// Category 0x0005 - Regulatory Oversight
+	categories.add(0x0005, 0x0000, "Regulatory Oversight");
+	categories.add(0x0005, 0x0001, "AML/CFT Obligations");
 	categories.add(0x0005, 0x0002, "KYC Provider");
-	categories.add(0x0005, 0x0003, "Risk / Compliance Service");
+	categories.add(0x0005, 0x0003, "Regulated Entity");
+
+	// Category 0x0006 - External Classification (Merkle Science)
+	categories.add(0x0006, 0x0000, "External Classification");
+	categories.add(0x0006, 0x0001, "Financial Service (Merkle)");
+	categories.add(0x0006, 0x0002, "Custody (Merkle)");
+
+	// Category 0x0007 - High Risk Organization
+	categories.add(0x0007, 0x0000, "High Risk Organization");
+	categories.add(0x0007, 0x0001, "High Risk Exchanges");
 
 	return categories;
 }

@@ -1,6 +1,6 @@
-export async function runWorker<T>(
+export async function runWorker<T, P = unknown>(
 	workerUrl: URL,
-	payload: unknown,
+	payload: P,
 	onBatch: (batch: T[]) => Promise<void>,
 ) {
 	const worker = new Worker(workerUrl, { type: "module" });

@@ -2,7 +2,13 @@ import { createDatabase, createHyperionApi } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { getOwnerHashFromRequest, loadJWKS } from "./auth";
-import { coerceCategoryParams } from "./path";
+import { coerceCategoryParams, coerceNetworkId, coerceTagParams } from "./path";
+import {
+	InternalServerError,
+	InvalidParameters,
+	NotFound,
+	Unauthorized,
+} from "./response";
 
 const scalarHtml = Bun.file("./src/static/scalar.html");
 
@@ -70,21 +76,74 @@ const listener = Bun.serve({
 					const entries = api.getCategories(params);
 
 					if (!entries || entries.length === 0) {
-						return new Response(null, { status: 404 });
+						return NotFound;
 					}
 
-					return Response.json({ entries });
+					return Response.json(entries);
 				} catch (err) {
 					console.error("Route error:", err);
-					return new Response("Internal Server Error\n", { status: 500 });
+					return InternalServerError;
+				}
+			},
+		},
+		"/public/tags/:address/:network": {
+			GET: (req) => {
+				try {
+					const { address, network } = req.params;
+					const networkId = coerceNetworkId(network);
+
+					if (!address || networkId === undefined) {
+						return InvalidParameters;
+					}
+
+					const entries = api.getTags({
+						address,
+						networkId,
+					});
+
+					if (entries === undefined || entries.length === 0) {
+						return NotFound;
+					}
+
+					return Response.json(entries);
+				} catch (err) {
+					console.error("Route error:", err);
+					return InternalServerError;
+				}
+			},
+		},
+		"/public/tag/:tag/:address/:network": {
+			GET: (req) => {
+				try {
+					const params = coerceTagParams(req.params);
+					if (params instanceof Response) return params;
+
+					const url = new URL(req.url);
+					const check = url.searchParams.get("check") === "true";
+
+					if (check) {
+						return new Response(null, {
+							status: api.hasTag(params) ? 204 : 404,
+						});
+					}
+
+					const result = api.getTag(params);
+
+					if (result === undefined) {
+						return NotFound;
+					}
+
+					return Response.json(result);
+				} catch (err) {
+					console.error("Route error:", err);
+					return InternalServerError;
 				}
 			},
 		},
 		"/me": {
 			GET: async (req) => {
 				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null)
-					return new Response("Unauthorized", { status: 401 });
+				if (ownerHash === null) return Unauthorized;
 				return Response.json({
 					hash: Buffer.from(ownerHash).toString("hex"),
 				});
@@ -94,8 +153,7 @@ const listener = Bun.serve({
 			GET: async (req) => {
 				try {
 					const ownerHash = await getOwnerHashFromRequest(req);
-					if (ownerHash === null)
-						return new Response("Unauthorized", { status: 401 });
+					if (ownerHash === null) return Unauthorized;
 
 					const params = coerceCategoryParams(req.params);
 					if (params instanceof Response) return params;
@@ -117,21 +175,18 @@ const listener = Bun.serve({
 					});
 
 					if (entries) {
-						return Response.json({ entries });
+						return Response.json(entries);
 					} else {
-						return new Response(null, {
-							status: 404,
-						});
+						return NotFound;
 					}
 				} catch (err) {
 					console.error("Route error:", err);
-					return new Response("Internal Server Error\n", { status: 500 });
+					return InternalServerError;
 				}
 			},
 			POST: async (req) => {
 				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null)
-					return new Response("Unauthorized", { status: 401 });
+				if (ownerHash === null) return Unauthorized;
 
 				const params = coerceCategoryParams(req.params);
 				if (params instanceof Response) return params;
@@ -144,12 +199,11 @@ const listener = Bun.serve({
 					body,
 				);
 
-				return Response.json({ result });
+				return Response.json(result);
 			},
 			DELETE: async (req) => {
 				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null)
-					return new Response("Unauthorized", { status: 401 });
+				if (ownerHash === null) return Unauthorized;
 
 				const params = coerceCategoryParams(req.params);
 				if (params instanceof Response) return params;
@@ -159,7 +213,7 @@ const listener = Bun.serve({
 					owner: ownerHash,
 				});
 
-				return Response.json({ result });
+				return Response.json(result);
 			},
 		},
 	},

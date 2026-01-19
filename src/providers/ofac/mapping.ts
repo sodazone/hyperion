@@ -4,7 +4,6 @@ import { addressTo32Bytes, NetworkMap } from "@/mapping";
 import { type HyperionRecord, KeyFamily } from "@/types";
 import type { OfacResult } from "./parser";
 
-// TODO map properly!
 const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {
 	XBT: "urn:ocn:bitcoin:0",
 	BCH: "urn:ocn:bitcoin-cash:0",
@@ -92,6 +91,13 @@ export function ofacToHyperion(r: OfacResult): HyperionRecord {
 
 	return {
 		key: ofacToHyperionKey(r),
-		value: encodeValue(r),
+		value: encodeValue(
+			{
+				source: "ofac",
+				timestamp: Date.now(),
+				version: 0,
+			},
+			r,
+		),
 	};
 }

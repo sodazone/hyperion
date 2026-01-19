@@ -1,1 +1,1 @@
-export * from "./ofac";
+export * from "./ofac/runner";
