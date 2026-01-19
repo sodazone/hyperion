@@ -1,7 +1,7 @@
 import { createDatabase, createHyperionApi, type HyperionApi } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
-import { getOwnerHashFromRequest, loadJWKS } from "./auth";
+import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
 import { coerceCategoryParams, coerceNetworkId, coerceTagParams } from "./path";
 import {
 	InternalServerError,
@@ -17,18 +17,19 @@ export type Serve = {
 
 export async function serve({
 	dbPath,
+	jwks,
 	port = 8080,
 	hostname = "localhost",
 	reusePort = true,
 }: Bun.Serve.HostnamePortServeOptions<unknown> & {
 	dbPath?: string;
+	jwks?: JWKSSource;
 }): Promise<Serve> {
 	const db = await createDatabase(dbPath);
 	const api = createHyperionApi(db);
 	const scalarHtml = Bun.file("./src/static/scalar.html");
 
-	// TODO pass a JWKS or load remote...
-	await loadJWKS();
+	await loadJWKS(jwks);
 
 	const listener = Bun.serve({
 		hostname,
