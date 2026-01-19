@@ -13,7 +13,7 @@ export class LabeledBimap {
 	private keyToIndex = new Map<number, number>();
 	private labelToIndex = new Map<Label, number>();
 
-	private cachedEntries?: { entries: Entry[] };
+	private cachedEntries?: Array<Entry>;
 	private dirty = true;
 
 	private makeKey(cat: CategoryID, sub: SubcategoryID) {
@@ -69,7 +69,7 @@ export class LabeledBimap {
 			};
 		}
 
-		this.cachedEntries = { entries };
+		this.cachedEntries = [...entries];
 		this.dirty = false;
 
 		return this.cachedEntries;
