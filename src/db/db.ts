@@ -29,11 +29,11 @@ export function isPublicOwner(owner: Uint8Array): boolean {
 }
 
 export async function createDatabase(
-	path: string,
+	path?: string,
 	// TODO
 	_options?: RootDatabaseOptionsWithPath,
 ) {
-	await mkdir(path, { recursive: true });
+	if (path !== undefined) await mkdir(path, { recursive: true });
 
 	const db = open<Uint8Array, Uint8Array>({
 		path,
@@ -387,7 +387,11 @@ export function createHyperionApi(db: Database) {
 				networkId,
 				address: addressBytes,
 			});
-			const endKey = makeEndKey(startKey, 32);
+
+			const endKey = new Uint8Array(startKey.length + 1);
+			endKey.set(startKey);
+			endKey[startKey.length] = 0xff;
+
 			const tags: Array<unknown> = [];
 
 			for (const { value } of db.getRange({

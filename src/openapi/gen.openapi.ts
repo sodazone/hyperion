@@ -103,10 +103,10 @@ export const openapi = {
 		},
 		"/public/category/{cat}/{subcat}/{address}/{network}": {
 			get: {
-				summary: "Get Categories for Address",
+				summary: "Get all categories for an address",
 				tags: ["Public"],
 				description:
-					"Returns all categories/subcategories for a given address and network. Use 0 for cat, subcat, or network as wildcard. If `check=true` is provided, only checks for existence.",
+					"Returns all categories/subcategories for a given address and network. Use 0 for cat, subcat, or network as wildcard. If `check=true` is provided, only checks for existence, and in this case `network` must be especified.",
 				parameters: [
 					{
 						name: "cat",
