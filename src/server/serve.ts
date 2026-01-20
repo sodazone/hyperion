@@ -1,4 +1,5 @@
-import { createDatabase, createHyperionApi, type HyperionApi } from "@/db";
+import { analyzeAddress, analyzeAddressAllNetworks } from "@/api/address";
+import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
@@ -12,7 +13,7 @@ import {
 
 export type Serve = {
 	shutdown: (signal: string) => Promise<void>;
-	api: HyperionApi;
+	db: HyperionDB;
 };
 
 export async function serve({
@@ -25,8 +26,8 @@ export async function serve({
 	dbPath?: string;
 	jwks?: JWKSSource;
 }): Promise<Serve> {
-	const db = await createDatabase(dbPath);
-	const api = createHyperionApi(db);
+	const kvs = await createDatabase(dbPath);
+	const db = createHyperionDB(kvs);
 	const scalarHtml = Bun.file("./src/static/scalar.html");
 
 	await loadJWKS(jwks);
@@ -61,43 +62,81 @@ export async function serve({
 			},
 			"/db/stats": {
 				GET: () => {
-					return Response.json(db.getStats());
+					return Response.json(kvs.getStats());
 				},
 			},
-			"/meta/networks": {
+			"/v1/meta/networks": {
 				GET: () => {
-					return Response.json(api.getNetworksMeta());
+					return Response.json(db.getNetworksMeta());
 				},
 			},
-			"/meta/categories": {
+			"/v1/meta/categories": {
 				GET: () => {
-					return Response.json(api.getCategoriesMeta());
+					return Response.json(db.getCategoriesMeta());
 				},
 			},
-			"/public/category/:cat/:subcat/:address/:network": {
+			"/v1/public/address/:address/:network": {
+				GET: (req) => {
+					try {
+						const { address, network } = req.params;
+						const networkId = coerceNetworkId(network);
+						if (!address || networkId === undefined) {
+							return InvalidParameters;
+						}
+
+						if (
+							!db.existsInCategory({
+								address,
+								networkId,
+								categoryCode: 0,
+							})
+						) {
+							return Response.json({
+								address,
+								networks: [],
+							});
+						}
+
+						const result = analyzeAddress(db, address, networkId);
+						return Response.json(result);
+					} catch (err) {
+						console.error(err);
+						return InternalServerError;
+					}
+				},
+			},
+			"/v1/public/address/:address": {
+				GET: async (req) => {
+					try {
+						const { address } = req.params;
+
+						const result = await analyzeAddressAllNetworks(db, address);
+						return Response.json(result);
+					} catch (err) {
+						console.error(err);
+						return InternalServerError;
+					}
+				},
+			},
+			"/v1/public/category/:address/:cat/:subcat/:network": {
 				GET: (req) => {
 					try {
 						const params = coerceCategoryParams(req.params);
 						if (params instanceof Response) return params;
 
 						const url = new URL(req.url);
-						const check = url.searchParams.get("check") === "true";
+						const exists = url.searchParams.get("exists") === "true";
 
-						if (check) {
+						if (exists) {
 							if (params.networkId === 0) {
-								return new Response(
-									"Invalid parameters. Network must be specified.",
-									{
-										status: 400,
-									},
-								);
+								return InvalidParameters;
 							}
 							return new Response(null, {
-								status: api.existsInCategory(params) ? 204 : 404,
+								status: db.existsInCategory(params) ? 204 : 404,
 							});
 						}
 
-						const entries = api.getCategories(params);
+						const entries = db.getCategories(params);
 
 						if (!entries || entries.length === 0) {
 							return NotFound;
@@ -110,7 +149,7 @@ export async function serve({
 					}
 				},
 			},
-			"/public/tags/:address/:network": {
+			"/v1/public/tags/:address/:network": {
 				GET: (req) => {
 					try {
 						const { address, network } = req.params;
@@ -120,7 +159,7 @@ export async function serve({
 							return InvalidParameters;
 						}
 
-						const entries = api.getTags({
+						const entries = db.getTags({
 							address,
 							networkId,
 						});
@@ -136,22 +175,25 @@ export async function serve({
 					}
 				},
 			},
-			"/public/tag/:tag/:address/:network": {
+			"/v1/public/tag/:address/:tag/:network": {
 				GET: (req) => {
 					try {
 						const params = coerceTagParams(req.params);
 						if (params instanceof Response) return params;
 
 						const url = new URL(req.url);
-						const check = url.searchParams.get("check") === "true";
+						const exists = url.searchParams.get("exists") === "true";
 
-						if (check) {
+						if (exists) {
+							if (params.networkId === 0) {
+								return InvalidParameters;
+							}
 							return new Response(null, {
-								status: api.hasTag(params) ? 204 : 404,
+								status: db.hasTag(params) ? 204 : 404,
 							});
 						}
 
-						const result = api.getTag(params);
+						const result = db.getTag(params);
 
 						if (result === undefined) {
 							return NotFound;
@@ -164,7 +206,7 @@ export async function serve({
 					}
 				},
 			},
-			"/me": {
+			"/v1/private/me": {
 				GET: async (req) => {
 					const ownerHash = await getOwnerHashFromRequest(req);
 					if (ownerHash === null) return Unauthorized;
@@ -173,7 +215,7 @@ export async function serve({
 					});
 				},
 			},
-			"/me/categories/:cat/:subcat/:address/:network": {
+			"/v1/private/categories/:address/:cat/:subcat/:network": {
 				GET: async (req) => {
 					try {
 						const ownerHash = await getOwnerHashFromRequest(req);
@@ -183,17 +225,20 @@ export async function serve({
 						if (params instanceof Response) return params;
 
 						const url = new URL(req.url);
-						const check = url.searchParams.get("check") === "true";
+						const exists = url.searchParams.get("exists") === "true";
 
-						if (check) {
+						if (exists) {
+							if (params.networkId === 0) {
+								return InvalidParameters;
+							}
 							return new Response(null, {
-								status: api.existsInCategory({ ...params, owner: ownerHash })
+								status: db.existsInCategory({ ...params, owner: ownerHash })
 									? 204
 									: 404,
 							});
 						}
 
-						const entries = api.getCategories({
+						const entries = db.getCategories({
 							...params,
 							owner: ownerHash,
 						});
@@ -218,7 +263,7 @@ export async function serve({
 					const body = await req.json();
 					if (body instanceof Response) return body;
 
-					const result = await api.putCategory(
+					const result = await db.putCategory(
 						{ ...params, owner: ownerHash },
 						body,
 					);
@@ -232,7 +277,7 @@ export async function serve({
 					const params = coerceCategoryParams(req.params);
 					if (params instanceof Response) return params;
 
-					const result = await api.deleteCategory({
+					const result = await db.deleteCategory({
 						...params,
 						owner: ownerHash,
 					});
@@ -255,7 +300,7 @@ export async function serve({
 			listener.stop();
 			console.log("HTTP server stopped");
 
-			db.close();
+			kvs.close();
 			console.log("Database closed");
 
 			process.exit(0);
@@ -274,6 +319,6 @@ export async function serve({
 
 	return {
 		shutdown,
-		api,
+		db: db,
 	};
 }

@@ -156,7 +156,7 @@ type AddressCat = {
 	subcategory: { code: number; label: string };
 };
 
-export function createHyperionApi(db: Database) {
+export function createHyperionDB(db: Database) {
 	return {
 		batch: async (batch: Array<HyperionRecord>) => {
 			return await db.batch(() => {
@@ -314,11 +314,15 @@ export function createHyperionApi(db: Database) {
 				categoryCode,
 				subcategoryCode,
 			});
-			if (subcategoryCode === undefined || subcategoryCode === 0) {
+			if (
+				categoryCode === 0 ||
+				subcategoryCode === undefined ||
+				subcategoryCode === 0
+			) {
 				return (
 					db.getCount({
 						start: key,
-						end: makeEndKey(key, 2),
+						end: makeEndKey(key, categoryCode === 0 ? 4 : 2),
 						limit: 1,
 					}) > 0
 				);
@@ -409,4 +413,4 @@ export function createHyperionApi(db: Database) {
 	};
 }
 
-export type HyperionApi = ReturnType<typeof createHyperionApi>;
+export type HyperionDB = ReturnType<typeof createHyperionDB>;

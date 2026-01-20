@@ -53,3 +53,13 @@ export const CategoriesMap = {
 	getLabel: (cat: number, sub: number = 0x0) => categories.getLabel(cat, sub),
 	entries: () => categories.entries(),
 };
+
+export const CAT = {
+	EXCHANGE: 0x0001,
+	DEFI: 0x0002,
+	INFRA: 0x0003,
+	SANCTIONS: 0x0004,
+	REGULATORY: 0x0005,
+	EXTERNAL: 0x0006,
+	HIGH_RISK: 0x0007,
+} as const;

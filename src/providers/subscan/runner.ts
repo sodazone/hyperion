@@ -1,5 +1,5 @@
 import { config } from "@/config";
-import type { HyperionApi } from "@/db";
+import type { HyperionDB } from "@/db";
 import { NetworkMap } from "@/mapping";
 import type { HyperionRecord } from "@/types";
 import { safePath } from "@/utils";
@@ -29,7 +29,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 
 		update,
 
-		run: async (api: HyperionApi) => {
+		run: async (api: HyperionDB) => {
 			const updated = await update();
 			if (!updated) return;
 

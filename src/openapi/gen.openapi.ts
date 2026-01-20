@@ -6,8 +6,17 @@ export const openapi = {
 		title: "Hyperion API",
 		version: VERSION,
 		description:
-			"Hyperion public API for address categorization. Use 0 as wildcard for cat, subcat, or network where supported.",
+			"Hyperion public API for blockchain address analysis, categorization, sanctions, and attribution. " +
+			"Use network = 0 as a wildcard where supported.",
 	},
+	servers: [{ url: "http://localhost:8080" }],
+	tags: [
+		{ name: "System" },
+		{ name: "Metadata" },
+		{ name: "Analysis" },
+		{ name: "Categories" },
+		{ name: "Tags" },
+	],
 	components: {
 		securitySchemes: {
 			bearerAuth: {
@@ -16,8 +25,40 @@ export const openapi = {
 				bearerFormat: "JWT",
 			},
 		},
+		schemas: {
+			CategoryEntry: {
+				type: "object",
+				properties: {
+					networkId: { type: "number" },
+					category: {
+						type: "object",
+						properties: { code: { type: "number" }, label: { type: "string" } },
+					},
+					subcategory: {
+						type: "object",
+						properties: { code: { type: "number" }, label: { type: "string" } },
+					},
+				},
+			},
+			TagEntry: { type: "object" },
+			AddressAnalysis: {
+				type: "object",
+				properties: {
+					address: { type: "string" },
+					networks: {
+						type: "array",
+						items: {
+							type: "object",
+							properties: {
+								networkId: { type: "number" },
+								analysis: { type: "object" },
+							},
+						},
+					},
+				},
+			},
+		},
 	},
-	servers: [{ url: "http://localhost:8080" }],
 	paths: {
 		"/": {
 			get: {
@@ -43,8 +84,8 @@ export const openapi = {
 								schema: {
 									type: "object",
 									properties: {
-										ok: { type: "boolean", example: true },
-										uptime: { type: "number", example: 123.45 },
+										ok: { type: "boolean" },
+										uptime: { type: "number" },
 									},
 								},
 							},
@@ -53,143 +94,171 @@ export const openapi = {
 				},
 			},
 		},
-		"/docs": {
+		"/v1/meta/networks": {
 			get: {
-				summary: "API HTML documentation",
-				tags: ["System"],
-				responses: {
-					200: {
-						description: "Static HTML docs",
-						content: { "text/html": { schema: { type: "string" } } },
-					},
-				},
-			},
-		},
-		"/openapi.json": {
-			get: {
-				summary: "OpenAPI JSON schema",
-				tags: ["System"],
-				responses: {
-					200: {
-						description: "OpenAPI JSON",
-						content: { "application/json": { schema: { type: "object" } } },
-					},
-				},
-			},
-		},
-		"/meta/networks": {
-			get: {
-				summary: "Network metadata",
+				summary: "Supported networks",
 				tags: ["Metadata"],
 				responses: {
 					200: {
-						description: "List of networks",
-						content: { "application/json": { schema: { type: "array" } } },
-					},
-				},
-			},
-		},
-		"/meta/categories": {
-			get: {
-				summary: "Category metadata",
-				tags: ["Metadata"],
-				responses: {
-					200: {
-						description: "List of categories",
-						content: { "application/json": { schema: { type: "array" } } },
-					},
-				},
-			},
-		},
-		"/public/category/{cat}/{subcat}/{address}/{network}": {
-			get: {
-				summary: "Get all categories for an address",
-				tags: ["Public"],
-				description:
-					"Returns all categories/subcategories for a given address and network. Use 0 for cat, subcat, or network as wildcard. If `check=true` is provided, only checks for existence, and in this case `network` must be especified.",
-				parameters: [
-					{
-						name: "cat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
-						description: "Category ID, 0 = any",
-					},
-					{
-						name: "subcat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
-						description: "Subcategory ID, 0 = any",
-					},
-					{
-						name: "address",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
-						description: "Target address",
-					},
-					{
-						name: "network",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
-						description: "Network URN or numeric ID, 0 = any",
-					},
-					{
-						name: "check",
-						in: "query",
-						required: false,
-						schema: { type: "boolean" },
-						description: "If true, existence-only check",
-					},
-				],
-				responses: {
-					200: {
-						description: "Category entries for address",
+						description: "Network map",
 						content: {
 							"application/json": {
 								schema: {
 									type: "object",
-									properties: {
-										entries: {
-											type: "array",
-											items: {
-												type: "object",
-												properties: {
-													networkId: { type: "integer" },
-													category: {
-														type: "object",
-														properties: {
-															code: { type: "integer" },
-															label: { type: "string" },
-														},
-													},
-													subcategory: {
-														type: "object",
-														properties: {
-															code: { type: "integer" },
-															label: { type: "string" },
-														},
-													},
-												},
-											},
+									additionalProperties: { type: "number" },
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"/v1/meta/categories": {
+			get: {
+				summary: "Supported categories",
+				tags: ["Metadata"],
+				responses: {
+					200: {
+						description: "Category definitions",
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: {
+										type: "object",
+										properties: {
+											category: { type: "number" },
+											subcategory: { type: "number" },
+											label: { type: "string" },
 										},
 									},
 								},
 							},
 						},
 					},
-					204: { description: "Exists only (check=true)" },
-					404: { description: "Not found / no entries" },
+				},
+			},
+		},
+
+		// Address Analysis
+		"/v1/public/address/{address}": {
+			get: {
+				summary: "Analyze address across all networks",
+				tags: ["Analysis"],
+				parameters: [
+					{
+						name: "address",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+						description: "Blockchain address",
+					},
+				],
+				responses: {
+					200: {
+						description: "Per-network analysis",
+						content: {
+							"application/json": {
+								schema: { $ref: "#/components/schemas/AddressAnalysis" },
+							},
+						},
+					},
+				},
+			},
+		},
+		"/v1/public/address/{address}/{network}": {
+			get: {
+				summary: "Analyze address on a specific network",
+				tags: ["Analysis"],
+				parameters: [
+					{
+						name: "address",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+					},
+					{
+						name: "network",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+						description: "Network URN or numeric ID",
+					},
+				],
+				responses: {
+					200: {
+						description: "Analysis result",
+						content: { "application/json": { schema: { type: "object" } } },
+					},
 					400: { description: "Invalid parameters" },
 				},
 			},
 		},
-		"/public/tags/{address}/{network}": {
+
+		// Categories
+		"/v1/public/category/{address}/{cat}/{subcat}/{network}": {
+			get: {
+				summary: "Get categories for an address",
+				tags: ["Categories"],
+				description:
+					"Retrieve categories for an address. Use 0 as wildcard for cat, subcat, or network. Optional query param `exists=true` returns 204/404 only.",
+				parameters: [
+					{
+						name: "address",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+					},
+					{
+						name: "cat",
+						in: "path",
+						required: true,
+						schema: { type: "integer", minimum: 0 },
+					},
+					{
+						name: "subcat",
+						in: "path",
+						required: true,
+						schema: { type: "integer", minimum: 0 },
+					},
+					{
+						name: "network",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+					},
+					{
+						name: "exists",
+						in: "query",
+						required: false,
+						schema: { type: "boolean" },
+						description: "If true, only check existence (204/404)",
+					},
+				],
+				responses: {
+					200: {
+						description: "Category entries",
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: { $ref: "#/components/schemas/CategoryEntry" },
+								},
+							},
+						},
+					},
+					204: { description: "Exists only" },
+					404: { description: "No categories found" },
+					400: { description: "Invalid parameters" },
+				},
+			},
+		},
+
+		// Tags
+		"/v1/public/tags/{address}/{network}": {
 			get: {
 				summary: "Get all tags for an address",
-				tags: ["Public"],
+				tags: ["Tags"],
 				parameters: [
 					{
 						name: "address",
@@ -206,18 +275,24 @@ export const openapi = {
 				],
 				responses: {
 					200: {
-						description: "Array of tags",
-						content: { "application/json": { schema: { type: "array" } } },
+						description: "List of tags",
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: { $ref: "#/components/schemas/TagEntry" },
+								},
+							},
+						},
 					},
 					404: { description: "No tags found" },
-					400: { description: "Invalid parameters" },
 				},
 			},
 		},
-		"/public/tag/{tag}/{address}/{network}": {
+		"/v1/public/tag/{tag}/{address}/{network}": {
 			get: {
 				summary: "Get a specific tag for an address",
-				tags: ["Public"],
+				tags: ["Tags"],
 				parameters: [
 					{
 						name: "tag",
@@ -238,118 +313,24 @@ export const openapi = {
 						schema: { type: "string" },
 					},
 					{
-						name: "check",
+						name: "exists",
 						in: "query",
 						required: false,
 						schema: { type: "boolean" },
-						description: "Existence-only check",
+						description: "If true, only check existence (204/404)",
 					},
 				],
 				responses: {
 					200: {
 						description: "Tag record",
-						content: { "application/json": { schema: { type: "object" } } },
-					},
-					204: { description: "Exists only (check=true)" },
-					404: { description: "Tag not found" },
-					400: { description: "Invalid parameters" },
-				},
-			},
-		},
-		"/me": {
-			get: {
-				summary: "Get current user",
-				tags: ["Private"],
-				security: [{ bearerAuth: [] }],
-				responses: {
-					200: {
-						description: "Authenticated user info",
 						content: {
 							"application/json": {
-								schema: {
-									type: "object",
-									properties: {
-										hash: { type: "string", description: "32-byte owner hash" },
-									},
-								},
+								schema: { $ref: "#/components/schemas/TagEntry" },
 							},
 						},
 					},
-					401: { description: "Unauthorized: missing or invalid token" },
-				},
-			},
-		},
-		"/me/categories/{cat}/{subcat}/{address}/{network}": {
-			get: {
-				summary: "Get categories for the authenticated user",
-				tags: ["Private"],
-				security: [{ bearerAuth: [] }],
-				parameters: [
-					{
-						name: "cat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
-					},
-					{
-						name: "subcat",
-						in: "path",
-						required: true,
-						schema: { type: "integer", minimum: 0 },
-					},
-					{
-						name: "address",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
-					},
-					{
-						name: "network",
-						in: "path",
-						required: true,
-						schema: { type: "string" },
-					},
-					{
-						name: "check",
-						in: "query",
-						required: false,
-						schema: { type: "boolean" },
-					},
-				],
-				responses: {
-					200: {
-						description: "Category entries for user",
-						content: { "application/json": { schema: { type: "object" } } },
-					},
-					204: { description: "Exists only (check=true)" },
-					404: { description: "Not found" },
-					400: { description: "Invalid parameters" },
-				},
-			},
-			post: {
-				summary: "Create or update categories for authenticated user",
-				tags: ["Private"],
-				security: [{ bearerAuth: [] }],
-				requestBody: {
-					required: true,
-					content: { "application/json": { schema: { type: "object" } } },
-				},
-				responses: {
-					200: {
-						description: "Operation result",
-						content: { "application/json": { schema: { type: "object" } } },
-					},
-				},
-			},
-			delete: {
-				summary: "Delete categories for authenticated user",
-				tags: ["Private"],
-				security: [{ bearerAuth: [] }],
-				responses: {
-					200: {
-						description: "Operation result",
-						content: { "application/json": { schema: { type: "object" } } },
-					},
+					204: { description: "Exists only" },
+					404: { description: "Tag not found" },
 				},
 			},
 		},

@@ -5,6 +5,7 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
+		"serve": "bun run src/server/main.ts",
 		"lint": "biome check --write"
 	},
 	"devDependencies": {

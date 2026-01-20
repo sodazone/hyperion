@@ -1,5 +1,5 @@
 import { config } from "@/config";
-import type { HyperionApi } from "@/db";
+import type { HyperionDB } from "@/db";
 import type { HyperionRecord } from "@/types";
 import { safePath } from "@/utils";
 import { runWorker } from "@/worker";
@@ -13,7 +13,7 @@ export const ofac = {
 		const scriptPath = safePath(import.meta.url, "./update.sh");
 		return updateData({ scriptPath, env: { DATA_DIR: dataDir } });
 	},
-	run: async (api: HyperionApi) => {
+	run: async (api: HyperionDB) => {
 		const updated = await ofac.update();
 		if (updated) {
 			await runWorker<HyperionRecord>(
