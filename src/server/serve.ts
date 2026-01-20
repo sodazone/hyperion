@@ -152,7 +152,7 @@ export async function serve({
 						const { address, network } = req.params;
 						const networkId = coerceNetworkId(network);
 
-						if (!address || networkId === undefined) {
+						if (!address || networkId === undefined || networkId === 0) {
 							return InvalidParameters;
 						}
 
