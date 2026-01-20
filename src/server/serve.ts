@@ -1,4 +1,4 @@
-import { analyzeAddress, analyzeAddressAllNetworks } from "@/api/address";
+import { analyzeAddress, analyzeAddressAllNetworks } from "@/api/analysis";
 import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";

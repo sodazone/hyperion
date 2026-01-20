@@ -1,10 +1,11 @@
 import type { HyperionDB } from "@/db";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { CAT } from "@/mapping/categories";
+import type { AddressCategory } from "@/types";
+import { computeRisk } from "./risk";
 import type {
 	AddressAnalysis,
 	AttributionResult,
-	RiskResult,
 	SanctionsResult,
 } from "./types";
 
@@ -40,13 +41,9 @@ export function checkSanctions(
 }
 
 export function resolveAttribution(
-	db: HyperionDB,
-	address: string,
-	networkId: number,
+	categories: Array<AddressCategory>,
 ): AttributionResult {
-	const cats = db.getCategories({ address, networkId });
-
-	for (const c of cats) {
+	for (const c of categories) {
 		switch (c.category.code) {
 			case CAT.EXCHANGE:
 				return {
@@ -79,43 +76,6 @@ export function resolveAttribution(
 	}
 
 	return { type: "UNKNOWN" };
-}
-
-export function computeRisk(
-	sanctions: SanctionsResult,
-	attribution: AttributionResult,
-	tags: unknown[],
-): RiskResult {
-	const reasons: string[] = [];
-	let score = 0;
-
-	if (sanctions.sanctioned) {
-		reasons.push("Address is sanctioned");
-		return {
-			level: "critical",
-			score: 100,
-			reasons,
-		};
-	}
-
-	if (attribution.type === "CEX") {
-		score += 10;
-	}
-
-	if (attribution.type === "DEX") {
-		score += 20;
-	}
-
-	if (tags.length > 0) {
-		score += Math.min(tags.length * 5, 30);
-		reasons.push("Tagged activity");
-	}
-
-	let level: RiskResult["level"] = "low";
-	if (score >= 70) level = "high";
-	else if (score >= 40) level = "medium";
-
-	return { level, score, reasons };
 }
 
 export async function analyzeAddressAllNetworks(
@@ -163,8 +123,8 @@ export function analyzeAddress(
 	const tags = db.getTags({ address, networkId });
 
 	const sanctioned = checkSanctions(db, address, networkId);
-	const attribution = resolveAttribution(db, address, networkId);
-	const risk = computeRisk(sanctioned, attribution, tags);
+	const attribution = resolveAttribution(categories);
+	const risk = computeRisk(sanctioned, attribution, categories, tags);
 
 	return {
 		address,

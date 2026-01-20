@@ -58,6 +58,12 @@ export interface SourceParser<T = unknown> {
 	parse(path: string): Promise<T[]>;
 }
 
+export type AddressCategory = {
+	networkId: number;
+	category: { code: number; label: string };
+	subcategory: { code: number; label: string };
+};
+
 export type Database = RootDatabase<Uint8Array, Uint8Array>;
 export type HyperionMetadata = {
 	source: string;

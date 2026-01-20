@@ -11,7 +11,15 @@ function bigintToUint8ArrayBE(value: bigint): Uint8Array {
 	return Uint8Array.from(bytes);
 }
 
-export function createTag(type: string, name: string) {
+export type TagValue = {
+	name: string;
+	type: string;
+};
+
+export function createTag(
+	type: string,
+	name: string,
+): { tagCode: Uint8Array; tagValue: TagValue } {
 	return {
 		tagCode: hashTag(`${type}:${name}`),
 		tagValue: {

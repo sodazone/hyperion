@@ -2,8 +2,13 @@ import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { addressTo32Bytes } from "@/mapping/address";
-import { hashTag } from "@/mapping/tags";
-import { type Database, type HyperionRecord, KeyFamily } from "@/types";
+import { hashTag, type TagValue } from "@/mapping/tags";
+import {
+	type AddressCategory,
+	type Database,
+	type HyperionRecord,
+	KeyFamily,
+} from "@/types";
 import {
 	decodeCategorizedKey,
 	decodeValue,
@@ -150,12 +155,6 @@ function asOwnedCatKey({
 	});
 }
 
-type AddressCat = {
-	networkId: number;
-	category: { code: number; label: string };
-	subcategory: { code: number; label: string };
-};
-
 export function createHyperionDB(db: Database) {
 	return {
 		batch: async (batch: Array<HyperionRecord>) => {
@@ -260,7 +259,7 @@ export function createHyperionDB(db: Database) {
 			address: string;
 			categoryCode?: number;
 			subcategoryCode?: number;
-		}): Array<AddressCat> => {
+		}): Array<AddressCategory> => {
 			const prefixKey = asCatKey({
 				owner,
 				networkId,
@@ -271,7 +270,7 @@ export function createHyperionDB(db: Database) {
 
 			const endKey = makeEndKey(prefixKey, networkId === 0 ? 6 : 4);
 
-			const categories: Array<AddressCat> = [];
+			const categories: Array<AddressCategory> = [];
 
 			for (const { key } of db.getRange({ start: prefixKey, end: endKey })) {
 				const decoded = decodeCategorizedKey(key);
@@ -396,7 +395,11 @@ export function createHyperionDB(db: Database) {
 			endKey.set(startKey);
 			endKey[startKey.length] = 0xff;
 
-			const tags: Array<unknown> = [];
+			const tags: Array<{
+				networkId: number;
+				address: string;
+				tag: TagValue;
+			}> = [];
 
 			for (const { value } of db.getRange({
 				start: startKey,
@@ -405,7 +408,7 @@ export function createHyperionDB(db: Database) {
 				tags.push({
 					networkId,
 					address,
-					tag: decodeValue(value),
+					tag: decodeValue<TagValue>(value).value,
 				});
 			}
 			return tags;
