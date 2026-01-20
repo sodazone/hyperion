@@ -16,6 +16,7 @@ export const openapi = {
 		{ name: "Analysis" },
 		{ name: "Categories" },
 		{ name: "Tags" },
+		{ name: "Private" },
 	],
 	components: {
 		securitySchemes: {
@@ -57,6 +58,12 @@ export const openapi = {
 					},
 				},
 			},
+			Owner: {
+				type: "object",
+				properties: {
+					hash: { type: "string", description: "32-byte owner hash" },
+				},
+			},
 		},
 	},
 	paths: {
@@ -94,6 +101,8 @@ export const openapi = {
 				},
 			},
 		},
+
+		/** Metadata */
 		"/v1/meta/networks": {
 			get: {
 				summary: "Supported networks",
@@ -140,7 +149,7 @@ export const openapi = {
 			},
 		},
 
-		// Address Analysis
+		/** Address Analysis */
 		"/v1/public/address/{address}": {
 			get: {
 				summary: "Analyze address across all networks",
@@ -151,7 +160,6 @@ export const openapi = {
 						in: "path",
 						required: true,
 						schema: { type: "string" },
-						description: "Blockchain address",
 					},
 				],
 				responses: {
@@ -182,7 +190,6 @@ export const openapi = {
 						in: "path",
 						required: true,
 						schema: { type: "string" },
-						description: "Network URN or numeric ID",
 					},
 				],
 				responses: {
@@ -195,13 +202,13 @@ export const openapi = {
 			},
 		},
 
-		// Categories
+		/** Public Categories */
 		"/v1/public/category/{address}/{cat}/{subcat}/{network}": {
 			get: {
 				summary: "Get categories for an address",
 				tags: ["Categories"],
 				description:
-					"Retrieve categories for an address. Use 0 as wildcard for cat, subcat, or network. Optional query param `exists=true` returns 204/404 only.",
+					"Retrieve categories for an address. Use 0 as wildcard. Optional `exists=true` for existence check (204/404).",
 				parameters: [
 					{
 						name: "address",
@@ -232,7 +239,6 @@ export const openapi = {
 						in: "query",
 						required: false,
 						schema: { type: "boolean" },
-						description: "If true, only check existence (204/404)",
 					},
 				],
 				responses: {
@@ -254,7 +260,7 @@ export const openapi = {
 			},
 		},
 
-		// Tags
+		/** Public Tags */
 		"/v1/public/tags/{address}/{network}": {
 			get: {
 				summary: "Get all tags for an address",
@@ -317,7 +323,6 @@ export const openapi = {
 						in: "query",
 						required: false,
 						schema: { type: "boolean" },
-						description: "If true, only check existence (204/404)",
 					},
 				],
 				responses: {
@@ -331,6 +336,110 @@ export const openapi = {
 					},
 					204: { description: "Exists only" },
 					404: { description: "Tag not found" },
+				},
+			},
+		},
+
+		/** Private endpoints */
+		"/v1/private/me": {
+			get: {
+				summary: "Get current authenticated user",
+				tags: ["Private"],
+				security: [{ bearerAuth: [] }],
+				responses: {
+					200: {
+						description: "Authenticated user info",
+						content: {
+							"application/json": {
+								schema: { $ref: "#/components/schemas/Owner" },
+							},
+						},
+					},
+					401: { description: "Unauthorized" },
+				},
+			},
+		},
+		"/v1/private/categories/{address}/{cat}/{subcat}/{network}": {
+			get: {
+				summary: "Get categories for authenticated user",
+				tags: ["Private"],
+				security: [{ bearerAuth: [] }],
+				parameters: [
+					{
+						name: "address",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+					},
+					{
+						name: "cat",
+						in: "path",
+						required: true,
+						schema: { type: "integer", minimum: 0 },
+					},
+					{
+						name: "subcat",
+						in: "path",
+						required: true,
+						schema: { type: "integer", minimum: 0 },
+					},
+					{
+						name: "network",
+						in: "path",
+						required: true,
+						schema: { type: "string" },
+					},
+					{
+						name: "exists",
+						in: "query",
+						required: false,
+						schema: { type: "boolean" },
+					},
+				],
+				responses: {
+					200: {
+						description: "Category entries",
+						content: {
+							"application/json": {
+								schema: {
+									type: "array",
+									items: { $ref: "#/components/schemas/CategoryEntry" },
+								},
+							},
+						},
+					},
+					204: { description: "Exists only" },
+					404: { description: "No categories found" },
+					400: { description: "Invalid parameters" },
+					401: { description: "Unauthorized" },
+				},
+			},
+			post: {
+				summary: "Create or update categories for authenticated user",
+				tags: ["Private"],
+				security: [{ bearerAuth: [] }],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { type: "object" } } },
+				},
+				responses: {
+					200: {
+						description: "Operation result",
+						content: { "application/json": { schema: { type: "object" } } },
+					},
+					401: { description: "Unauthorized" },
+				},
+			},
+			delete: {
+				summary: "Delete categories for authenticated user",
+				tags: ["Private"],
+				security: [{ bearerAuth: [] }],
+				responses: {
+					200: {
+						description: "Operation result",
+						content: { "application/json": { schema: { type: "object" } } },
+					},
+					401: { description: "Unauthorized" },
 				},
 			},
 		},
