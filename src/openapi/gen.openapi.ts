@@ -67,18 +67,6 @@ export const openapi = {
 		},
 	},
 	paths: {
-		"/": {
-			get: {
-				summary: "API root",
-				tags: ["System"],
-				responses: {
-					200: {
-						description: "API version string",
-						content: { "application/json": { schema: { type: "string" } } },
-					},
-				},
-			},
-		},
 		"/uptime": {
 			get: {
 				summary: "Server uptime",
