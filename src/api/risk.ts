@@ -61,7 +61,8 @@ export function computeRisk(
 	if (score > 100) score = 100;
 
 	let level: RiskResult["level"] = "low";
-	if (score >= 70) level = "high";
+	if (score >= 90) level = "critical";
+	else if (score >= 70) level = "high";
 	else if (score >= 40) level = "medium";
 
 	return { level, score, reasons };

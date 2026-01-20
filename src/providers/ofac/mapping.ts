@@ -1,6 +1,6 @@
 import { PUBLIC_OWNER } from "@/db";
 import { encodeCategorizedKey, encodeValue } from "@/db/encoding/codec";
-import { addressTo32Bytes, NetworkMap } from "@/mapping";
+import { addressTo32Bytes, CAT, NetworkMap } from "@/mapping";
 import { type HyperionRecord, KeyFamily } from "@/types";
 import type { OfacResult } from "./parser";
 
@@ -69,7 +69,7 @@ export function ofacToHyperionKey(r: OfacResult) {
 
 	const address = addressTo32Bytes(r.address);
 	const family = KeyFamily.Categorized;
-	const categoryCode = 0x0004;
+	const categoryCode = CAT.SANCTIONS;
 	const subcategoryCode = 0x0001;
 
 	return encodeCategorizedKey({
