@@ -91,10 +91,7 @@ export async function serve({
 								categoryCode: 0,
 							})
 						) {
-							return Response.json({
-								address,
-								networks: [],
-							});
+							return NotFound;
 						}
 
 						const result = analyzeAddress(db, address, networkId);

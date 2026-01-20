@@ -76,34 +76,16 @@ export function analyzeAddress(
 	address: string,
 	networkId: number,
 ): AddressAnalysis {
-	const categories = db.getCategories({ address, networkId });
+	const attribution = db.getCategories({ address, networkId });
 	const tags = db.getTags({ address, networkId });
 
-	const attribution = categories.map(({ category, subcategory }) => {
-		const type = CategoriesMap.getLabel(category.code) ?? "Unknown";
-		const detail =
-			subcategory && subcategory.code > 0
-				? CategoriesMap.getLabel(category.code, subcategory.code)
-				: undefined;
-		const code = `${category.code}/${subcategory?.code ?? 0}`;
-
-		return {
-			type,
-			detail,
-			code,
-		};
-	});
-
 	const sanctioned = checkSanctions(db, address, networkId);
-	const risk = computeRisk(sanctioned, categories, tags);
+	const risk = computeRisk(sanctioned, attribution, tags);
 
 	return {
-		address,
-		networkId,
 		sanctioned,
-		attribution,
 		risk,
-		categories,
+		attribution,
 		tags,
 	};
 }

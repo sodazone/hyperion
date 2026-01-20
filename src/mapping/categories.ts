@@ -49,6 +49,15 @@ function createCategoriesMap() {
 	categories.add(0x0008, 0x0001, "Decentralized Mixer");
 	categories.add(0x0008, 0x0002, "Centralized Mixer");
 
+	// Category 0x0009 - Cybercrime
+	categories.add(0x0009, 0x0000, "Cybercrime");
+	categories.add(0x0009, 0x0001, "Ponzi Scheme");
+	categories.add(0x0009, 0x0002, "Scam");
+	categories.add(0x0009, 0x0003, "Ransomware");
+	categories.add(0x0009, 0x0004, "Malware");
+	categories.add(0x0009, 0x0005, "Phishing");
+	categories.add(0x0009, 0x0006, "Darknet Market");
+
 	return categories;
 }
 
@@ -68,4 +77,5 @@ export const CAT = {
 	EXTERNAL: 0x0006,
 	HIGH_RISK: 0x0007,
 	ANONYMIZING: 0x0008,
+	CYBERCRIME: 0x0009,
 } as const;

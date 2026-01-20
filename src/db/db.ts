@@ -275,7 +275,7 @@ export function createHyperionDB(db: Database) {
 			for (const { key } of db.getRange({ start: prefixKey, end: endKey })) {
 				const decoded = decodeCategorizedKey(key);
 				categories.push({
-					networkId: decoded.networkId,
+					networkId: networkId === 0 ? decoded.networkId : undefined,
 					category: {
 						code: decoded.categoryCode,
 						label: CategoriesMap.getLabel(decoded.categoryCode) ?? "",
@@ -395,21 +395,13 @@ export function createHyperionDB(db: Database) {
 			endKey.set(startKey);
 			endKey[startKey.length] = 0xff;
 
-			const tags: Array<{
-				networkId: number;
-				address: string;
-				tag: TagValue;
-			}> = [];
+			const tags: Array<TagValue> = [];
 
 			for (const { value } of db.getRange({
 				start: startKey,
 				end: endKey,
 			})) {
-				tags.push({
-					networkId,
-					address,
-					tag: decodeValue<TagValue>(value).value,
-				});
+				tags.push(decodeValue<TagValue>(value).value);
 			}
 			return tags;
 		},

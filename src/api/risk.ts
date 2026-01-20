@@ -6,7 +6,7 @@ import type { RiskResult, SanctionsResult } from "./types";
 export function computeRisk(
 	sanctions: SanctionsResult,
 	categories: Array<AddressCategory>,
-	tags: Array<{ tag: TagValue }>,
+	tags: Array<TagValue>,
 ): RiskResult {
 	const reasons: string[] = [];
 	let score = 0;
@@ -20,6 +20,14 @@ export function computeRisk(
 	// Category-based risk
 	for (const { category, subcategory } of categories) {
 		switch (category.code) {
+			case CAT.CYBERCRIME:
+				score += 100;
+				reasons.push(`Linked to cybercrime (${subcategory.label})`);
+				break;
+			case CAT.SANCTIONS:
+				score += 100;
+				reasons.push(`Linked to sanctioned entity (${subcategory.label})`);
+				break;
 			case CAT.EXCHANGE:
 				if (subcategory.code === 0x0002) {
 					score += 10;
@@ -34,10 +42,6 @@ export function computeRisk(
 				score += 50;
 				reasons.push(category.label);
 				break;
-			case CAT.SANCTIONS:
-				score += 100;
-				reasons.push(category.label);
-				break;
 			default:
 				break;
 		}
@@ -46,7 +50,7 @@ export function computeRisk(
 	// Tag-based risk
 	if (tags.length > 0) {
 		const tagIndex = tags.findIndex(
-			({ tag }) => tag.type === "tx_class" && tag.name === "high_count",
+			(tag) => tag.type === "tx_class" && tag.name === "high_count",
 		);
 		if (tagIndex > -1) {
 			score += 5;

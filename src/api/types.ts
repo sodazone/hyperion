@@ -12,15 +12,8 @@ export type RiskResult = {
 };
 
 export type AddressAnalysis = {
-	address: string;
-	networkId: number;
 	sanctioned: SanctionsResult;
-	attribution: Array<{
-		type: string;
-		detail?: string;
-		code: string;
-	}>;
 	risk: RiskResult;
-	categories: ReturnType<HyperionDB["getCategories"]>;
-	tags: unknown[];
+	attribution: ReturnType<HyperionDB["getCategories"]>;
+	tags: ReturnType<HyperionDB["getTags"]>;
 };

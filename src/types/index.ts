@@ -59,7 +59,7 @@ export interface SourceParser<T = unknown> {
 }
 
 export type AddressCategory = {
-	networkId: number;
+	networkId?: number;
 	category: { code: number; label: string };
 	subcategory: { code: number; label: string };
 };
