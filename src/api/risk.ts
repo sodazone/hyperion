@@ -1,10 +1,10 @@
+import { CAT } from "@/mapping";
 import type { TagValue } from "@/mapping/tags";
 import type { AddressCategory } from "@/types";
-import type { AttributionResult, RiskResult, SanctionsResult } from "./types";
+import type { RiskResult, SanctionsResult } from "./types";
 
 export function computeRisk(
 	sanctions: SanctionsResult,
-	attribution: AttributionResult,
 	categories: Array<AddressCategory>,
 	tags: Array<{ tag: TagValue }>,
 ): RiskResult {
@@ -17,28 +17,26 @@ export function computeRisk(
 		return { level: "critical", score: 100, reasons };
 	}
 
-	// Attribution-based risk
-	switch (attribution.type) {
-		case "CEX":
-			score += 1;
-			reasons.push("Linked to centralized exchange");
-			break;
-		case "DEX":
-			score += 5;
-			reasons.push("Linked to decentralized exchange");
-			break;
-	}
-
 	// Category-based risk
-	for (const { category } of categories) {
+	for (const { category, subcategory } of categories) {
 		switch (category.code) {
-			case 7:
-				score += 15;
-				reasons.push(`High-risk service (${category.label})`);
+			case CAT.EXCHANGE:
+				if (subcategory.code === 0x0002) {
+					score += 10;
+					reasons.push(subcategory.label);
+				}
 				break;
-			case 4:
+			case CAT.HIGH_RISK:
+				score += 15;
+				reasons.push(category.label);
+				break;
+			case CAT.ANONYMIZING:
 				score += 50;
-				reasons.push(`Watchlisted category (${category.label})`);
+				reasons.push(category.label);
+				break;
+			case CAT.SANCTIONS:
+				score += 100;
+				reasons.push(category.label);
 				break;
 			default:
 				break;

@@ -44,6 +44,11 @@ function createCategoriesMap() {
 	categories.add(0x0007, 0x0000, "High Risk Organization");
 	categories.add(0x0007, 0x0001, "High Risk Exchanges");
 
+	// Category 0x0008 - Anonymizing Services
+	categories.add(0x0008, 0x0000, "Anonymizing Services");
+	categories.add(0x0008, 0x0001, "Decentralized Mixer");
+	categories.add(0x0008, 0x0002, "Centralized Mixer");
+
 	return categories;
 }
 
@@ -62,4 +67,5 @@ export const CAT = {
 	REGULATORY: 0x0005,
 	EXTERNAL: 0x0006,
 	HIGH_RISK: 0x0007,
+	ANONYMIZING: 0x0008,
 } as const;

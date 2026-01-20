@@ -1,13 +1,8 @@
 import type { HyperionDB } from "@/db";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { CAT } from "@/mapping/categories";
-import type { AddressCategory } from "@/types";
 import { computeRisk } from "./risk";
-import type {
-	AddressAnalysis,
-	AttributionResult,
-	SanctionsResult,
-} from "./types";
+import type { AddressAnalysis, SanctionsResult } from "./types";
 
 export function checkSanctions(
 	db: HyperionDB,
@@ -38,44 +33,6 @@ export function checkSanctions(
 				"Unknown",
 		),
 	};
-}
-
-export function resolveAttribution(
-	categories: Array<AddressCategory>,
-): AttributionResult {
-	for (const c of categories) {
-		switch (c.category.code) {
-			case CAT.EXCHANGE:
-				return {
-					type: "CEX",
-					label: c.subcategory.label,
-					source: "hyperion",
-				};
-
-			case CAT.DEFI:
-				return {
-					type: "DEX",
-					label: c.subcategory.label,
-					source: "hyperion",
-				};
-
-			case CAT.INFRA:
-				return {
-					type: "INFRA",
-					label: c.subcategory.label,
-					source: "hyperion",
-				};
-
-			case CAT.EXTERNAL:
-				return {
-					type: "SERVICE",
-					label: c.subcategory.label,
-					source: "external",
-				};
-		}
-	}
-
-	return { type: "UNKNOWN" };
 }
 
 export async function analyzeAddressAllNetworks(
@@ -122,9 +79,23 @@ export function analyzeAddress(
 	const categories = db.getCategories({ address, networkId });
 	const tags = db.getTags({ address, networkId });
 
+	const attribution = categories.map(({ category, subcategory }) => {
+		const type = CategoriesMap.getLabel(category.code) ?? "Unknown";
+		const detail =
+			subcategory && subcategory.code > 0
+				? CategoriesMap.getLabel(category.code, subcategory.code)
+				: undefined;
+		const code = `${category.code}/${subcategory?.code ?? 0}`;
+
+		return {
+			type,
+			detail,
+			code,
+		};
+	});
+
 	const sanctioned = checkSanctions(db, address, networkId);
-	const attribution = resolveAttribution(categories);
-	const risk = computeRisk(sanctioned, attribution, categories, tags);
+	const risk = computeRisk(sanctioned, categories, tags);
 
 	return {
 		address,
