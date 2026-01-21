@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import type { AddressAnalysis } from "@/api/types";
+import { encodeCategorizedKey, encodeValue, PUBLIC_OWNER } from "@/db";
+import { addressTo32Bytes } from "@/mapping";
 import type { Serve } from "@/server/serve";
+import { KeyFamily } from "@/types";
 import { createTestJWT } from "./auth";
 import { get, getAuth, runTestServer } from "./helpers";
 
@@ -8,7 +12,27 @@ describe("Hyperion API v1", () => {
 
 	beforeAll(async () => {
 		srv = await runTestServer();
-		// TODO: seed test data if needed
+		// TODO: extract fixture
+		await srv.db.put({
+			key: encodeCategorizedKey({
+				family: KeyFamily.Categorized,
+				owner: PUBLIC_OWNER,
+				networkId: 1,
+				address: addressTo32Bytes(
+					"14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA",
+				),
+				categoryCode: 1,
+				subcategoryCode: 1,
+			}),
+			value: encodeValue(
+				{
+					source: "test",
+					timestamp: Date.now(),
+					version: 0,
+				},
+				{ test: true },
+			),
+		});
 	});
 
 	afterAll(async () => {
@@ -51,7 +75,7 @@ describe("Hyperion API v1", () => {
 
 		if (json) {
 			expect(typeof json).toBe("object");
-			expect(Object.keys(json).length).toBeGreaterThanOrEqual(0);
+			expect(Object.keys(json).length).toBeGreaterThan(0);
 		}
 	});
 
@@ -83,7 +107,7 @@ describe("Hyperion API v1", () => {
 		expect(json).not.toBeNull();
 
 		if (json) {
-			expect(json.hash).toHaveLength(64); // sha256 hex
+			expect(json.hash).toHaveLength(64);
 		}
 	});
 
@@ -94,7 +118,7 @@ describe("Hyperion API v1", () => {
 	it("GET /v1/public/address/:address returns analysis across networks", async () => {
 		const { status, json } = await get<{
 			address: string;
-			networks: unknown[];
+			networks: { networkId: number; analysis: AddressAnalysis }[];
 		}>("/v1/public/address/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA");
 
 		expect(status).toBe(200);
@@ -103,15 +127,17 @@ describe("Hyperion API v1", () => {
 		if (json) {
 			expect(typeof json.address).toBe("string");
 			expect(Array.isArray(json.networks)).toBe(true);
+			expect(json.networks.length).toBeGreaterThan(0);
+			expect(json.networks[0]?.networkId).toBe(1);
 		}
 	});
 
-	it("GET /v1/public/address/:address/:network returns analysis or empty", async () => {
+	it("GET /v1/public/address/:address/:network returns analysis", async () => {
 		const { status } = await get(
-			"/v1/public/address/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/urn:ocn:net:1",
+			"/v1/public/address/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/1",
 		);
 
-		expect([200, 400]).toContain(status);
+		expect(status).toBe(200);
 	});
 
 	/**

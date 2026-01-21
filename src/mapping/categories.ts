@@ -18,6 +18,7 @@ function createCategoriesMap() {
 	categories.add(0x0002, 0x0005, "Perpetuals");
 	categories.add(0x0002, 0x0006, "Derivatives");
 	categories.add(0x0002, 0x0007, "Insurance");
+	categories.add(0x0002, 0x0008, "Pool");
 
 	// Category 0x0003 - Infrastructure
 	categories.add(0x0003, 0x0000, "Infrastructure");
@@ -57,6 +58,28 @@ function createCategoriesMap() {
 	categories.add(0x0009, 0x0004, "Malware");
 	categories.add(0x0009, 0x0005, "Phishing");
 	categories.add(0x0009, 0x0006, "Darknet Market");
+	categories.add(0x0009, 0x0007, "Exploit Attacker");
+	categories.add(0x0009, 0x0008, "Drainer Wallet");
+	categories.add(0x0009, 0x0009, "Rug Pull Operator");
+	categories.add(0x0009, 0x000a, "Scam Operator");
+	categories.add(0x0009, 0x000b, "Key Theft Attacker");
+
+	// Category 0x000A - Automated Actors
+	categories.add(0x000a, 0x0000, "Automated Actors");
+	categories.add(0x000a, 0x0001, "Arbitrage Bot");
+	categories.add(0x000a, 0x0002, "MEV Bot");
+	categories.add(0x000a, 0x0003, "Market Making Bot");
+	categories.add(0x000a, 0x0004, "Liquidation Bot");
+	categories.add(0x000a, 0x0005, "Trading Bot");
+
+	// Category 0x000B - Compromised & Exposed
+	categories.add(0x000b, 0x0000, "Compromised & Exposed");
+	categories.add(0x000b, 0x0001, "Compromised Wallet");
+	categories.add(0x000b, 0x0002, "Suspected Compromise");
+	categories.add(0x000b, 0x0003, "Phished Victim");
+	categories.add(0x000b, 0x0004, "Drained Wallet (Victim)");
+	categories.add(0x000b, 0x0005, "Leaked Private Key");
+	categories.add(0x000b, 0x0006, "Dusting Victim");
 
 	return categories;
 }
@@ -78,4 +101,6 @@ export const CAT = {
 	HIGH_RISK: 0x0007,
 	ANONYMIZING: 0x0008,
 	CYBERCRIME: 0x0009,
+	AUTOMATED: 0x000a,
+	COMPROMISED: 0x000b,
 } as const;
