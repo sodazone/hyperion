@@ -5,16 +5,19 @@ import { addressTo32Bytes } from "@/mapping/address";
 import { hashTag, type TagValue } from "@/mapping/tags";
 import {
 	type AddressCategory,
+	type AddressTag,
 	type Database,
 	type HyperionRecord,
 	KeyFamily,
 } from "@/types";
 import {
 	decodeCategorizedKey,
+	decodeTaggedKey,
 	decodeValue,
 	encodeCategorizedKey,
-	encodeTaggedKey,
 	encodeValue,
+	makeCategoryPrefix,
+	makePrefixEnd,
 	makeTagPrefix,
 } from "./encoding/codec";
 
@@ -52,80 +55,13 @@ export async function createDatabase(
 	return db;
 }
 
-function makeEndKey(
-	prefixKey: Uint8Array,
-	overrideBytes: number,
-	value = 0xff,
-): Uint8Array {
-	if (overrideBytes > prefixKey.length) {
-		throw new Error("overrideBytes cannot exceed prefixKey length");
-	}
-
-	const endKey = new Uint8Array(prefixKey.length);
-	endKey.set(prefixKey);
-
-	for (let i = endKey.length - overrideBytes; i < endKey.length; i++) {
-		endKey[i] = value;
-	}
-
-	return endKey;
-}
-
-function asTagKey({
-	owner,
-	networkId,
-	address,
-	tag,
-}: {
-	owner?: string | Uint8Array;
-	networkId: number;
-	address: string;
-	tag: string;
-}) {
-	const addressBytes =
-		typeof address === "string" ? addressTo32Bytes(address) : address;
-
-	return encodeTaggedKey({
-		owner: owner
-			? typeof owner === "string"
-				? addressTo32Bytes(owner)
-				: owner
-			: PUBLIC_OWNER,
-		family: KeyFamily.Tagged,
+function toAddressTag(key: Uint8Array, value: Uint8Array): AddressTag {
+	const { networkId, tagCode } = decodeTaggedKey(key);
+	const { name, type } = decodeValue<TagValue>(value).value;
+	return {
 		networkId,
-		address: addressBytes,
-		tagCode: hashTag(tag),
-	});
-}
-
-function asCatKey({
-	owner,
-	networkId,
-	address,
-	categoryCode,
-	subcategoryCode,
-}: {
-	owner?: string | Uint8Array;
-	networkId: number;
-	address: string;
-	categoryCode: number;
-	subcategoryCode?: number;
-}) {
-	const addressBytes =
-		typeof address === "string" ? addressTo32Bytes(address) : address;
-
-	return encodeCategorizedKey({
-		owner: owner
-			? typeof owner === "string"
-				? addressTo32Bytes(owner)
-				: owner
-			: PUBLIC_OWNER,
-		family: KeyFamily.Categorized,
-		networkId,
-		address: addressBytes,
-		categoryCode,
-		subcategoryCode: subcategoryCode ?? 0,
-	});
+		tag: { code: Buffer.from(tagCode).toString("hex"), name, type },
+	};
 }
 
 function asOwnedCatKey({
@@ -156,6 +92,294 @@ function asOwnedCatKey({
 }
 
 export function createHyperionDB(db: Database) {
+	function hasTag({
+		owner,
+		address,
+		tag,
+		networkId,
+	}: {
+		owner?: Uint8Array | string;
+		address: string;
+		tag: string;
+		networkId?: number;
+	}): boolean {
+		const ownerBytes =
+			owner instanceof Uint8Array
+				? owner
+				: typeof owner === "string"
+					? addressTo32Bytes(owner)
+					: PUBLIC_OWNER;
+
+		const addressBytes = addressTo32Bytes(address);
+		const tagCode = hashTag(tag);
+
+		const prefix = makeTagPrefix({
+			owner: ownerBytes,
+			address: addressBytes,
+			tagCode,
+			networkId,
+		});
+
+		if (networkId !== undefined) {
+			return db.doesExist(prefix);
+		}
+
+		const endKey = makePrefixEnd(prefix);
+		return db.getCount({ start: prefix, end: endKey, limit: 1 }) > 0;
+	}
+
+	function getTag({
+		owner,
+		address,
+		tag,
+		networkId,
+	}: {
+		owner?: Uint8Array | string;
+		address: string;
+		tag: string;
+		networkId?: number;
+	}) {
+		const ownerBytes =
+			owner instanceof Uint8Array
+				? owner
+				: typeof owner === "string"
+					? addressTo32Bytes(owner)
+					: PUBLIC_OWNER;
+
+		const addressBytes = addressTo32Bytes(address);
+		const tagCode = hashTag(tag);
+
+		const prefix = makeTagPrefix({
+			owner: ownerBytes,
+			address: addressBytes,
+			tagCode,
+			networkId,
+		});
+
+		if (networkId !== undefined) {
+			const value = db.get(prefix);
+			return value === undefined ? undefined : toAddressTag(prefix, value);
+		}
+
+		const endKey = makePrefixEnd(prefix);
+
+		for (const { key, value } of db.getRange({
+			start: prefix,
+			end: endKey,
+			limit: 1,
+		})) {
+			return toAddressTag(key, value);
+		}
+
+		return undefined;
+	}
+
+	function getTags({
+		owner,
+		address,
+		networkId,
+	}: {
+		owner?: Uint8Array | string;
+		address: string;
+		networkId?: number;
+	}) {
+		const ownerBytes =
+			owner instanceof Uint8Array
+				? owner
+				: typeof owner === "string"
+					? addressTo32Bytes(owner)
+					: PUBLIC_OWNER;
+
+		const addressBytes = addressTo32Bytes(address);
+
+		const startPrefix = makeTagPrefix({
+			owner: ownerBytes,
+			address: addressBytes,
+		});
+		const endKey = makePrefixEnd(startPrefix);
+
+		const tags: AddressTag[] = [];
+
+		for (const { key, value } of db.getRange({
+			start: startPrefix,
+			end: endKey,
+		})) {
+			const decoded = toAddressTag(key, value);
+			if (networkId === undefined || decoded.networkId === networkId) {
+				tags.push(decoded);
+			}
+		}
+
+		return tags;
+	}
+
+	async function deleteCategory({
+		owner,
+		networkId,
+		address,
+		categoryCode,
+		subcategoryCode,
+	}: {
+		owner: Uint8Array;
+		networkId: number;
+		address: string;
+		categoryCode: number;
+		subcategoryCode: number;
+	}) {
+		const key = asOwnedCatKey({
+			owner,
+			networkId,
+			address,
+			categoryCode,
+			subcategoryCode,
+		});
+
+		return await db.remove(key);
+	}
+
+	async function putCategory(
+		{
+			owner,
+			networkId,
+			address,
+			categoryCode,
+			subcategoryCode,
+		}: {
+			owner: Uint8Array;
+			networkId: number;
+			address: string;
+			categoryCode: number;
+			subcategoryCode: number;
+		},
+		value: unknown,
+	) {
+		const key = asOwnedCatKey({
+			owner,
+			networkId,
+			address,
+			categoryCode,
+			subcategoryCode,
+		});
+
+		return await db.put(
+			key,
+			encodeValue(
+				{
+					source: "owner",
+					timestamp: Date.now(),
+					version: METADATA_VERSION,
+				},
+				value,
+			),
+		);
+	}
+
+	function getCategories({
+		owner,
+		address,
+		networkId,
+		categoryCode = 0,
+		subcategoryCode = 0,
+	}: {
+		owner?: Uint8Array | string;
+		networkId?: number;
+		address: string;
+		categoryCode?: number;
+		subcategoryCode?: number;
+	}): Array<AddressCategory> {
+		const ownerBytes =
+			owner instanceof Uint8Array
+				? owner
+				: typeof owner === "string"
+					? addressTo32Bytes(owner)
+					: PUBLIC_OWNER;
+
+		const addressBytes = addressTo32Bytes(address);
+
+		const prefix = makeCategoryPrefix({
+			owner: ownerBytes,
+			address: addressBytes,
+			categoryCode,
+			subcategoryCode,
+			networkId,
+		});
+
+		const endKey = makePrefixEnd(prefix);
+
+		const categories: Array<AddressCategory> = [];
+
+		for (const { key } of db.getRange({ start: prefix, end: endKey })) {
+			const decoded = decodeCategorizedKey(key);
+
+			categories.push({
+				networkId: decoded.networkId,
+				category: {
+					code: decoded.categoryCode,
+					label: CategoriesMap.getLabel(decoded.categoryCode) ?? "",
+				},
+				subcategory: {
+					code: decoded.subcategoryCode,
+					label:
+						CategoriesMap.getLabel(
+							decoded.categoryCode,
+							decoded.subcategoryCode,
+						) ?? "",
+				},
+			});
+		}
+
+		return categories;
+	}
+
+	function hasCategory({
+		owner,
+		networkId,
+		address,
+		categoryCode,
+		subcategoryCode = 0,
+	}: {
+		owner?: Uint8Array | string;
+		networkId?: number;
+		address: string;
+		categoryCode: number;
+		subcategoryCode?: number;
+	}): boolean {
+		const ownerBytes =
+			owner instanceof Uint8Array
+				? owner
+				: typeof owner === "string"
+					? addressTo32Bytes(owner)
+					: PUBLIC_OWNER;
+
+		const addressBytes = addressTo32Bytes(address);
+
+		const prefix = makeCategoryPrefix({
+			owner: ownerBytes,
+			address: addressBytes,
+			categoryCode,
+			subcategoryCode,
+			networkId,
+		});
+
+		if (
+			networkId !== undefined &&
+			categoryCode !== 0 &&
+			subcategoryCode !== 0
+		) {
+			return db.doesExist(prefix);
+		}
+
+		const endKey = makePrefixEnd(prefix);
+
+		return (
+			db.getCount({
+				start: prefix,
+				end: endKey,
+				limit: 1,
+			}) > 0
+		);
+	}
+
 	return {
 		batch: async (batch: Array<HyperionRecord>) => {
 			return await db.batch(() => {
@@ -188,223 +412,13 @@ export function createHyperionDB(db: Database) {
 		getNetworksMeta: () => {
 			return NetworkMap.entries();
 		},
-		deleteCategory: async ({
-			owner,
-			networkId,
-			address,
-			categoryCode,
-			subcategoryCode,
-		}: {
-			owner: Uint8Array;
-			networkId: number;
-			address: string;
-			categoryCode: number;
-			subcategoryCode: number;
-		}) => {
-			const key = asOwnedCatKey({
-				owner,
-				networkId,
-				address,
-				categoryCode,
-				subcategoryCode,
-			});
-
-			return await db.remove(key);
-		},
-		putCategory: async (
-			{
-				owner,
-				networkId,
-				address,
-				categoryCode,
-				subcategoryCode,
-			}: {
-				owner: Uint8Array;
-				networkId: number;
-				address: string;
-				categoryCode: number;
-				subcategoryCode: number;
-			},
-			value: unknown,
-		) => {
-			const key = asOwnedCatKey({
-				owner,
-				networkId,
-				address,
-				categoryCode,
-				subcategoryCode,
-			});
-
-			return await db.put(
-				key,
-				encodeValue(
-					{
-						source: "owner",
-						timestamp: Date.now(),
-						version: METADATA_VERSION,
-					},
-					value,
-				),
-			);
-		},
-		getCategories: ({
-			owner,
-			networkId,
-			address,
-			categoryCode,
-			subcategoryCode,
-		}: {
-			owner?: Uint8Array | string;
-			networkId: number;
-			address: string;
-			categoryCode?: number;
-			subcategoryCode?: number;
-		}): Array<AddressCategory> => {
-			const prefixKey = asCatKey({
-				owner,
-				networkId,
-				address,
-				categoryCode: categoryCode ?? 0,
-				subcategoryCode: subcategoryCode ?? 0,
-			});
-
-			const endKey = makeEndKey(prefixKey, networkId === 0 ? 6 : 4);
-
-			const categories: Array<AddressCategory> = [];
-
-			for (const { key } of db.getRange({ start: prefixKey, end: endKey })) {
-				const decoded = decodeCategorizedKey(key);
-				categories.push({
-					networkId: networkId === 0 ? decoded.networkId : undefined,
-					category: {
-						code: decoded.categoryCode,
-						label: CategoriesMap.getLabel(decoded.categoryCode) ?? "",
-					},
-					subcategory: {
-						code: decoded.subcategoryCode,
-						label:
-							CategoriesMap.getLabel(
-								decoded.categoryCode,
-								decoded.subcategoryCode,
-							) ?? "",
-					},
-				});
-			}
-
-			return categories;
-		},
-		existsInCategory: ({
-			owner,
-			networkId,
-			address,
-			categoryCode,
-			subcategoryCode,
-		}: {
-			owner?: Uint8Array | string;
-			networkId: number;
-			address: string;
-			categoryCode: number;
-			subcategoryCode?: number;
-		}): boolean => {
-			const key = asCatKey({
-				owner,
-				networkId,
-				address,
-				categoryCode,
-				subcategoryCode,
-			});
-			if (
-				categoryCode === 0 ||
-				subcategoryCode === undefined ||
-				subcategoryCode === 0
-			) {
-				return (
-					db.getCount({
-						start: key,
-						end: makeEndKey(key, categoryCode === 0 ? 4 : 2),
-						limit: 1,
-					}) > 0
-				);
-			} else {
-				return db.doesExist(key);
-			}
-		},
-		hasTag: ({
-			owner,
-			networkId,
-			address,
-			tag,
-		}: {
-			owner?: Uint8Array | string;
-			networkId: number;
-			address: string;
-			tag: string;
-		}): boolean => {
-			const key = asTagKey({
-				owner,
-				networkId,
-				address,
-				tag,
-			});
-			return db.doesExist(key);
-		},
-		getTag: ({
-			owner,
-			networkId,
-			address,
-			tag,
-		}: {
-			owner?: Uint8Array | string;
-			networkId: number;
-			address: string;
-			tag: string;
-		}) => {
-			const key = asTagKey({
-				owner,
-				networkId,
-				address,
-				tag,
-			});
-			const encoded = db.get(key);
-			return encoded === undefined ? undefined : decodeValue(encoded);
-		},
-		getTags: ({
-			owner,
-			networkId,
-			address,
-		}: {
-			owner?: Uint8Array | string;
-			networkId: number;
-			address: string;
-		}) => {
-			const ownerBytes =
-				owner instanceof Uint8Array
-					? owner
-					: typeof owner === "string"
-						? addressTo32Bytes(owner)
-						: PUBLIC_OWNER;
-
-			const addressBytes = addressTo32Bytes(address);
-			const startKey = makeTagPrefix({
-				owner: ownerBytes,
-				networkId,
-				address: addressBytes,
-			});
-
-			const endKey = new Uint8Array(startKey.length + 1);
-			endKey.set(startKey);
-			endKey[startKey.length] = 0xff;
-
-			const tags: Array<TagValue> = [];
-
-			for (const { value } of db.getRange({
-				start: startKey,
-				end: endKey,
-			})) {
-				tags.push(decodeValue<TagValue>(value).value);
-			}
-			return tags;
-		},
+		putCategory,
+		deleteCategory,
+		getCategories,
+		hasCategory,
+		hasTag,
+		getTag,
+		getTags,
 	};
 }
 

@@ -3,7 +3,12 @@ import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
-import { coerceCategoryParams, coerceNetworkId, coerceTagParams } from "./path";
+import {
+	coerceCategoryParams,
+	coerceCatetoryWriteParams,
+	coerceNetworkId,
+	coerceTagParams,
+} from "./path";
 import {
 	InternalServerError,
 	InvalidParameters,
@@ -85,7 +90,7 @@ export async function serve({
 						}
 
 						if (
-							!db.existsInCategory({
+							!db.hasCategory({
 								address,
 								networkId,
 								categoryCode: 0,
@@ -103,11 +108,11 @@ export async function serve({
 				},
 			},
 			"/v1/public/address/:address": {
-				GET: async (req) => {
+				GET: (req) => {
 					try {
 						const { address } = req.params;
 
-						const result = await analyzeAddressAllNetworks(db, address);
+						const result = analyzeAddressAllNetworks(db, address);
 						return Response.json(result);
 					} catch (err) {
 						console.error(err);
@@ -125,11 +130,8 @@ export async function serve({
 						const exists = url.searchParams.get("exists") === "true";
 
 						if (exists) {
-							if (params.networkId === 0) {
-								return InvalidParameters;
-							}
 							return new Response(null, {
-								status: db.existsInCategory(params) ? 204 : 404,
+								status: db.hasCategory(params) ? 204 : 404,
 							});
 						}
 
@@ -152,7 +154,7 @@ export async function serve({
 						const { address, network } = req.params;
 						const networkId = coerceNetworkId(network);
 
-						if (!address || networkId === undefined || networkId === 0) {
+						if (!address) {
 							return InvalidParameters;
 						}
 
@@ -182,9 +184,6 @@ export async function serve({
 						const exists = url.searchParams.get("exists") === "true";
 
 						if (exists) {
-							if (params.networkId === 0) {
-								return InvalidParameters;
-							}
 							return new Response(null, {
 								status: db.hasTag(params) ? 204 : 404,
 							});
@@ -225,11 +224,8 @@ export async function serve({
 						const exists = url.searchParams.get("exists") === "true";
 
 						if (exists) {
-							if (params.networkId === 0) {
-								return InvalidParameters;
-							}
 							return new Response(null, {
-								status: db.existsInCategory({ ...params, owner: ownerHash })
+								status: db.hasCategory({ ...params, owner: ownerHash })
 									? 204
 									: 404,
 							});
@@ -254,7 +250,7 @@ export async function serve({
 					const ownerHash = await getOwnerHashFromRequest(req);
 					if (ownerHash === null) return Unauthorized;
 
-					const params = coerceCategoryParams(req.params);
+					const params = coerceCatetoryWriteParams(req.params);
 					if (params instanceof Response) return params;
 
 					const body = await req.json();
@@ -271,7 +267,7 @@ export async function serve({
 					const ownerHash = await getOwnerHashFromRequest(req);
 					if (ownerHash === null) return Unauthorized;
 
-					const params = coerceCategoryParams(req.params);
+					const params = coerceCatetoryWriteParams(req.params);
 					if (params instanceof Response) return params;
 
 					const result = await db.deleteCategory({

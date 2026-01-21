@@ -1,12 +1,11 @@
 import { CAT } from "@/mapping";
-import type { TagValue } from "@/mapping/tags";
-import type { AddressCategory } from "@/types";
+import type { AddressCategory, AddressTag } from "@/types";
 import type { RiskResult, SanctionsResult } from "./types";
 
 export function computeRisk(
 	sanctions: SanctionsResult,
 	categories: Array<AddressCategory>,
-	tags: Array<TagValue>,
+	tags: Array<AddressTag>,
 ): RiskResult {
 	const reasons: string[] = [];
 	let score = 0;
@@ -50,7 +49,7 @@ export function computeRisk(
 	// Tag-based risk
 	if (tags.length > 0) {
 		const tagIndex = tags.findIndex(
-			(tag) => tag.type === "tx_class" && tag.name === "high_count",
+			({ tag }) => tag.type === "tx_class" && tag.name === "high_count",
 		);
 		if (tagIndex > -1) {
 			score += 5;

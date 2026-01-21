@@ -5,19 +5,19 @@ type CategoryParams = {
 	address: string;
 	categoryCode: number;
 	subcategoryCode: number;
-	networkId: number;
+	networkId?: number;
 };
 
 type TagParams = {
 	tag: string;
 	address: string;
-	networkId: number;
+	networkId?: number;
 };
 
 export function coerceNetworkId(
 	network: string | undefined,
 ): number | undefined {
-	if (!network) return undefined;
+	if (!network || network === "*") return undefined;
 	const networkId = Number.isInteger(Number(network))
 		? Number(network)
 		: NetworkMap.fromURN(network);
@@ -31,7 +31,7 @@ export function coerceTagParams(
 
 	const networkId = coerceNetworkId(network);
 
-	if (!tag || !address || networkId === undefined) {
+	if (!tag || !address) {
 		return InvalidParameters;
 	}
 
@@ -40,6 +40,15 @@ export function coerceTagParams(
 		address,
 		networkId,
 	};
+}
+
+export function coerceCatetoryWriteParams(
+	params: Record<string, string>,
+): Required<CategoryParams> | Response {
+	const p = coerceCategoryParams(params);
+	if (p instanceof Response) return p;
+	if (p.networkId === undefined) return InvalidParameters;
+	return p as Required<CategoryParams>;
 }
 
 export function coerceCategoryParams(
@@ -55,7 +64,6 @@ export function coerceCategoryParams(
 	if (
 		!Number.isInteger(categoryCode) ||
 		!Number.isInteger(subcategoryCode) ||
-		networkId === undefined ||
 		address === undefined
 	) {
 		return InvalidParameters;

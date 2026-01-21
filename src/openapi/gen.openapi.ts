@@ -5,18 +5,24 @@ export const openapi = {
 	info: {
 		title: "Hyperion API",
 		version: VERSION,
-		description:
-			"Hyperion public API for blockchain address analysis, categorization, sanctions, and attribution. " +
-			"Use network = 0 as a wildcard where supported.",
+		description: `
+Hyperion is a public API for blockchain address analysis, including risk scoring, categorization, sanctions checks, and attribution.
+
+- Use \`network = "*"\` as a wildcard where supported.
+- Public endpoints provide read-only access to category and tag data.
+- Private endpoints require authentication (JWT bearer token) and allow updates/deletes for owned addresses.
+		`.trim(),
 	},
-	servers: [{ url: "http://localhost:8080" }],
+	servers: [
+		{ url: "http://localhost:8080", description: "Local development server" },
+	],
 	tags: [
-		{ name: "System" },
-		{ name: "Metadata" },
-		{ name: "Analysis" },
-		{ name: "Categories" },
-		{ name: "Tags" },
-		{ name: "Private" },
+		{ name: "System", description: "Server status and health endpoints" },
+		{ name: "Metadata", description: "Network and category metadata" },
+		{ name: "Analysis", description: "Blockchain address analysis" },
+		{ name: "Categories", description: "Address categories" },
+		{ name: "Tags", description: "Address tags" },
+		{ name: "Private", description: "Authenticated operations" },
 	],
 	components: {
 		securitySchemes: {
@@ -24,35 +30,69 @@ export const openapi = {
 				type: "http",
 				scheme: "bearer",
 				bearerFormat: "JWT",
+				description: "JWT token for private endpoints",
 			},
 		},
 		schemas: {
 			CategoryEntry: {
 				type: "object",
 				properties: {
-					networkId: { type: "number" },
+					networkId: {
+						type: "number",
+						description: "Network ID for this category entry",
+					},
 					category: {
 						type: "object",
-						properties: { code: { type: "number" }, label: { type: "string" } },
+						properties: {
+							code: { type: "number", description: "Category code" },
+							label: {
+								type: "string",
+								description: "Human-readable category label",
+							},
+						},
 					},
 					subcategory: {
 						type: "object",
-						properties: { code: { type: "number" }, label: { type: "string" } },
+						properties: {
+							code: { type: "number", description: "Subcategory code" },
+							label: {
+								type: "string",
+								description: "Human-readable subcategory label",
+							},
+						},
+					},
+				},
+				required: ["networkId", "category", "subcategory"],
+			},
+			TagEntry: {
+				type: "object",
+				description: "A tag attached to an address",
+				properties: {
+					tag: { type: "string", description: "Tag identifier" },
+					value: { type: "string", description: "Tag value or metadata" },
+					networkId: {
+						type: "number",
+						description: "Network where this tag applies",
 					},
 				},
 			},
-			TagEntry: { type: "object" },
 			AddressAnalysis: {
 				type: "object",
 				properties: {
-					address: { type: "string" },
+					address: {
+						type: "string",
+						description: "Blockchain address being analyzed",
+					},
 					networks: {
 						type: "array",
 						items: {
 							type: "object",
 							properties: {
-								networkId: { type: "number" },
-								analysis: { type: "object" },
+								networkId: { type: "number", description: "Network ID" },
+								analysis: {
+									type: "object",
+									description: "Per-network analysis data",
+								},
 							},
 						},
 					},
@@ -69,8 +109,9 @@ export const openapi = {
 	paths: {
 		"/uptime": {
 			get: {
-				summary: "Server uptime",
+				summary: "Get server uptime",
 				tags: ["System"],
+				description: "Returns server uptime in seconds.",
 				responses: {
 					200: {
 						description: "Uptime info",
@@ -79,8 +120,14 @@ export const openapi = {
 								schema: {
 									type: "object",
 									properties: {
-										ok: { type: "boolean" },
-										uptime: { type: "number" },
+										ok: {
+											type: "boolean",
+											description: "Always true if server is running",
+										},
+										uptime: {
+											type: "number",
+											description: "Server uptime in seconds",
+										},
 									},
 								},
 							},
@@ -90,11 +137,12 @@ export const openapi = {
 			},
 		},
 
-		/** Metadata */
+		/** Metadata endpoints */
 		"/v1/meta/networks": {
 			get: {
-				summary: "Supported networks",
+				summary: "List supported networks",
 				tags: ["Metadata"],
+				description: "Returns a map of network names to network IDs.",
 				responses: {
 					200: {
 						description: "Network map",
@@ -112,8 +160,10 @@ export const openapi = {
 		},
 		"/v1/meta/categories": {
 			get: {
-				summary: "Supported categories",
+				summary: "List supported categories",
 				tags: ["Metadata"],
+				description:
+					"Returns all category and subcategory codes along with human-readable labels.",
 				responses: {
 					200: {
 						description: "Category definitions",
@@ -124,9 +174,18 @@ export const openapi = {
 									items: {
 										type: "object",
 										properties: {
-											category: { type: "number" },
-											subcategory: { type: "number" },
-											label: { type: "string" },
+											category: {
+												type: "number",
+												description: "Category code",
+											},
+											subcategory: {
+												type: "number",
+												description: "Subcategory code",
+											},
+											label: {
+												type: "string",
+												description: "Label for category/subcategory",
+											},
 										},
 									},
 								},
@@ -140,7 +199,7 @@ export const openapi = {
 		/** Address Analysis */
 		"/v1/public/address/{address}": {
 			get: {
-				summary: "Analyze address across all networks",
+				summary: "Analyze an address across all networks",
 				tags: ["Analysis"],
 				parameters: [
 					{
@@ -148,11 +207,12 @@ export const openapi = {
 						in: "path",
 						required: true,
 						schema: { type: "string" },
+						description: "Blockchain address to analyze",
 					},
 				],
 				responses: {
 					200: {
-						description: "Per-network analysis",
+						description: "Per-network analysis results",
 						content: {
 							"application/json": {
 								schema: { $ref: "#/components/schemas/AddressAnalysis" },
@@ -164,7 +224,7 @@ export const openapi = {
 		},
 		"/v1/public/address/{address}/{network}": {
 			get: {
-				summary: "Analyze address on a specific network",
+				summary: "Analyze an address on a specific network",
 				tags: ["Analysis"],
 				parameters: [
 					{
@@ -172,20 +232,23 @@ export const openapi = {
 						in: "path",
 						required: true,
 						schema: { type: "string" },
+						description: "Blockchain address to analyze",
 					},
 					{
 						name: "network",
 						in: "path",
 						required: true,
 						schema: { type: "string" },
+						description:
+							"Network name or ID (use '*' for all networks where supported)",
 					},
 				],
 				responses: {
 					200: {
-						description: "Analysis result",
+						description: "Analysis result for the address on the given network",
 						content: { "application/json": { schema: { type: "object" } } },
 					},
-					400: { description: "Invalid parameters" },
+					400: { description: "Invalid address or network parameter" },
 				},
 			},
 		},
@@ -193,10 +256,15 @@ export const openapi = {
 		/** Public Categories */
 		"/v1/public/category/{address}/{cat}/{subcat}/{network}": {
 			get: {
-				summary: "Get categories for an address",
+				summary: "Retrieve categories for a blockchain address",
 				tags: ["Categories"],
-				description:
-					"Retrieve categories for an address. Use 0 as wildcard. Optional `exists=true` for existence check (204/404).",
+				description: `
+Get categories assigned to an address.
+
+- Use \`cat=0\` as a wildcard to retrieve all categories.
+- Use optional query parameter \`exists=true\` to check for existence (returns 204 if exists, 404 if not).
+- Network can be a specific network or '*' for all networks.
+				`,
 				parameters: [
 					{
 						name: "address",
@@ -241,7 +309,7 @@ export const openapi = {
 							},
 						},
 					},
-					204: { description: "Exists only" },
+					204: { description: "Category exists (no content returned)" },
 					404: { description: "No categories found" },
 					400: { description: "Invalid parameters" },
 				},
@@ -253,6 +321,12 @@ export const openapi = {
 			get: {
 				summary: "Get all tags for an address",
 				tags: ["Tags"],
+				description: `
+Retrieve all tags associated with an address.
+
+- Specify \`network\` to filter tags for a specific network.
+- Use '*' for all networks where supported.
+				`,
 				parameters: [
 					{
 						name: "address",
@@ -283,10 +357,16 @@ export const openapi = {
 				},
 			},
 		},
-		"/v1/public/tag/{tag}/{address}/{network}": {
+		"/v1/public/tag/{address}/{tag}/{network}": {
 			get: {
 				summary: "Get a specific tag for an address",
 				tags: ["Tags"],
+				description: `
+Retrieve a single tag for an address.
+
+- Optional \`exists=true\` query parameter can be used to only check presence (204/404).
+- \`network\` can be '*' to search all networks.
+				`,
 				parameters: [
 					{
 						name: "tag",
@@ -322,7 +402,7 @@ export const openapi = {
 							},
 						},
 					},
-					204: { description: "Exists only" },
+					204: { description: "Tag exists (no content returned)" },
 					404: { description: "Tag not found" },
 				},
 			},
@@ -352,6 +432,8 @@ export const openapi = {
 				summary: "Get categories for authenticated user",
 				tags: ["Private"],
 				security: [{ bearerAuth: [] }],
+				description:
+					"Retrieve categories you have permission to read or check existence.",
 				parameters: [
 					{
 						name: "address",
@@ -406,6 +488,7 @@ export const openapi = {
 				summary: "Create or update categories for authenticated user",
 				tags: ["Private"],
 				security: [{ bearerAuth: [] }],
+				description: "Add or update categories for addresses you own.",
 				requestBody: {
 					required: true,
 					content: { "application/json": { schema: { type: "object" } } },
@@ -422,6 +505,7 @@ export const openapi = {
 				summary: "Delete categories for authenticated user",
 				tags: ["Private"],
 				security: [{ bearerAuth: [] }],
+				description: "Remove categories for addresses you own.",
 				responses: {
 					200: {
 						description: "Operation result",

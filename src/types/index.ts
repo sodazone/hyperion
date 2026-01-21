@@ -64,6 +64,11 @@ export type AddressCategory = {
 	subcategory: { code: number; label: string };
 };
 
+export type AddressTag = {
+	networkId?: number;
+	tag: { name: string; type: string; code: string };
+};
+
 export type Database = RootDatabase<Uint8Array, Uint8Array>;
 export type HyperionMetadata = {
 	source: string;

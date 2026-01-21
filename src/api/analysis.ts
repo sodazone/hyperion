@@ -1,5 +1,5 @@
 import type { HyperionDB } from "@/db";
-import { CategoriesMap, NetworkMap } from "@/mapping";
+import { CategoriesMap } from "@/mapping";
 import { CAT } from "@/mapping/categories";
 import { computeRisk } from "./risk";
 import type { AddressAnalysis, SanctionsResult } from "./types";
@@ -9,21 +9,15 @@ export function checkSanctions(
 	address: string,
 	networkId: number,
 ): SanctionsResult {
-	const sanctioned = db.existsInCategory({
-		networkId,
+	const entries = db.getCategories({
 		address,
+		networkId,
 		categoryCode: CAT.SANCTIONS,
 	});
 
-	if (!sanctioned) {
+	if (entries.length === 0) {
 		return { sanctioned: false, lists: [] };
 	}
-
-	const entries = db.getCategories({
-		networkId,
-		address,
-		categoryCode: CAT.SANCTIONS,
-	});
 
 	return {
 		sanctioned: true,
@@ -35,40 +29,81 @@ export function checkSanctions(
 	};
 }
 
-export async function analyzeAddressAllNetworks(
-	db: HyperionDB,
-	address: string,
-) {
-	const tasks = [];
+function computeSanctionsFromAttribution(
+	attribution: Array<{
+		category: { code: number };
+		subcategory: { code: number };
+	}>,
+): SanctionsResult {
+	const sanctions = attribution.filter(
+		(a) => a.category.code === CAT.SANCTIONS,
+	);
 
-	for (const networkId of Object.values(NetworkMap.entries())) {
-		tasks.push(
-			Promise.resolve().then(() => {
-				if (
-					!db.existsInCategory({
-						address,
-						networkId,
-						categoryCode: 0,
-					})
-				)
-					return null;
-
-				return {
-					networkId,
-					analysis: analyzeAddress(db, address, networkId),
-				};
-			}),
-		);
+	if (sanctions.length === 0) {
+		return { sanctioned: false, lists: [] };
 	}
 
-	const resolved = await Promise.all(tasks);
-
 	return {
-		address,
-		networks: resolved.filter(
-			(r): r is { networkId: number; analysis: AddressAnalysis } => r !== null,
+		sanctioned: true,
+		lists: sanctions.map(
+			(a) =>
+				CategoriesMap.getLabel(a.category.code, a.subcategory.code) ??
+				"Unknown",
 		),
 	};
+}
+
+export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
+	const categories = db.getCategories({ address });
+	const tags = db.getTags({ address });
+
+	type Bucket = {
+		attribution: typeof categories;
+		tags: typeof tags;
+	};
+
+	const byNetwork = new Map<number, Bucket>();
+
+	for (const c of categories) {
+		if (c.networkId === undefined) continue;
+		const bucket = byNetwork.get(c.networkId) ?? { attribution: [], tags: [] };
+
+		bucket.attribution.push(c);
+		byNetwork.set(c.networkId, bucket);
+	}
+
+	for (const t of tags) {
+		if (t.networkId === undefined) continue;
+
+		const bucket = byNetwork.get(t.networkId) ?? { attribution: [], tags: [] };
+
+		bucket.tags.push(t);
+		byNetwork.set(t.networkId, bucket);
+	}
+
+	const networks: Array<{
+		networkId: number;
+		analysis: AddressAnalysis;
+	}> = [];
+
+	for (const [networkId, { attribution, tags }] of byNetwork) {
+		const sanctioned = computeSanctionsFromAttribution(attribution);
+		const risk = computeRisk(sanctioned, attribution, tags);
+
+		networks.push({
+			networkId,
+			analysis: {
+				sanctioned,
+				risk,
+				attribution,
+				tags,
+			},
+		});
+	}
+
+	networks.sort((a, b) => a.networkId - b.networkId);
+
+	return { address, networks };
 }
 
 export function analyzeAddress(

@@ -8,10 +8,9 @@ import {
 	type TaggedKey,
 } from "@/types";
 
-const BE = false;
+const ENDIANNESS = false;
 const CATEGORIZED_KEY_LENGTH = 71;
-const TAG_KEY_MIN_LENGTH = 67;
-const TAG_KEY_MAX_LENGTH = 99;
+const TAGGED_KEY_LENGTH = 99;
 
 /**
  * Encode a categorized key
@@ -19,9 +18,9 @@ const TAG_KEY_MAX_LENGTH = 99;
  * 32 bytes Owner
  * 1 byte  Key Family
  * 32 bytes Address
- * 2 bytes Network ID (BE)
  * 2 bytes Category Code (BE)
  * 2 bytes Subcategory Code (BE)
+ * 2 bytes Network ID (BE)
  */
 export function encodeCategorizedKey({
 	owner,
@@ -34,15 +33,15 @@ export function encodeCategorizedKey({
 	if (owner.length !== 32) throw new Error("Owner must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
 
-	const key = new Uint8Array(CATEGORIZED_KEY_LENGTH);
+	const key = new Uint8Array(71);
 	key.set(owner, 0);
 	key[32] = family;
 	key.set(address, 33);
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	dv.setUint16(65, networkId, BE);
-	dv.setUint16(67, categoryCode, BE);
-	dv.setUint16(69, subcategoryCode, BE);
+	dv.setUint16(65, categoryCode, ENDIANNESS);
+	dv.setUint16(67, subcategoryCode, ENDIANNESS);
+	dv.setUint16(69, networkId, ENDIANNESS);
 
 	return key;
 }
@@ -53,62 +52,132 @@ export function encodeCategorizedKey({
  * 32 bytes Owner
  * 1 byte  Key Family
  * 32 bytes Address
- * 2 bytes Network ID (BE)
  * 32 bytes Tag Code (padded with zeros if shorter)
+ * 2 bytes Network ID (BE)
  */
 export function encodeTaggedKey({
 	owner,
 	address,
 	tagCode,
-	family,
+	family = KeyFamily.Tagged,
 	networkId,
 }: TaggedKey): CryptoAddressKey {
-	if (owner.length !== 32) throw new Error("Owner hash must be 32 bytes");
+	if (owner.length !== 32) throw new Error("Owner must be 32 bytes");
 	if (address.length !== 32) throw new Error("Address must be 32 bytes");
-	if (tagCode.length > 32) throw new Error("Tag code must be at most 32 bytes");
+	if (tagCode.length > 32) throw new Error("Tag code max 32 bytes");
 
-	const key = new Uint8Array(TAG_KEY_MAX_LENGTH);
+	const key = new Uint8Array(99);
 	key.set(owner, 0);
 	key[32] = family;
 	key.set(address, 33);
 
-	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
-	dv.setUint16(65, networkId, BE);
+	key.set(tagCode, 65);
 
-	// right-padded with 0x00
-	key.set(tagCode, 67);
+	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
+	dv.setUint16(97, networkId, ENDIANNESS);
 
 	return key;
 }
 
-/**
- * Prefix for querying all tags of a given owner/address/network
- */
 export function makeTagPrefix({
 	owner,
 	address,
-	networkId,
+	tagCode,
 	family = KeyFamily.Tagged,
+	networkId,
 }: {
 	owner: Uint8Array;
 	address: Uint8Array;
-	networkId: number;
-	family?: number;
-}) {
-	const prefix = new Uint8Array(TAG_KEY_MIN_LENGTH);
-	prefix.set(owner, 0);
-	prefix[32] = family;
-	prefix.set(address, 33);
+	tagCode?: Uint8Array;
+	family?: KeyFamily;
+	networkId?: number;
+}): Uint8Array {
+	const base = new Uint8Array(65);
+	base.set(owner, 0);
+	base[32] = family;
+	base.set(address, 33);
 
-	const dv = new DataView(prefix.buffer);
-	dv.setUint16(65, networkId, BE);
+	if (!tagCode || tagCode.length === 0) {
+		return base;
+	}
 
-	return prefix;
+	const tagPrefix = new Uint8Array(97);
+	tagPrefix.set(base, 0);
+	tagPrefix.set(tagCode, 65);
+
+	if (networkId === undefined) {
+		return tagPrefix;
+	}
+
+	const full = new Uint8Array(99);
+	full.set(tagPrefix, 0);
+	const dv = new DataView(full.buffer);
+	dv.setUint16(97, networkId, ENDIANNESS);
+
+	return full;
 }
 
-/**
- * Decode a categorized key
- */
+export function makeCategoryPrefix({
+	owner,
+	address,
+	categoryCode,
+	subcategoryCode,
+	networkId,
+}: {
+	owner: Uint8Array;
+	address: Uint8Array;
+	categoryCode: number;
+	subcategoryCode: number;
+	networkId?: number;
+}): Uint8Array {
+	const base = new Uint8Array(65);
+	base.set(owner, 0);
+	base[32] = KeyFamily.Categorized;
+	base.set(address, 33);
+
+	if (categoryCode === 0) {
+		return base;
+	}
+
+	const withCategory = new Uint8Array(67);
+	withCategory.set(base, 0);
+	{
+		const dv = new DataView(withCategory.buffer);
+		dv.setUint16(65, categoryCode, ENDIANNESS);
+	}
+
+	if (subcategoryCode === 0) {
+		return withCategory;
+	}
+
+	const withSubcategory = new Uint8Array(69);
+	withSubcategory.set(withCategory, 0);
+	{
+		const dv = new DataView(withSubcategory.buffer);
+		dv.setUint16(67, subcategoryCode, ENDIANNESS);
+	}
+
+	if (networkId === undefined) {
+		return withSubcategory;
+	}
+
+	const full = new Uint8Array(71);
+	full.set(withSubcategory, 0);
+	{
+		const dv = new DataView(full.buffer);
+		dv.setUint16(69, networkId, ENDIANNESS);
+	}
+
+	return full;
+}
+
+export function makePrefixEnd(prefix: Uint8Array): Uint8Array {
+	const end = new Uint8Array(prefix.length + 1);
+	end.set(prefix, 0);
+	end[prefix.length] = 0xff;
+	return end;
+}
+
 export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 	if (!key || key.length !== CATEGORIZED_KEY_LENGTH)
 		throw new Error("Invalid categorized key length");
@@ -117,9 +186,9 @@ export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 	const owner = key.subarray(0, 32);
 	const family = key[32] as KeyFamily;
 	const address = key.subarray(33, 65);
-	const networkId = dv.getUint16(65, BE);
-	const categoryCode = dv.getUint16(67, BE);
-	const subcategoryCode = dv.getUint16(69, BE);
+	const categoryCode = dv.getUint16(65, ENDIANNESS);
+	const subcategoryCode = dv.getUint16(67, ENDIANNESS);
+	const networkId = dv.getUint16(69, ENDIANNESS);
 
 	return {
 		owner,
@@ -131,23 +200,16 @@ export function decodeCategorizedKey(key: Uint8Array): CategorizedKey {
 	};
 }
 
-/**
- * Decode a tagged key
- */
 export function decodeTaggedKey(key: Uint8Array): TaggedKey {
-	if (
-		!key ||
-		key.length < TAG_KEY_MIN_LENGTH ||
-		key.length > TAG_KEY_MAX_LENGTH
-	)
+	if (!key || key.length !== TAGGED_KEY_LENGTH)
 		throw new Error("Invalid tagged key length");
 
 	const dv = new DataView(key.buffer, key.byteOffset, key.byteLength);
 	const owner = key.subarray(0, 32);
 	const family = key[32] as KeyFamily;
 	const address = key.subarray(33, 65);
-	const networkId = dv.getUint16(65, BE);
-	const tagCode = key.subarray(67);
+	const tagCode = key.subarray(65, 97);
+	const networkId = dv.getUint16(97, ENDIANNESS);
 
 	return { owner, family, address, networkId, tagCode };
 }
