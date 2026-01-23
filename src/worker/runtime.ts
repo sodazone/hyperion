@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import type { StreamContext } from "./protocol";
+import type { StreamContext } from "./types";
 
 type Handler<T, R> = (payload: T, stream: StreamContext) => Promise<R>;
 type HandlerMap<T, R> = Record<string, Handler<T, R>>;
