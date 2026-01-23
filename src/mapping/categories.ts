@@ -36,10 +36,11 @@ function createCategoriesMap() {
 	categories.add(0x0005, 0x0002, "KYC Provider");
 	categories.add(0x0005, 0x0003, "Regulated Entity");
 
-	// Category 0x0006 - External Classification (Merkle Science)
-	categories.add(0x0006, 0x0000, "External Classification");
-	categories.add(0x0006, 0x0001, "Financial Service (Merkle)");
-	categories.add(0x0006, 0x0002, "Custody (Merkle)");
+	// Category 0x0006 - Services
+	categories.add(0x0006, 0x0000, "Services");
+	categories.add(0x0006, 0x0001, "Financial Service");
+	categories.add(0x0006, 0x0002, "Custody");
+	categories.add(0x0006, 0x0003, "Market Making");
 
 	// Category 0x0007 - High Risk Organization
 	categories.add(0x0007, 0x0000, "High Risk Organization");
