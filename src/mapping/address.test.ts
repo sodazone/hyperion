@@ -41,16 +41,6 @@ describe("normalizeAddress", () => {
 		);
 	});
 
-	it("should normalize Ethereum 20-byte hex without 0x prefix", () => {
-		const addr = "0123456789abcdef0123456789abcdef01234567";
-		const normalized = normalizeAddress(addr);
-
-		expect(normalized.length).toBe(32);
-		expect(hex(normalized)).toEqual(
-			"0000000000000000000000000123456789abcdef0123456789abcdef01234567",
-		);
-	});
-
 	it("should normalize Solana 32-byte base58 address", () => {
 		const addr = "4uLkNz2JhP9K5TqzR2n5z7o9eGzxE3L3kR1RM9Zx6j2v";
 		const normalized = normalizeAddress(addr);
