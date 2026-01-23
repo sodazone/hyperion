@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import type { AddressAnalysis } from "@/api/types";
 import { encodeCategorizedKey, encodeValue, PUBLIC_OWNER } from "@/db";
-import { addressTo32Bytes } from "@/mapping";
+import { normalizeAddress } from "@/mapping";
 import type { Serve } from "@/server/serve";
 import { KeyFamily } from "@/types";
 import { createTestJWT } from "./auth";
@@ -18,7 +18,7 @@ describe("Hyperion API v1", () => {
 				family: KeyFamily.Categorized,
 				owner: PUBLIC_OWNER,
 				networkId: 1,
-				address: addressTo32Bytes(
+				address: normalizeAddress(
 					"14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA",
 				),
 				categoryCode: 1,

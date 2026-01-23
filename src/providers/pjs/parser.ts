@@ -5,14 +5,14 @@ import {
 	encodeValue,
 	PUBLIC_OWNER,
 } from "@/db";
-import { addressTo32Bytes, CAT } from "@/mapping";
+import { CAT, normalizeAddress } from "@/mapping";
 import { createTag } from "@/mapping/tags";
 import { type HyperionRecord, KeyFamily } from "@/types";
 
 const NETWORK_POLKADOT = 0x0101;
 
 function mapCategory(address: string, campaign: string) {
-	const addressBytes = addressTo32Bytes(address);
+	const addressBytes = normalizeAddress(address);
 	const family = KeyFamily.Categorized;
 	const categoryCode = CAT.CYBERCRIME;
 	const subcategoryCode = 0x0005;
@@ -42,7 +42,7 @@ function mapCategory(address: string, campaign: string) {
 }
 
 function mapDomainTag(address: string, domain: string): HyperionRecord {
-	const addressBytes = addressTo32Bytes(address);
+	const addressBytes = normalizeAddress(address);
 	const { tagCode, tagValue } = createTag("phishing_domain", domain);
 	const key = encodeTaggedKey({
 		owner: PUBLIC_OWNER,

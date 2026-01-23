@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { CategoriesMap, NetworkMap } from "@/mapping";
-import { addressTo32Bytes } from "@/mapping/address";
+import { normalizeAddress } from "@/mapping/address";
 import { hashTag, type TagValue } from "@/mapping/tags";
 import {
 	type AddressCategory,
@@ -85,7 +85,7 @@ function asOwnedCatKey({
 		owner,
 		family: KeyFamily.Categorized,
 		networkId,
-		address: typeof address === "string" ? addressTo32Bytes(address) : address,
+		address: typeof address === "string" ? normalizeAddress(address) : address,
 		categoryCode: categoryCode,
 		subcategoryCode: subcategoryCode ?? 0,
 	});
@@ -107,10 +107,10 @@ export function createHyperionDB(db: Database) {
 			owner instanceof Uint8Array
 				? owner
 				: typeof owner === "string"
-					? addressTo32Bytes(owner)
+					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = addressTo32Bytes(address);
+		const addressBytes = normalizeAddress(address);
 		const tagCode = hashTag(tag);
 
 		const prefix = makeTagPrefix({
@@ -143,10 +143,10 @@ export function createHyperionDB(db: Database) {
 			owner instanceof Uint8Array
 				? owner
 				: typeof owner === "string"
-					? addressTo32Bytes(owner)
+					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = addressTo32Bytes(address);
+		const addressBytes = normalizeAddress(address);
 		const tagCode = hashTag(tag);
 
 		const prefix = makeTagPrefix({
@@ -187,10 +187,10 @@ export function createHyperionDB(db: Database) {
 			owner instanceof Uint8Array
 				? owner
 				: typeof owner === "string"
-					? addressTo32Bytes(owner)
+					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = addressTo32Bytes(address);
+		const addressBytes = normalizeAddress(address);
 
 		const startPrefix = makeTagPrefix({
 			owner: ownerBytes,
@@ -291,10 +291,10 @@ export function createHyperionDB(db: Database) {
 			owner instanceof Uint8Array
 				? owner
 				: typeof owner === "string"
-					? addressTo32Bytes(owner)
+					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = addressTo32Bytes(address);
+		const addressBytes = normalizeAddress(address);
 
 		const prefix = makeCategoryPrefix({
 			owner: ownerBytes,
@@ -348,10 +348,10 @@ export function createHyperionDB(db: Database) {
 			owner instanceof Uint8Array
 				? owner
 				: typeof owner === "string"
-					? addressTo32Bytes(owner)
+					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = addressTo32Bytes(address);
+		const addressBytes = normalizeAddress(address);
 
 		const prefix = makeCategoryPrefix({
 			owner: ownerBytes,

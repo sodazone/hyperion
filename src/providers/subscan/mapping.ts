@@ -4,7 +4,7 @@ import {
 	encodeValue,
 	PUBLIC_OWNER,
 } from "@/db";
-import { addressTo32Bytes } from "@/mapping";
+import { normalizeAddress } from "@/mapping";
 import { createTag } from "@/mapping/tags";
 import { type HyperionRecord, KeyFamily } from "@/types";
 import { classifyPolkadotBalance } from "./balance";
@@ -159,7 +159,7 @@ export function toHyperionRecords(
 	const { account } = item;
 
 	const records = [];
-	const address = addressTo32Bytes(account.address);
+	const address = normalizeAddress(account.address);
 	const classifications = classify(networkId, item);
 
 	for (const classification of classifications) {
