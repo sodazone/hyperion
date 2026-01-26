@@ -158,21 +158,25 @@ describe("Hyperion API v1", () => {
 	 * Tags
 	 */
 
-	it("GET /v1/public/tags returns 404 or array", async () => {
-		const { status, json } = await get("/v1/public/tags/abcd/1");
+	it("GET /v1/public/tags returns 404 when no tags", async () => {
+		const { status } = await get("/v1/public/tags/abcd/1");
 
-		expect([200, 404]).toContain(status);
-
-		if (status === 200 && json !== null) {
-			expect(Array.isArray(json)).toBe(true);
-		}
+		expect(status).toBe(404);
 	});
 
-	it("GET /v1/public/tag/:address/:tag/:network returns 404 or 204 when exists=true", async () => {
+	it("GET /v1/public/tag/:address/:tag/:network returns 204 when exists=true", async () => {
 		const { status } = await get(
-			"/v1/public/tag/abcd/phishing:ee/0x0101?exists=true",
+			"/v1/public/tag/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/phishing-domain:example.com/1?exists=true",
 		);
 
-		expect([204, 404]).toContain(status);
+		expect(status).toBe(204);
+	});
+
+	it("GET /v1/public/tag/:address/:tag/:network returns 404 when tag not found", async () => {
+		const { status } = await get(
+			"/v1/public/tag/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/not-found-tag/1?exists=true",
+		);
+
+		expect(status).toBe(404);
 	});
 });
