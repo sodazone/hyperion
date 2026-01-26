@@ -2,6 +2,8 @@ import { type Rule, RuleEngine } from "@/rules";
 import type { SubscriptionManager } from "@/streams";
 
 // TODO: load rules...
+// TODO: wire up the subscription events to the rule engine
+// TODO: wire up the rule engine to the alerting system... (local db and egress)
 export function createMonitor(rules: Rule[], subManager: SubscriptionManager) {
 	for (const rule of rules) {
 		subManager.addRule(rule);
