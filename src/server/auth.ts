@@ -1,4 +1,5 @@
 import * as jose from "jose";
+import { hashOwner } from "@/auth";
 
 export type JWKSSource = string | { keys: jose.JWK[] };
 
@@ -56,9 +57,7 @@ export async function getOwnerHashFromRequest(
 		const sub = payload?.sub;
 		if (!sub) return null;
 
-		const padded = `OC.HYPERION_OWNER.${sub}`;
-
-		return Bun.CryptoHasher.hash("sha256", padded);
+		return hashOwner(sub);
 	} catch (err) {
 		console.error("JWT verification failed:", err);
 		return null;

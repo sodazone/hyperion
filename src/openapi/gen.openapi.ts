@@ -427,7 +427,7 @@ Retrieve a single tag for an address.
 				},
 			},
 		},
-		"/v1/private/categories/{address}/{cat}/{subcat}/{network}": {
+		"/v1/private/category/{address}/{cat}/{subcat}/{network}": {
 			get: {
 				summary: "Get categories for authenticated user",
 				tags: ["Private"],

@@ -211,7 +211,7 @@ export async function serve({
 					});
 				},
 			},
-			"/v1/private/categories/:address/:cat/:subcat/:network": {
+			"/v1/private/category/:address/:cat/:subcat/:network": {
 				GET: async (req) => {
 					try {
 						const ownerHash = await getOwnerHashFromRequest(req);

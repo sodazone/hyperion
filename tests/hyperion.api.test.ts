@@ -1,38 +1,18 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import type { AddressAnalysis } from "@/api/types";
-import { encodeCategorizedKey, encodeValue, PUBLIC_OWNER } from "@/db";
-import { normalizeAddress } from "@/mapping";
 import type { Serve } from "@/server/serve";
-import { KeyFamily } from "@/types";
 import { createTestJWT } from "./auth";
+import { withTestData } from "./fixture";
 import { get, getAuth, runTestServer } from "./helpers";
 
 describe("Hyperion API v1", () => {
 	let srv: Serve;
+	let token: string;
 
 	beforeAll(async () => {
 		srv = await runTestServer();
-		// TODO: extract fixture
-		await srv.db.put({
-			key: encodeCategorizedKey({
-				family: KeyFamily.Categorized,
-				owner: PUBLIC_OWNER,
-				networkId: 1,
-				address: normalizeAddress(
-					"14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA",
-				),
-				categoryCode: 1,
-				subcategoryCode: 1,
-			}),
-			value: encodeValue(
-				{
-					source: "test",
-					timestamp: Date.now(),
-					version: 0,
-				},
-				{ test: true },
-			),
-		});
+		withTestData(srv);
+		token = await createTestJWT("did:test|user");
 	});
 
 	afterAll(async () => {
@@ -96,8 +76,6 @@ describe("Hyperion API v1", () => {
 	});
 
 	it("GET /v1/private/me succeeds with auth", async () => {
-		const token = await createTestJWT("did:test|user");
-
 		const { status, json } = await getAuth<{ hash: string }>(
 			"/v1/private/me",
 			token,
@@ -109,6 +87,17 @@ describe("Hyperion API v1", () => {
 		if (json) {
 			expect(json.hash).toHaveLength(64);
 		}
+	});
+
+	it("GET /v1/private/category/:address/:cat/:subcat/:network", async () => {
+		const token = await createTestJWT("did:test|user");
+
+		const { status } = await getAuth(
+			"/v1/private/category/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/2/1/1?exists=true",
+			token,
+		);
+
+		expect(status).toBe(204);
 	});
 
 	/**
@@ -129,6 +118,7 @@ describe("Hyperion API v1", () => {
 			expect(Array.isArray(json.networks)).toBe(true);
 			expect(json.networks.length).toBeGreaterThan(0);
 			expect(json.networks[0]?.networkId).toBe(1);
+			expect(json.networks[0]?.analysis.attribution.length).toBe(2);
 		}
 	});
 
@@ -138,6 +128,12 @@ describe("Hyperion API v1", () => {
 		);
 
 		expect(status).toBe(200);
+	});
+
+	it("GET /v1/public/address/:address/:network returns 404 when address not found", async () => {
+		const { status } = await get("/v1/public/address/0xABC123/1");
+
+		expect(status).toBe(404);
 	});
 
 	/**
@@ -150,10 +146,12 @@ describe("Hyperion API v1", () => {
 		expect(status).toBe(404);
 	});
 
-	it("GET /v1/public/category with exists=true returns 204 or 404", async () => {
-		const { status } = await get("/v1/public/category/abcd/0/0/0?exists=true");
+	it("GET /v1/public/category with exists=true returns 204", async () => {
+		const { status } = await get(
+			"/v1/public/category/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/0/0/0?exists=true",
+		);
 
-		expect([204, 404]).toContain(status);
+		expect(status).toBe(204);
 	});
 
 	/**

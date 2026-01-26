@@ -1,5 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
+import { hashAuth } from "@/auth";
 import { CategoriesMap, NetworkMap } from "@/mapping";
 import { normalizeAddress } from "@/mapping/address";
 import { hashTag, type TagValue } from "@/mapping/tags";
@@ -23,9 +24,7 @@ import {
 
 export const METADATA_VERSION = 0;
 
-export const PUBLIC_OWNER = new Uint8Array(
-	Bun.CryptoHasher.hash("sha256", "HYPERION.PUBLIC"),
-);
+export const PUBLIC_OWNER = hashAuth("HYPERION.PUBLIC");
 
 export function isPublicOwner(owner: Uint8Array): boolean {
 	if (owner.byteLength !== PUBLIC_OWNER.byteLength) return false;
