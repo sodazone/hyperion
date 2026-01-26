@@ -14,12 +14,15 @@ export async function get<T>(
 	return { status: res.status, json };
 }
 
-export async function getAuth<T>(
+export async function fetchAuth<T>(
 	path: string,
 	token: string,
+	{ method = "GET", body }: { method?: string; body?: unknown } = {},
 ): Promise<{ status: number; json: T | null }> {
 	const res = await fetch(`${BASE}${path}`, {
 		headers: { Authorization: `Bearer ${token}` },
+		method,
+		body: body ? JSON.stringify(body) : undefined,
 	});
 	let json: T | null = null;
 	try {

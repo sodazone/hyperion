@@ -11,7 +11,7 @@ import type { Serve } from "@/server/serve";
 import { KeyFamily } from "@/types";
 
 type TestCategorizedRecord = {
-	owner: Uint8Array;
+	owner?: Uint8Array;
 	networkId: number;
 	address: string;
 	categoryCode: number;
@@ -66,10 +66,7 @@ async function putTaggedTestRecord(srv: Serve, record: TestTaggedRecord) {
 	});
 }
 
-async function putCategorizedTestRecord(
-	srv: Serve,
-	record: TestCategorizedRecord,
-) {
+function createCategorizedRecord(record: TestCategorizedRecord) {
 	const {
 		owner,
 		networkId,
@@ -81,10 +78,10 @@ async function putCategorizedTestRecord(
 		version = 0,
 	} = record;
 
-	await srv.db.put({
+	return {
 		key: encodeCategorizedKey({
 			family: KeyFamily.Categorized,
-			owner,
+			owner: owner ?? PUBLIC_OWNER,
 			networkId,
 			address: normalizeAddress(address),
 			categoryCode,
@@ -98,7 +95,14 @@ async function putCategorizedTestRecord(
 			},
 			meta,
 		),
-	});
+	};
+}
+
+async function putCategorizedTestRecord(
+	srv: Serve,
+	record: TestCategorizedRecord,
+) {
+	await srv.db.put(createCategorizedRecord(record));
 }
 
 export async function withTestData(srv: Serve) {

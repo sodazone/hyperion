@@ -3,7 +3,7 @@ import type { AddressAnalysis } from "@/api/types";
 import type { Serve } from "@/server/serve";
 import { createTestJWT } from "./auth";
 import { withTestData } from "./fixture";
-import { get, getAuth, runTestServer } from "./helpers";
+import { fetchAuth, get, runTestServer } from "./helpers";
 
 describe("Hyperion API v1", () => {
 	let srv: Serve;
@@ -76,7 +76,7 @@ describe("Hyperion API v1", () => {
 	});
 
 	it("GET /v1/private/me succeeds with auth", async () => {
-		const { status, json } = await getAuth<{ hash: string }>(
+		const { status, json } = await fetchAuth<{ hash: string }>(
 			"/v1/private/me",
 			token,
 		);
@@ -90,14 +90,50 @@ describe("Hyperion API v1", () => {
 	});
 
 	it("GET /v1/private/category/:address/:cat/:subcat/:network", async () => {
-		const token = await createTestJWT("did:test|user");
-
-		const { status } = await getAuth(
+		const { status } = await fetchAuth(
 			"/v1/private/category/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/2/1/1?exists=true",
 			token,
 		);
 
 		expect(status).toBe(204);
+	});
+
+	it("POST /v1/private/category/:address/:cat/:subcat/:network", async () => {
+		const { status } = await fetchAuth(
+			"/v1/private/category/15PFPYwGMXeMMCXf5KZZqPZLDak9LHZb3bWXHqnAFe2fSGtq/5/2/2",
+			token,
+			{ method: "POST", body: { name: "Test Category" } },
+		);
+
+		expect(status).toBe(200);
+
+		const { status: statusGet, json } = await fetchAuth(
+			"/v1/private/category/15PFPYwGMXeMMCXf5KZZqPZLDak9LHZb3bWXHqnAFe2fSGtq/5/2/2",
+			token,
+		);
+
+		expect(statusGet).toBe(200);
+		expect(json).not.toBeNull();
+
+		const { status: statusDelete } = await fetchAuth(
+			"/v1/private/category/15PFPYwGMXeMMCXf5KZZqPZLDak9LHZb3bWXHqnAFe2fSGtq/5/2/2",
+			token,
+			{ method: "DELETE" },
+		);
+
+		expect(statusDelete).toBe(200);
+
+		const { status: statusGetAfterDelete, json: jsonAfterDelete } =
+			await fetchAuth<[]>(
+				"/v1/private/category/15PFPYwGMXeMMCXf5KZZqPZLDak9LHZb3bWXHqnAFe2fSGtq/5/2/2",
+				token,
+			);
+
+		expect(statusGetAfterDelete).toBe(200);
+		expect(jsonAfterDelete).not.toBeNull;
+		if (jsonAfterDelete) {
+			expect(jsonAfterDelete.length).toBe(0);
+		}
 	});
 
 	/**
