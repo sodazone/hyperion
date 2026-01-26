@@ -1,5 +1,5 @@
-import { type Rule, RuleEngine } from "@/rules";
-import type { SubscriptionManager } from "@/streams";
+import { type Rule, RuleEngine } from "@/alerting";
+import type { SubscriptionManager } from "@/alerting/streams";
 
 // TODO: load rules...
 // TODO: wire up the subscription events to the rule engine

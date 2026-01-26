@@ -1,6 +1,6 @@
 import type { AnyEvent, Rule } from "../types";
 
-const crossChainCompareRule: Rule<AnyEvent> = {
+const __crossChainCompareRule: Rule<AnyEvent> = {
 	id: "cross-chain-compare",
 	dependencies: [
 		{

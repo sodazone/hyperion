@@ -1,4 +1,4 @@
-import type { Rule } from "@/rules";
+import type { Rule } from "@/alerting";
 
 type ActiveSubscription = {
 	key: string;
