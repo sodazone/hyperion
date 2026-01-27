@@ -1,23 +1,9 @@
 import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
-import {
-	analyzeAddress,
-	analyzeAddressAllNetworks,
-} from "@/intel/api/analysis";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
-import {
-	coerceCategoryParams,
-	coerceCatetoryWriteParams,
-	coerceNetworkId,
-	coerceTagParams,
-} from "./path";
-import {
-	InternalServerError,
-	InvalidParameters,
-	NotFound,
-	Unauthorized,
-} from "./response";
+import { intel } from "./intel/routes";
+import { Unauthorized } from "./response";
 
 export type Serve = {
 	shutdown: (signal: string) => Promise<void>;
@@ -85,124 +71,27 @@ export async function serve({
 			},
 			"/v1/public/address/:address/:network": {
 				GET: (req) => {
-					try {
-						const { address, network } = req.params;
-						const networkId = coerceNetworkId(network);
-						if (!address || networkId === undefined) {
-							return InvalidParameters;
-						}
-
-						if (
-							!db.hasCategory({
-								address,
-								networkId,
-								categoryCode: 0,
-							})
-						) {
-							return NotFound;
-						}
-
-						const result = analyzeAddress(db, address, networkId);
-						return Response.json(result);
-					} catch (err) {
-						console.error(err);
-						return InternalServerError;
-					}
+					return intel.getAddressByNetwork(db, req);
 				},
 			},
 			"/v1/public/address/:address": {
 				GET: (req) => {
-					try {
-						const { address } = req.params;
-
-						const result = analyzeAddressAllNetworks(db, address);
-						return Response.json(result);
-					} catch (err) {
-						console.error(err);
-						return InternalServerError;
-					}
+					return intel.getAddressAllNetworks(db, req);
 				},
 			},
 			"/v1/public/category/:address/:cat/:subcat/:network": {
 				GET: (req) => {
-					try {
-						const params = coerceCategoryParams(req.params);
-						if (params instanceof Response) return params;
-
-						const url = new URL(req.url);
-						const exists = url.searchParams.get("exists") === "true";
-
-						if (exists) {
-							return new Response(null, {
-								status: db.hasCategory(params) ? 204 : 404,
-							});
-						}
-
-						const entries = db.getCategories(params);
-
-						if (!entries || entries.length === 0) {
-							return NotFound;
-						}
-
-						return Response.json(entries);
-					} catch (err) {
-						console.error("Route error:", err);
-						return InternalServerError;
-					}
+					return intel.getAddressCategory(db, req);
 				},
 			},
 			"/v1/public/tags/:address/:network": {
 				GET: (req) => {
-					try {
-						const { address, network } = req.params;
-						const networkId = coerceNetworkId(network);
-
-						if (!address) {
-							return InvalidParameters;
-						}
-
-						const entries = db.getTags({
-							address,
-							networkId,
-						});
-
-						if (entries === undefined || entries.length === 0) {
-							return NotFound;
-						}
-
-						return Response.json(entries);
-					} catch (err) {
-						console.error("Route error:", err);
-						return InternalServerError;
-					}
+					return intel.getAddressTags(db, req);
 				},
 			},
 			"/v1/public/tag/:address/:tag/:network": {
 				GET: (req) => {
-					try {
-						const params = coerceTagParams(req.params);
-						if (params instanceof Response) return params;
-
-						const url = new URL(req.url);
-						const exists = url.searchParams.get("exists") === "true";
-
-						if (exists) {
-							return new Response(null, {
-								status: db.hasTag(params) ? 204 : 404,
-							});
-						}
-
-						const result = db.getTag(params);
-
-						if (result === undefined) {
-							return NotFound;
-						}
-
-						return Response.json(result);
-					} catch (err) {
-						console.error("Route error:", err);
-						return InternalServerError;
-					}
+					return intel.getAddressTagByNetwork(db, req);
 				},
 			},
 			"/v1/private/me": {
@@ -216,69 +105,13 @@ export async function serve({
 			},
 			"/v1/private/category/:address/:cat/:subcat/:network": {
 				GET: async (req) => {
-					try {
-						const ownerHash = await getOwnerHashFromRequest(req);
-						if (ownerHash === null) return Unauthorized;
-
-						const params = coerceCategoryParams(req.params);
-						if (params instanceof Response) return params;
-
-						const url = new URL(req.url);
-						const exists = url.searchParams.get("exists") === "true";
-
-						if (exists) {
-							return new Response(null, {
-								status: db.hasCategory({ ...params, owner: ownerHash })
-									? 204
-									: 404,
-							});
-						}
-
-						const entries = db.getCategories({
-							...params,
-							owner: ownerHash,
-						});
-
-						if (entries) {
-							return Response.json(entries);
-						} else {
-							return NotFound;
-						}
-					} catch (err) {
-						console.error("Route error:", err);
-						return InternalServerError;
-					}
+					return await intel.owned.getCategory(db, req);
 				},
 				POST: async (req) => {
-					const ownerHash = await getOwnerHashFromRequest(req);
-					if (ownerHash === null) return Unauthorized;
-
-					const params = coerceCatetoryWriteParams(req.params);
-					if (params instanceof Response) return params;
-
-					const body = await req.json();
-					if (body instanceof Response) return body;
-
-					const result = await db.putCategory(
-						{ ...params, owner: ownerHash },
-						body,
-					);
-
-					return Response.json(result);
+					return await intel.owned.postCategory(db, req);
 				},
 				DELETE: async (req) => {
-					const ownerHash = await getOwnerHashFromRequest(req);
-					if (ownerHash === null) return Unauthorized;
-
-					const params = coerceCatetoryWriteParams(req.params);
-					if (params instanceof Response) return params;
-
-					const result = await db.deleteCategory({
-						...params,
-						owner: ownerHash,
-					});
-
-					return Response.json(result);
+					return await intel.owned.deleteCategory(db, req);
 				},
 			},
 		},

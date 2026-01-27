@@ -1,5 +1,5 @@
 import { NetworkMap } from "@/intel/mapping";
-import { InvalidParameters } from "./response";
+import { InvalidParameters } from "../response";
 
 type CategoryParams = {
 	address: string;
