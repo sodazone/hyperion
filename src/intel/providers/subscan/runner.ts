@@ -1,9 +1,9 @@
 import { config } from "@/config";
 import type { HyperionDB } from "@/db";
+import type { HyperionRecord } from "@/db/types";
+import { runWorker } from "@/intel/worker";
 import { NetworkMap } from "@/mapping";
-import type { HyperionRecord } from "@/types";
 import { safePath } from "@/utils";
-import { runWorker } from "@/worker";
 import { updateData } from "../update";
 import { CHAINS, type SubscanChain } from "./chains";
 import type { WorkerParams } from "./worker";

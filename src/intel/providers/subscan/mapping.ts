@@ -4,9 +4,10 @@ import {
 	encodeValue,
 	PUBLIC_OWNER,
 } from "@/db";
-import { normalizeAddress } from "@/mapping";
-import { createTag } from "@/mapping/tags";
-import { type HyperionRecord, KeyFamily } from "@/types";
+import type { HyperionRecord } from "@/db/types";
+import { normalizeAddress } from "@/intel/mapping";
+import { createTag } from "@/intel/mapping/tags";
+import { KeyFamily } from "@/intel/types";
 import { classifyPolkadotBalance } from "./balance";
 import type { MerkleAccount } from "./crawler";
 

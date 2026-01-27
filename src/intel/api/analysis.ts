@@ -1,6 +1,6 @@
 import type { HyperionDB } from "@/db";
-import { CategoriesMap } from "@/mapping";
-import { CAT } from "@/mapping/categories";
+import { CategoriesMap } from "@/intel/mapping";
+import { CAT } from "@/intel/mapping/categories";
 import { computeRisk } from "./risk";
 import type { AddressAnalysis, SanctionsResult } from "./types";
 

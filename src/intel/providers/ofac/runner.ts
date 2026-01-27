@@ -1,24 +1,24 @@
 import { config } from "@/config";
 import type { HyperionDB } from "@/db";
-import type { HyperionRecord } from "@/types";
+import type { HyperionRecord } from "@/db/types";
+import { runWorker } from "@/intel/worker";
 import { safePath } from "@/utils";
-import { runWorker } from "@/worker";
 import { updateData } from "../update";
 
-const dataDir = `${config.dataDir}/polkadot-js`;
+const dataDir = `${config.dataDir}/ofac`;
 
-export const polkadotJs = {
+export const ofac = {
 	dataDir,
 	update: async () => {
 		const scriptPath = safePath(import.meta.url, "./update.sh");
 		return updateData({ scriptPath, env: { DATA_DIR: dataDir } });
 	},
 	run: async (api: HyperionDB) => {
-		const updated = await polkadotJs.update();
+		const updated = await ofac.update();
 		if (updated) {
 			await runWorker<HyperionRecord>(
 				new URL("./worker.ts", import.meta.url),
-				{ path: `${dataDir}/polkadot-phishing-addresses.json` },
+				{ path: `${dataDir}/SDN_ADVANCED.XML` },
 				async (batch) => {
 					console.log("Writing batch of", batch.length, "records");
 					await api.batch(batch);

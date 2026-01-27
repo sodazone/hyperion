@@ -1,7 +1,9 @@
 import { PUBLIC_OWNER } from "@/db";
-import { encodeCategorizedKey, encodeValue } from "@/db/encoding/codec";
-import { CAT, NetworkMap, normalizeAddress } from "@/mapping";
-import { type HyperionRecord, KeyFamily } from "@/types";
+import type { HyperionRecord } from "@/db/types";
+
+import { encodeCategorizedKey, encodeValue } from "@/intel/encoding/codec";
+import { CAT, NetworkMap, normalizeAddress } from "@/intel/mapping";
+import { KeyFamily } from "@/intel/types";
 import type { OfacResult } from "./parser";
 
 const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {

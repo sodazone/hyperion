@@ -1,5 +1,5 @@
-import { CAT } from "@/mapping";
-import type { AddressCategory, AddressTag } from "@/types";
+import { CAT } from "@/intel/mapping";
+import type { AddressCategory, AddressTag } from "../types";
 import type { RiskResult, SanctionsResult } from "./types";
 
 export function computeRisk(

@@ -1,4 +1,4 @@
-import { NetworkMap } from "@/mapping";
+import { NetworkMap } from "@/intel/mapping";
 import { InvalidParameters } from "./response";
 
 type CategoryParams = {

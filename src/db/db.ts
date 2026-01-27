@@ -1,16 +1,14 @@
 import { mkdir } from "node:fs/promises";
 import { open, type RootDatabaseOptionsWithPath } from "lmdb";
 import { hashAuth } from "@/auth";
-import { CategoriesMap, NetworkMap } from "@/mapping";
-import { normalizeAddress } from "@/mapping/address";
-import { hashTag, type TagValue } from "@/mapping/tags";
+import { CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { normalizeAddress } from "@/intel/mapping/address";
+import { hashTag, type TagValue } from "@/intel/mapping/tags";
 import {
 	type AddressCategory,
 	type AddressTag,
-	type Database,
-	type HyperionRecord,
 	KeyFamily,
-} from "@/types";
+} from "@/intel/types";
 import {
 	decodeCategorizedKey,
 	decodeTaggedKey,
@@ -20,7 +18,8 @@ import {
 	makeCategoryPrefix,
 	makePrefixEnd,
 	makeTagPrefix,
-} from "./encoding/codec";
+} from "../intel/encoding/codec";
+import type { Database, HyperionRecord } from "./types";
 
 export const METADATA_VERSION = 0;
 

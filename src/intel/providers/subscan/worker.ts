@@ -1,6 +1,6 @@
 import { unlink } from "node:fs/promises";
 
-import { startWorker } from "@/worker";
+import { startWorker } from "@/intel/worker";
 import { fetchMerkleAccounts } from "./crawler";
 
 export type WorkerParams = {

@@ -1,5 +1,8 @@
-import { analyzeAddress, analyzeAddressAllNetworks } from "@/api/analysis";
 import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
+import {
+	analyzeAddress,
+	analyzeAddressAllNetworks,
+} from "@/intel/api/analysis";
 import { openapi } from "@/openapi/gen.openapi";
 import { VERSION } from "@/version";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";

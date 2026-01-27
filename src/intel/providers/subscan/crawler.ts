@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { HyperionRecord } from "@/types";
+import type { HyperionRecord } from "@/db/types";
 import { toHyperionRecords } from "./mapping";
 
 export interface MerkleAccount {

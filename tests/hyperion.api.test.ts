@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import type { AddressAnalysis } from "@/api/types";
+import type { AddressAnalysis } from "@/intel/api/types";
 import type { Serve } from "@/server/serve";
 import { createTestJWT } from "./auth";
 import { withTestData } from "./fixture";

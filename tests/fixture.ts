@@ -5,10 +5,10 @@ import {
 	encodeValue,
 	PUBLIC_OWNER,
 } from "@/db";
-import { normalizeAddress } from "@/mapping";
-import { createTag } from "@/mapping/tags";
+import { normalizeAddress } from "@/intel/mapping";
+import { createTag } from "@/intel/mapping/tags";
+import { KeyFamily } from "@/intel/types";
 import type { Serve } from "@/server/serve";
-import { KeyFamily } from "@/types";
 
 type TestCategorizedRecord = {
 	owner?: Uint8Array;

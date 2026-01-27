@@ -1,12 +1,14 @@
+import type {
+	HyperionMetadata,
+	HyperionRecord,
+	HyperionValue,
+} from "@/db/types";
 import {
 	type CategorizedKey,
 	type CryptoAddressKey,
-	type HyperionMetadata,
-	type HyperionRecord,
-	type HyperionValue,
 	KeyFamily,
 	type TaggedKey,
-} from "@/types";
+} from "../types";
 
 const ENDIANNESS = false;
 const CATEGORIZED_KEY_LENGTH = 71;

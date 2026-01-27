@@ -5,9 +5,10 @@ import {
 	encodeValue,
 	PUBLIC_OWNER,
 } from "@/db";
-import { CAT, normalizeAddress } from "@/mapping";
-import { createTag } from "@/mapping/tags";
-import { type HyperionRecord, KeyFamily } from "@/types";
+import type { HyperionRecord } from "@/db/types";
+import { CAT, normalizeAddress } from "@/intel/mapping";
+import { createTag } from "@/intel/mapping/tags";
+import { KeyFamily } from "@/intel/types";
 
 const NETWORK_POLKADOT = 0x0101;
 

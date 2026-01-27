@@ -1,6 +1,5 @@
-import { startWorker } from "@/worker";
-import { ofacToHyperion } from "./mapping";
-import { ofacParse } from "./parser";
+import { startWorker } from "@/intel/worker";
+import { parse } from "./parser";
 
 startWorker({
 	async parse(
@@ -11,17 +10,17 @@ startWorker({
 			const batch = [];
 			let count = 0;
 
-			for await (const record of ofacParse(path)) {
+			for await (const record of parse(path)) {
 				batch.push(record);
 				count++;
 
 				if (batch.length === 500) {
-					await stream.emitBatch(batch.splice(0).map(ofacToHyperion));
+					await stream.emitBatch(batch.splice(0));
 				}
 			}
 
 			if (batch.length) {
-				await stream.emitBatch(batch.map(ofacToHyperion));
+				await stream.emitBatch(batch);
 			}
 
 			return { records: count };
