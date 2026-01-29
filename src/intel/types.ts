@@ -20,6 +20,13 @@ export type Entity = {
 	aliases?: string[];
 };
 
+export type AddressRow = {
+	id: string;
+	address: string;
+	networks: string[];
+	categories: number[];
+};
+
 export type CryptoAddressEntry = {
 	chainId: string;
 	address: string;

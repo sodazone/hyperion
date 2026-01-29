@@ -1,7 +1,9 @@
+import { loadExtraInfos } from "@/console/extra.infos";
 import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
-import { VERSION } from "@/version";
+import apiDocs from "@/static/scalar.html";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
+import { EntityDetailPage, EntityListPage } from "./intel/entity.pages";
 import { intel } from "./intel/routes";
 import { Unauthorized } from "./response";
 
@@ -22,9 +24,11 @@ export async function serve({
 }): Promise<Serve> {
 	const kvs = await createDatabase(dbPath);
 	const db = createHyperionDB(kvs);
-	const scalarHtml = Bun.file("./src/static/scalar.html");
 
 	await loadJWKS(jwks);
+
+	const networkInfos = await loadExtraInfos();
+	const ctx = { db, networkInfos };
 
 	const listener = Bun.serve({
 		hostname,
@@ -33,21 +37,21 @@ export async function serve({
 
 		routes: {
 			"/": {
-				GET: () => {
-					return Response.json(`Hyperion API v${VERSION}\n`);
-				},
+				GET: async (req) => EntityListPage(ctx, req),
+			},
+			"/styles.css": Bun.file("./src/static/styles.min.css"),
+			"/console/entities": {
+				GET: async (req) => EntityListPage(ctx, req),
+			},
+			"/console/entities/:id": {
+				GET: async (req) => EntityDetailPage(ctx, req),
 			},
 			"/uptime": {
 				GET: () => {
 					return Response.json({ ok: true, uptime: process.uptime() });
 				},
 			},
-			"/docs": {
-				GET: () =>
-					new Response(scalarHtml, {
-						headers: { "Content-Type": "text/html" },
-					}),
-			},
+			"/docs": apiDocs,
 			"/openapi.json": {
 				GET: () =>
 					Response.json(openapi, {

@@ -99,7 +99,12 @@ export function ofacToHyperion(r: OfacResult): HyperionRecord {
 				timestamp: Date.now(),
 				version: 0,
 			},
-			r,
+			{
+				canonical: {
+					address: r.address,
+				},
+				data: r,
+			},
 		),
 	};
 }

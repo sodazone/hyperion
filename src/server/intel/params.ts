@@ -14,9 +14,7 @@ type TagParams = {
 	networkId?: number;
 };
 
-export function coerceNetworkId(
-	network: string | undefined,
-): number | undefined {
+export function coerceNetworkId(network?: string | null): number | undefined {
 	if (!network || network === "*") return undefined;
 	const networkId = Number.isInteger(Number(network))
 		? Number(network)

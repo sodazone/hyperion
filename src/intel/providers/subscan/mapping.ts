@@ -11,14 +11,19 @@ import { KeyFamily } from "@/intel/types";
 import { classifyPolkadotBalance } from "./balance";
 import type { MerkleAccount } from "./crawler";
 
-function makeMerkleValue(value: unknown) {
+function makeMerkleValue(address: string, value: unknown) {
 	return encodeValue(
 		{
 			source: "subscan",
 			timestamp: Date.now(),
 			version: 0,
 		},
-		value,
+		{
+			canonical: {
+				address,
+			},
+			data: value,
+		},
 	);
 }
 
@@ -176,7 +181,7 @@ export function toHyperionRecords(
 				tagCode,
 			});
 
-			const value = makeMerkleValue(classification.tagValue);
+			const value = makeMerkleValue(account.address, classification.tagValue);
 			records.push({
 				key,
 				value,
@@ -194,7 +199,7 @@ export function toHyperionRecords(
 				subcategoryCode,
 			});
 
-			const value = makeMerkleValue({
+			const value = makeMerkleValue(account.address, {
 				name: item.tag_name,
 				subType: item.tag_sub_type,
 				type: item.tag_type,

@@ -36,7 +36,12 @@ function mapCategory(address: string, campaign: string) {
 				version: 0,
 			},
 			{
-				campaign,
+				canonical: {
+					address,
+				},
+				data: {
+					campaign,
+				},
 			},
 		),
 	};
@@ -61,7 +66,12 @@ function mapDomainTag(address: string, domain: string): HyperionRecord {
 				timestamp: Date.now(),
 				version: 0,
 			},
-			tagValue,
+			{
+				canonical: {
+					address,
+				},
+				data: tagValue,
+			},
 		),
 	};
 }

@@ -19,6 +19,7 @@ import {
 	makePrefixEnd,
 	makeTagPrefix,
 } from "../intel/encoding/codec";
+import { createSearchApi } from "./search";
 import type { Database, HyperionRecord } from "./types";
 
 export const METADATA_VERSION = 0;
@@ -55,7 +56,9 @@ export async function createDatabase(
 
 function toAddressTag(key: Uint8Array, value: Uint8Array): AddressTag {
 	const { networkId, tagCode } = decodeTaggedKey(key);
-	const { name, type } = decodeValue<TagValue>(value).value;
+	const {
+		data: { name, type },
+	} = decodeValue<TagValue>(value).value;
 	return {
 		networkId,
 		tag: { code: Buffer.from(tagCode).toString("hex"), name, type },
@@ -267,7 +270,12 @@ export function createHyperionDB(db: Database) {
 					timestamp: Date.now(),
 					version: METADATA_VERSION,
 				},
-				value,
+				{
+					canonical: {
+						address,
+					},
+					data: value,
+				},
 			),
 		);
 	}
@@ -281,7 +289,7 @@ export function createHyperionDB(db: Database) {
 	}: {
 		owner?: Uint8Array | string;
 		networkId?: number;
-		address: string;
+		address: Uint8Array | string;
 		categoryCode?: number;
 		subcategoryCode?: number;
 	}): Array<AddressCategory> {
@@ -292,7 +300,8 @@ export function createHyperionDB(db: Database) {
 					? normalizeAddress(owner)
 					: PUBLIC_OWNER;
 
-		const addressBytes = normalizeAddress(address);
+		const addressBytes =
+			address instanceof Uint8Array ? address : normalizeAddress(address);
 
 		const prefix = makeCategoryPrefix({
 			owner: ownerBytes,
@@ -404,11 +413,11 @@ export function createHyperionDB(db: Database) {
 		stats: () => {
 			return db.getStats();
 		},
-		getCategoriesMeta: () => {
-			return CategoriesMap.entries();
-		},
 		getNetworksMeta: () => {
 			return NetworkMap.entries();
+		},
+		getCategoriesMeta: () => {
+			return CategoriesMap.entries();
 		},
 		putCategory,
 		deleteCategory,
@@ -417,6 +426,7 @@ export function createHyperionDB(db: Database) {
 		hasTag,
 		getTag,
 		getTags,
+		search: createSearchApi(db),
 	};
 }
 

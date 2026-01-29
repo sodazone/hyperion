@@ -106,6 +106,10 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 	return { address, networks };
 }
 
+export type AddressAnalysisAllNetworks = ReturnType<
+	typeof analyzeAddressAllNetworks
+>;
+
 export function analyzeAddress(
 	db: HyperionDB,
 	address: string,

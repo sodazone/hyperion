@@ -1,4 +1,5 @@
 import type {
+	HyperionEnvelope,
 	HyperionMetadata,
 	HyperionRecord,
 	HyperionValue,
@@ -221,13 +222,13 @@ const decoder = new TextDecoder();
 
 export function encodeValue(
 	metadata: HyperionMetadata,
-	value: unknown,
+	value: HyperionValue,
 ): Uint8Array {
 	const json = JSON.stringify({ metadata, value });
 	return encoder.encode(json);
 }
 
-export function decodeValue<T>(v: Uint8Array): HyperionValue<T> {
+export function decodeValue<T>(v: Uint8Array): HyperionEnvelope<T> {
 	return JSON.parse(decoder.decode(v));
 }
 
@@ -245,6 +246,6 @@ export function decodeRecord<K = CategorizedKey | TaggedKey, V = unknown>(
 ) {
 	return {
 		key: decodeKey(r.key) as K,
-		value: decodeValue(r.value) as HyperionValue<V>,
+		value: decodeValue(r.value) as HyperionEnvelope<V>,
 	};
 }

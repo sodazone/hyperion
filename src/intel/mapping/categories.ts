@@ -105,3 +105,7 @@ export const CAT = {
 	AUTOMATED: 0x000a,
 	COMPROMISED: 0x000b,
 } as const;
+
+export const topLevelCategories = CategoriesMap.entries().filter(
+	(e) => e.subcategory === 0x0000,
+);
