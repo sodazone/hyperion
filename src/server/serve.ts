@@ -1,9 +1,9 @@
+import { EntityDetailPage, EntityListPage } from "@/console/entity.pages";
 import { loadExtraInfos } from "@/console/extra.infos";
 import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
 import { getOwnerHashFromRequest, type JWKSSource, loadJWKS } from "./auth";
-import { EntityDetailPage, EntityListPage } from "./intel/entity.pages";
 import { intel } from "./intel/routes";
 import { Unauthorized } from "./response";
 

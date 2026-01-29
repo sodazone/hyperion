@@ -4,8 +4,8 @@ import { EntitiesView } from "@/console/entity.list";
 import type { NetworkInfos } from "@/console/extra.infos";
 import type { HyperionDB } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
-import { render } from "../render";
-import { coerceNetworkId } from "./params";
+import { coerceNetworkId } from "@/server/intel/params";
+import { render } from "@/server/render";
 
 type Context = {
 	db: HyperionDB;
