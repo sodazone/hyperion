@@ -3,7 +3,7 @@ import type { Member } from "@/auth/types";
 import { MagicLinkSent } from "@/console/email-sent.page";
 import { InvalidParameters } from "../response";
 
-export function createStytchApi() {
+export function createAuthApi() {
 	const project_id = process.env.STYTCH_PROJECT_ID;
 	const secret = process.env.STYTCH_SECRET;
 
@@ -132,4 +132,4 @@ export function createStytchApi() {
 	};
 }
 
-export type StytchApi = ReturnType<typeof createStytchApi>;
+export type AuthApi = ReturnType<typeof createAuthApi>;

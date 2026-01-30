@@ -10,7 +10,7 @@ import {
 	type JWKSSource,
 	loadJWKS,
 } from "./auth/jwks";
-import { createStytchApi } from "./auth/stytch";
+import { createAuthApi } from "./auth/stytch";
 import { intel } from "./intel/routes";
 import { Unauthorized } from "./response";
 
@@ -35,9 +35,9 @@ export async function serve({
 	await loadJWKS(jwks);
 
 	const networkInfos = await loadExtraInfos();
-	const stytchApi = createStytchApi();
+	const authApi = createAuthApi();
 
-	const ctx = { db, networkInfos, stytchApi };
+	const ctx = { db, networkInfos, authApi };
 
 	const listener = Bun.serve({
 		hostname,
@@ -55,10 +55,10 @@ export async function serve({
 			"/styles.css": Bun.file("./src/static/styles.min.css"),
 			"/login": {
 				GET: LoginPage,
-				POST: stytchApi.login,
+				POST: authApi.login,
 			},
-			"/logout": stytchApi.logout,
-			"/authenticate": stytchApi.authenticate,
+			"/logout": authApi.logout,
+			"/authenticate": authApi.authenticate,
 			"/console/entities": async (req) => EntityListPage(ctx, req),
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/uptime": () => Response.json({ ok: true, uptime: process.uptime() }),
@@ -70,26 +70,14 @@ export async function serve({
 			"/db/stats": () => Response.json(kvs.getStats()),
 			"/v1/meta/networks": () => Response.json(db.getNetworksMeta()),
 			"/v1/meta/categories": () => Response.json(db.getCategoriesMeta()),
-			"/v1/public/address/:address/:network": {
-				GET: (req) => {
-					return intel.getAddressByNetwork(db, req);
-				},
-			},
-			"/v1/public/address/:address": {
-				GET: (req) => {
-					return intel.getAddressAllNetworks(db, req);
-				},
-			},
-			"/v1/public/category/:address/:cat/:subcat/:network": {
-				GET: (req) => {
-					return intel.getAddressCategory(db, req);
-				},
-			},
-			"/v1/public/tags/:address/:network": {
-				GET: (req) => {
-					return intel.getAddressTags(db, req);
-				},
-			},
+			"/v1/public/address/:address/:network": (req) =>
+				intel.getAddressByNetwork(db, req),
+			"/v1/public/address/:address": (req) =>
+				intel.getAddressAllNetworks(db, req),
+			"/v1/public/category/:address/:cat/:subcat/:network": (req) =>
+				intel.getAddressCategory(db, req),
+			"/v1/public/tags/:address/:network": (req) =>
+				intel.getAddressTags(db, req),
 			"/v1/public/tag/:address/:tag/:network": (req) =>
 				intel.getAddressTagByNetwork(db, req),
 			"/v1/private/me": async (req) => {
