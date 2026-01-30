@@ -7,3 +7,4 @@ export const InvalidParameters = new Response("Invalid parameters", {
 });
 export const Unauthorized = new Response("Unauthorized", { status: 401 });
 export const Forbidden = new Response("Forbidden", { status: 403 });
+export const Ok = new Response(null, { status: 200 });

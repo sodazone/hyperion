@@ -4,17 +4,19 @@ import { EntitiesView } from "@/console/entity.list";
 import type { NetworkInfos } from "@/console/extra.infos";
 import type { HyperionDB } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
+import type { StytchApi } from "@/server/auth/stytch";
 import { coerceNetworkId } from "@/server/intel/params";
 import { render } from "@/server/render";
 
 type Context = {
 	db: HyperionDB;
 	networkInfos: NetworkInfos;
+	stytchApi: StytchApi;
 };
 
 export async function EntityListPage(
-	{ db, networkInfos }: Context,
-	req: Request,
+	{ db, networkInfos, stytchApi }: Context,
+	req: Bun.BunRequest,
 ) {
 	const url = new URL(req.url);
 
@@ -46,8 +48,10 @@ export async function EntityListPage(
 		return render(<EntitiesView ctx={{ networkInfos }} page={page} />);
 	}
 
+	const user = await stytchApi.getAuthenticatedUser(req);
+
 	return render(
-		<ConsoleApp path="/console/entities">
+		<ConsoleApp member={user} path="/console/entities">
 			<EntitiesView ctx={{ networkInfos }} page={page} />
 		</ConsoleApp>,
 	);

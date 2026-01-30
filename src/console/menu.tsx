@@ -1,3 +1,4 @@
+import type { Member } from "@/auth/types";
 import { BellIcon, TagIcon } from "./components/icons";
 
 function isActive(currentPath: string, href: string) {
@@ -13,8 +14,9 @@ function navItemClass(active: boolean) {
 	].join(" ");
 }
 
-type SidebarProps = {
+type Props = {
 	path: string;
+	member?: Member | null;
 };
 
 function Section({
@@ -65,13 +67,53 @@ function NavLink({
 	);
 }
 
-export function Sidebar({ path }: SidebarProps) {
+function Account({ member }: { member?: Member | null }) {
+	if (member == null) {
+		return (
+			<div className="border-t border-zinc-800 p-4">
+				<a
+					href="/login"
+					className="block w-full rounded-md border border-zinc-800 px-3 py-1.5 text-center text-xs text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+				>
+					Sign in
+				</a>
+			</div>
+		);
+	}
+
+	return (
+		<div className="border-t border-zinc-800 p-4">
+			<div className="flex items-center gap-3">
+				<div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold">
+					{member.name?.[0] ?? member.email?.[0] ?? "?"}
+				</div>
+
+				<div className="flex flex-col text-sm">
+					<span className="text-zinc-200">{member.name ?? member.email}</span>
+					<span className="text-xs text-zinc-500">{member.role ?? "User"}</span>
+				</div>
+			</div>
+
+			<button
+				type="button"
+				hx-post="/logout"
+				hx-trigger="click"
+				hx-swap="none"
+				className="mt-3 w-full rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+			>
+				Sign out
+			</button>
+		</div>
+	);
+}
+
+export function Sidebar({ member, path }: Props) {
 	return (
 		<aside className="hidden md:flex w-64 flex-col border-r border-zinc-800 bg-zinc-950">
 			{/* Brand */}
 			<div className="flex items-center gap-2 px-4 py-4 border-b border-zinc-800">
-				<div className="h-8 w-8 rounded bg-indigo-600/20 flex items-center justify-center text-indigo-400 font-bold">
-					H
+				<div className="flex items-center justify-center">
+					<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
 				</div>
 				<div className="flex flex-col">
 					<span className="text-sm font-semibold tracking-wide">Hyperion</span>
@@ -119,25 +161,7 @@ export function Sidebar({ path }: SidebarProps) {
 				</Section>
 			</nav>
 
-			{/* Account */}
-			<div className="border-t border-zinc-800 p-4">
-				<div className="flex items-center gap-3">
-					<div className="h-9 w-9 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-semibold">
-						JD
-					</div>
-					<div className="flex flex-col text-sm">
-						<span className="text-zinc-200">John Doe</span>
-						<span className="text-xs text-zinc-500">Analyst</span>
-					</div>
-				</div>
-
-				<button
-					type="button"
-					className="mt-3 w-full rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-				>
-					Sign out
-				</button>
-			</div>
+			<Account member={member} />
 		</aside>
 	);
 }

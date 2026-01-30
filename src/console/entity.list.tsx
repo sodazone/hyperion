@@ -46,7 +46,7 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 				hx-get="/console/entities"
 				hx-target="#entity-section"
 				hx-swap="outerHTML"
-				hx-trigger="change from:select, input, reset"
+				hx-trigger="change from:select, reset"
 				hx-push-url="true"
 			>
 				{/* Search Input with Button inside */}
@@ -63,7 +63,12 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 						name="q"
 						defaultValue={filters.q}
 						placeholder="Search address or alias…"
-						className="w-full rounded-md bg-zinc-900 pl-8 pr-3 py-2 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none"
+						className="w-full pl-8 pr-3 py-2 text-sm bg-transparent
+                  border-b border-zinc-800
+                  text-zinc-100
+                  placeholder-zinc-600
+                  focus:border-zinc-300
+                  focus:outline-none"
 					/>
 				</div>
 

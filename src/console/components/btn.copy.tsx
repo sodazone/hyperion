@@ -5,6 +5,7 @@ export function CopyButton({ text, title }: { text: string; title?: string }) {
 		<button
 			type="button"
 			hx-on:click={`
+			    event.stopPropagation();
           const btn = this;
           navigator.clipboard.writeText('${text}');
           const old = btn.innerHTML;

@@ -1,5 +1,5 @@
 import type { HyperionDB } from "@/db";
-import { getOwnerHashFromRequest } from "../auth";
+import { getOwnerHashFromRequest } from "../auth/jwks";
 import { InternalServerError, NotFound, Unauthorized } from "../response";
 import { coerceCategoryParams, coerceCatetoryWriteParams } from "./params";
 

@@ -93,6 +93,39 @@ export function ChevronRightIcon() {
 	);
 }
 
+export function SadIcon({ size = 16 }: { size?: number }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width={size}
+			height={size}
+			fill="currentColor"
+			viewBox="0 0 24 24"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="M8.5 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3m7 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5S16.33 9 15.5 9M12 14c-3 0-4 3-4 3h8s-1-3-4-3"></path>
+			<path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8"></path>
+		</svg>
+	);
+}
+
+export function CheckIcon({ size = 16 }: { size?: number }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width={size}
+			height={size}
+			fill="currentColor"
+			viewBox="0 0 24 24"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="M9 15.59 4.71 11.3 3.3 12.71l5 5c.2.2.45.29.71.29s.51-.1.71-.29l11-11-1.41-1.41L9.02 15.59Z"></path>
+		</svg>
+	);
+}
+
 export function ChevronUpDownIcon() {
 	return (
 		<svg
