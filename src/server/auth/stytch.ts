@@ -29,6 +29,7 @@ export function createAuthApi() {
 
 			const resp = await stytchClient.sessions.authenticate({
 				session_token: sessionToken,
+				session_duration_minutes: 24 * 60,
 			});
 			if (resp.status_code !== 200) {
 				console.log("Session invalid or expired");
