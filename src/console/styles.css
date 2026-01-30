@@ -1,9 +1,6 @@
 @import "tailwindcss";
 
-.custom-class {
-	@apply bg-red-500 text-white;
-}
-
-button {
+button,
+select {
 	@apply cursor-pointer;
 }

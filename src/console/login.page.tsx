@@ -1,5 +1,6 @@
 import { render } from "@/server/render";
 import { ConsoleApp } from "./app";
+import { Spinner } from "./components/spinner";
 
 export function LoginPage() {
 	return render(
@@ -49,16 +50,25 @@ export function LoginPage() {
 
 						<button
 							type="submit"
+							hx-disabled-elt="this"
 							className="
+                relative
                 mt-4
                 border border-zinc-800
+                flex
+                justify-center
+                items-center
+                gap-2
                 py-2 text-sm
                 text-zinc-300
                 hover:border-zinc-600 hover:text-zinc-100
                 transition
               "
 						>
-							Continue
+							<span>Continue</span>
+							<span className="htmx-indicator absolute right-2">
+								<Spinner title="Sending..." />
+							</span>
 						</button>
 					</form>
 				</div>

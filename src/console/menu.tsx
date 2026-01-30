@@ -73,7 +73,7 @@ function Account({ member }: { member?: Member | null }) {
 			<div className="border-t border-zinc-800 p-4">
 				<a
 					href="/login"
-					className="block w-full rounded-md border border-zinc-800 px-3 py-1.5 text-center text-xs text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+					className="block w-full rounded-md border border-zinc-800 px-3 py-1.5 text-center text-sm text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
 				>
 					Sign in
 				</a>
@@ -89,8 +89,14 @@ function Account({ member }: { member?: Member | null }) {
 				</div>
 
 				<div className="flex flex-col text-sm">
-					<span className="text-zinc-200">{member.name ?? member.email}</span>
-					<span className="text-xs text-zinc-500">{member.role ?? "User"}</span>
+					<span className="text-zinc-200 truncate">
+						{member.name ?? member.email}
+					</span>
+					{member.name && (
+						<span className="text-xs text-zinc-500 truncate">
+							{member.email}
+						</span>
+					)}
 				</div>
 			</div>
 
@@ -99,6 +105,7 @@ function Account({ member }: { member?: Member | null }) {
 				hx-post="/logout"
 				hx-trigger="click"
 				hx-swap="none"
+				hx-disabled-elt="this"
 				className="mt-3 w-full rounded-md border border-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
 			>
 				Sign out
@@ -113,11 +120,17 @@ export function Sidebar({ member, path }: Props) {
 			{/* Brand */}
 			<div className="flex items-center gap-2 px-4 py-4 border-b border-zinc-800">
 				<div className="flex items-center justify-center">
-					<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
+					<a href="/">
+						<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
+					</a>
 				</div>
-				<div className="flex flex-col">
-					<span className="text-sm font-semibold tracking-wide">Hyperion</span>
-					<span className="text-xs text-zinc-500">Intelligence Console</span>
+				<div>
+					<a className="flex flex-col" href="/">
+						<span className="text-sm font-semibold tracking-wide">
+							Hyperion
+						</span>
+						<span className="text-xs text-zinc-500">Intelligence Console</span>
+					</a>
 				</div>
 			</div>
 

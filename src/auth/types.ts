@@ -1,7 +1,7 @@
 export type Member = {
 	email: string;
 	id: string;
-	role?: string;
+	roles: string[];
 	organization?: string;
 	name?: string;
 };

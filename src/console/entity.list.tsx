@@ -53,7 +53,7 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 				<div className="relative w-80 mr-4">
 					<button
 						type="submit"
-						className="absolute left-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-zinc-400 hover:text-zinc-100"
+						className="absolute left-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-zinc-600 hover:text-zinc-100"
 						aria-label="Search"
 					>
 						<SearchIcon />
@@ -79,13 +79,17 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 						defaultValue={filters.networkId ?? "*"}
 						className="
               w-full
-              bg-zinc-900
+              border
+              border-zinc-900
+              bg-zinc-950
               text-zinc-400
               text-sm
               px-3
               py-2
               rounded-md
               appearance-none
+              hover:text-zinc-200
+              hover:bg-zinc-900
               focus:outline-none
             "
 					>
@@ -106,13 +110,16 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 						defaultValue={filters.category ?? "*"}
 						className="
               w-full
-              bg-zinc-900
+              border
+              border-zinc-900
+              bg-zinc-950
               text-zinc-400
               text-sm
               px-3
               py-2
-              rounded-md
               appearance-none
+              hover:text-zinc-200
+              hover:bg-zinc-900
               focus:outline-none
             "
 					>

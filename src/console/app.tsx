@@ -14,10 +14,10 @@ export function ConsoleApp({ member, path, children }: Props) {
 			<head>
 				<meta charSet="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-				<link rel="stylesheet" href="/styles.css" />
 				<link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
 				<link rel="icon" type="image/png" href="/img/favicon.png" />
 				<title>Hyperion Console</title>
+				<link rel="stylesheet" href="/styles.css" />
 				<script
 					src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
 					integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"

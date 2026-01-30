@@ -21,28 +21,34 @@ export function createAuthApi() {
 	async function getAuthenticatedUser(
 		req: Bun.BunRequest,
 	): Promise<Member | null> {
-		const sessionToken = req.cookies.get(StytchSessionToken);
-		if (!sessionToken) {
+		try {
+			const sessionToken = req.cookies.get(StytchSessionToken);
+			if (!sessionToken) {
+				return null;
+			}
+
+			const resp = await stytchClient.sessions.authenticate({
+				session_token: sessionToken,
+			});
+			if (resp.status_code !== 200) {
+				console.log("Session invalid or expired");
+				req.cookies.delete(StytchSessionToken);
+				return null;
+			}
+
+			req.cookies.set(StytchSessionToken, resp.session_token);
+			const member = resp.member;
+			return {
+				email: member.email_address,
+				id: member.member_id,
+				organization: member.organization_id,
+				roles: member.roles.map((role) => role.role_id),
+				name: member.name,
+			};
+		} catch (error) {
+			console.error("Error authenticating user:", error);
 			return null;
 		}
-
-		const resp = await stytchClient.sessions.authenticate({
-			session_token: sessionToken,
-		});
-		if (resp.status_code !== 200) {
-			console.log("Session invalid or expired");
-			req.cookies.delete(StytchSessionToken);
-			return null;
-		}
-
-		req.cookies.set(StytchSessionToken, resp.session_token);
-		const member = resp.member;
-		return {
-			email: member.email_address,
-			id: member.member_id,
-			organization: member.organization_id,
-			name: member.name,
-		};
 	}
 
 	return {
