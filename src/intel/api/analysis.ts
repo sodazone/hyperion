@@ -1,4 +1,4 @@
-import type { HyperionDB } from "@/db";
+import { type HyperionDB, PUBLIC_OWNER } from "@/db";
 import { CategoriesMap } from "@/intel/mapping";
 import { CAT } from "@/intel/mapping/categories";
 import { computeRisk } from "./risk";
@@ -7,55 +7,46 @@ import type { AddressAnalysis, SanctionsResult } from "./types";
 export function checkSanctions(
 	db: HyperionDB,
 	address: string,
-	networkId: number,
+	network: number,
 ): SanctionsResult {
 	const entries = db.getCategories({
+		owner: PUBLIC_OWNER,
 		address,
-		networkId,
-		categoryCode: CAT.SANCTIONS,
+		network,
+		category: CAT.SANCTIONS,
 	});
 
-	if (entries.length === 0) {
-		return { sanctioned: false, lists: [] };
-	}
+	if (entries.length === 0) return { sanctioned: false, lists: [] };
 
 	return {
 		sanctioned: true,
 		lists: entries.map(
-			(e) =>
-				CategoriesMap.getLabel(e.category.code, e.subcategory.code) ??
-				"Unknown",
+			(e) => CategoriesMap.getLabel(e.category, e.subcategory) ?? "Unknown",
 		),
 	};
 }
 
 function computeSanctionsFromAttribution(
 	attribution: Array<{
-		category: { code: number };
-		subcategory: { code: number };
+		category: number;
+		subcategory: number;
 	}>,
 ): SanctionsResult {
-	const sanctions = attribution.filter(
-		(a) => a.category.code === CAT.SANCTIONS,
-	);
+	const sanctions = attribution.filter((a) => a.category === CAT.SANCTIONS);
 
-	if (sanctions.length === 0) {
-		return { sanctioned: false, lists: [] };
-	}
+	if (sanctions.length === 0) return { sanctioned: false, lists: [] };
 
 	return {
 		sanctioned: true,
 		lists: sanctions.map(
-			(a) =>
-				CategoriesMap.getLabel(a.category.code, a.subcategory.code) ??
-				"Unknown",
+			(a) => CategoriesMap.getLabel(a.category, a.subcategory) ?? "Unknown",
 		),
 	};
 }
 
 export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
-	const categories = db.getCategories({ address });
-	const tags = db.getTags({ address });
+	const categories = db.getCategories({ owner: PUBLIC_OWNER, address });
+	const tags = db.getTags({ owner: PUBLIC_OWNER, address });
 
 	type Bucket = {
 		attribution: typeof categories;
@@ -65,20 +56,17 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 	const byNetwork = new Map<number, Bucket>();
 
 	for (const c of categories) {
-		if (c.networkId === undefined) continue;
-		const bucket = byNetwork.get(c.networkId) ?? { attribution: [], tags: [] };
-
+		if (c.network === undefined) continue;
+		const bucket = byNetwork.get(c.network) ?? { attribution: [], tags: [] };
 		bucket.attribution.push(c);
-		byNetwork.set(c.networkId, bucket);
+		byNetwork.set(c.network, bucket);
 	}
 
 	for (const t of tags) {
-		if (t.networkId === undefined) continue;
-
-		const bucket = byNetwork.get(t.networkId) ?? { attribution: [], tags: [] };
-
+		if (t.network === undefined) continue;
+		const bucket = byNetwork.get(t.network) ?? { attribution: [], tags: [] };
 		bucket.tags.push(t);
-		byNetwork.set(t.networkId, bucket);
+		byNetwork.set(t.network, bucket);
 	}
 
 	const networks: Array<{
@@ -92,12 +80,7 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 
 		networks.push({
 			networkId,
-			analysis: {
-				sanctioned,
-				risk,
-				attribution,
-				tags,
-			},
+			analysis: { sanctioned, risk, attribution, tags },
 		});
 	}
 
@@ -113,18 +96,17 @@ export type AddressAnalysisAllNetworks = ReturnType<
 export function analyzeAddress(
 	db: HyperionDB,
 	address: string,
-	networkId: number,
+	network: number,
 ): AddressAnalysis {
-	const attribution = db.getCategories({ address, networkId });
-	const tags = db.getTags({ address, networkId });
+	const attribution = db.getCategories({
+		owner: PUBLIC_OWNER,
+		address,
+		network,
+	});
+	const tags = db.getTags({ owner: PUBLIC_OWNER, address, network });
 
-	const sanctioned = checkSanctions(db, address, networkId);
+	const sanctioned = checkSanctions(db, address, network);
 	const risk = computeRisk(sanctioned, attribution, tags);
 
-	return {
-		sanctioned,
-		risk,
-		attribution,
-		tags,
-	};
+	return { sanctioned, risk, attribution, tags };
 }

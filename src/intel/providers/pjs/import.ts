@@ -1,11 +1,11 @@
-import { createDatabase, createHyperionDB } from "@/db";
+import { createHyperionDB } from "@/db";
 import { polkadotJs } from "./runner";
 
-const db = await createDatabase("./.db/current");
+const db = await createHyperionDB("./.db/current");
 
 const t0 = performance.now();
 
-await polkadotJs.run(createHyperionDB(db));
+await polkadotJs.run(db);
 
 const t1 = performance.now();
 

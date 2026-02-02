@@ -1,11 +1,11 @@
-import { createDatabase, createHyperionDB } from "@/db";
+import { createHyperionDB } from "@/db";
 import { ofac } from "./runner";
-
-const db = await createDatabase("./.db/current");
 
 const t0 = performance.now();
 
-await ofac.run(createHyperionDB(db));
+const db = await createHyperionDB("./.db/current");
+
+await ofac.run(db);
 
 const t1 = performance.now();
 

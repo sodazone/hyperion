@@ -1,9 +1,6 @@
 import { PUBLIC_OWNER } from "@/db";
-import type { HyperionRecord } from "@/db/types";
-
-import { encodeCategorizedKey, encodeValue } from "@/intel/encoding/codec";
+import type { Entity } from "@/db/model";
 import { CAT, NetworkMap, normalizeAddress } from "@/intel/mapping";
-import { KeyFamily } from "@/intel/types";
 import type { OfacResult } from "./parser";
 
 const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {
@@ -62,7 +59,7 @@ function getNetworkForSymbol({
 	throw new Error(`Unsupported address format for symbol ${symbol} ${address}`);
 }
 
-export function ofacToHyperionKey(r: OfacResult) {
+export function toHyperionEntity(r: OfacResult): Entity {
 	const network = getNetworkForSymbol({ symbol: r.symbol, address: r.address });
 	if (!network) throw new Error(`Unsupported symbol ${r.symbol}`);
 
@@ -70,41 +67,33 @@ export function ofacToHyperionKey(r: OfacResult) {
 	if (networkId === undefined) throw new Error(`Unknown network ${network}`);
 
 	const address = normalizeAddress(r.address);
-	const family = KeyFamily.Categorized;
 	const categoryCode = CAT.SANCTIONS;
 	const subcategoryCode = 0x0001;
 
-	return encodeCategorizedKey({
+	return {
 		owner: PUBLIC_OWNER,
-		family,
 		address,
-		networkId,
-		categoryCode,
-		subcategoryCode,
-	});
+		address_formatted: r.address,
+		categories: [
+			{
+				network: networkId,
+				category: categoryCode,
+				subcategory: subcategoryCode,
+				source: "ofac",
+				timestamp: Date.now(),
+				version: 0,
+				raw: r,
+			},
+		],
+	};
 }
 
-export function ofacToHyperion(r: OfacResult): HyperionRecord {
+export function ofacToHyperion(r: OfacResult): Entity {
 	const network = getNetworkForSymbol({ symbol: r.symbol, address: r.address });
 
 	if (!network) {
 		throw new Error(`Unsupported symbol ${r.symbol}`);
 	}
 
-	return {
-		key: ofacToHyperionKey(r),
-		value: encodeValue(
-			{
-				source: "ofac",
-				timestamp: Date.now(),
-				version: 0,
-			},
-			{
-				canonical: {
-					address: r.address,
-				},
-				data: r,
-			},
-		),
-	};
+	return toHyperionEntity(r);
 }
