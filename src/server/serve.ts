@@ -1,7 +1,7 @@
 import { EntityDetailPage, EntityListPage } from "@/console/entity.pages";
 import { loadExtraInfos } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
-import { createDatabase, createHyperionDB, type HyperionDB } from "@/db";
+import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
 import { images } from "./assets/img";
@@ -29,8 +29,7 @@ export async function serve({
 	dbPath?: string;
 	jwks?: JWKSSource;
 }): Promise<Serve> {
-	const kvs = await createDatabase(dbPath);
-	const db = createHyperionDB(kvs);
+	const db = await createHyperionDB(dbPath ?? "./db");
 
 	await loadJWKS(jwks);
 
@@ -67,7 +66,7 @@ export async function serve({
 				Response.json(openapi, {
 					headers: { "Cache-Control": "public, max-age=3600" },
 				}),
-			"/db/stats": () => Response.json(kvs.getStats()),
+			// "/db/stats": () => Response.json(kvs.getStats()),
 			"/v1/meta/networks": () => Response.json(db.getNetworksMeta()),
 			"/v1/meta/categories": () => Response.json(db.getCategoriesMeta()),
 			"/v1/public/address/:address/:network": (req) =>
@@ -113,7 +112,7 @@ export async function serve({
 			listener.stop();
 			console.log("HTTP server stopped");
 
-			kvs.close();
+			db.close();
 			console.log("Database closed");
 
 			process.exit(0);

@@ -1,12 +1,10 @@
-import type { Cursor } from "./types";
+export const encodeCursor = (key: Uint8Array): string =>
+	Buffer.from(key).toString("hex");
 
-export const encodeCursor = (key: Uint8Array): Cursor =>
-	Buffer.from(key).toString("base64");
-
-export const decodeCursor = (cursor?: Cursor): Uint8Array | null => {
+export const decodeCursor = (cursor?: string): Uint8Array | null => {
 	if (!cursor) return null;
 	try {
-		return Buffer.from(cursor, "base64");
+		return Buffer.from(cursor, "hex");
 	} catch {
 		return null;
 	}

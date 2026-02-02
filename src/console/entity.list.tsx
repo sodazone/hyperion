@@ -1,5 +1,5 @@
+import type { Entity } from "@/db";
 import { topLevelCategories } from "@/intel/mapping";
-import type { AddressRow } from "@/intel/types";
 import { CopyButton } from "./components/btn.copy";
 import { CategoryBadge } from "./components/category.badge";
 import {
@@ -12,7 +12,7 @@ import { NetworkIconGroup } from "./components/network.icon.group";
 import type { NetworkInfos } from "./extra.infos";
 
 type EntityPage = {
-	rows: AddressRow[];
+	rows: Array<Entity & { networks: string[] }>;
 	cursorNext?: string | null;
 	cursorCurrent?: string | null;
 	filters: {
@@ -62,7 +62,7 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 						type="text"
 						name="q"
 						defaultValue={filters.q}
-						placeholder="Search address or alias…"
+						placeholder="Search address..."
 						className="w-full pl-8 pr-3 py-2 text-sm bg-transparent
                   border-b border-zinc-800
                   text-zinc-100
@@ -167,16 +167,19 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 					<tbody className="divide-y divide-zinc-800">
 						{rows.map((e) => (
 							<tr
-								key={e.id}
+								key={e.address_formatted}
 								className="hover:bg-zinc-900 cursor-pointer"
-								hx-get={`/console/entities/${e.address}`}
+								hx-get={`/console/entities/${e.address_formatted}`}
 								hx-target="#main-panel"
 								hx-push-url="true"
 							>
 								<td className="px-4 py-2 font-mono text-xs text-zinc-200">
 									<div className="flex items-center gap-2">
-										<span>{e.address}</span>
-										<CopyButton text={e.address} title="Copy address" />
+										<span>{e.address_formatted}</span>
+										<CopyButton
+											text={e.address_formatted}
+											title="Copy address"
+										/>
 									</div>
 								</td>
 								<td className="px-4 py-2 text-zinc-300">
@@ -186,8 +189,8 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 									/>
 								</td>
 								<td className="px-4 py-2 text-zinc-300">
-									{e.categories.map((c) => (
-										<CategoryBadge key={c} categoryCode={c} />
+									{e.categories?.map(({ category }) => (
+										<CategoryBadge key={category} categoryCode={category} />
 									))}
 								</td>
 							</tr>
@@ -220,6 +223,7 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 				{`
           (function () {
             if (window.__entityPaginationInstalled) return;
+
             window.__entityPaginationInstalled = true;
 
             window.entityPageStack = window.entityPageStack || [];
@@ -262,30 +266,32 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
               const params = getCurrentFilters(root);
               params.set('cursor', cursorNext);
 
-              htmx.ajax('GET', '/console/entities?' + params.toString(), {
+              const url = '/console/entities?' + params.toString();
+
+              htmx.ajax('GET', url, {
                 target: '#entity-section',
                 swap: 'outerHTML',
-                pushUrl: true
+                push: url,
               });
             }
 
             function goBackward(root) {
               if (window.entityPageStack.length <= 1) return;
 
-              // Remove current page
               window.entityPageStack.pop();
 
-              // Go to previous
               const prevCursor =
                 window.entityPageStack[window.entityPageStack.length - 1];
 
               const params = getCurrentFilters(root);
               params.set('cursor', prevCursor);
 
-              htmx.ajax('GET', '/console/entities?' + params.toString(), {
+              const url = '/console/entities?' + params.toString();
+
+              htmx.ajax('GET', url, {
                 target: '#entity-section',
                 swap: 'outerHTML',
-                pushUrl: true
+                push: url
               });
             }
 
@@ -311,6 +317,15 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
                   window.entityPageStack.push('');
                 }, { once: true });
               }
+            });
+
+            document.body.addEventListener('htmx:historyRestore', (event) => {
+              const section = document.getElementById('entity-section');
+              if (section) updateButtons(section);
+            }, { once: true });
+
+            htmx.on('#entity-section', 'htmx:afterSwap', (event) => {
+              updateButtons(event.target);
             });
 
             // initial state
