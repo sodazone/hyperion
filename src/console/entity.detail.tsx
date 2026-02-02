@@ -157,8 +157,8 @@ function CategoriesPanel({
 			<div className="flex flex-wrap gap-2">
 				{attribution.map((a, i) => (
 					<SplitBadge
-						key={`${a.category.code}:${a.subcategory.code}:${i}`}
-						left={a.category.label ?? a.category.code}
+						key={`${a.category}:${a.subcategory}:${i}`}
+						left={a.category.label ?? a.category}
 						right={a.subcategory.label ?? a.subcategory.code}
 					/>
 				))}
