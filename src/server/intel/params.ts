@@ -1,17 +1,20 @@
+import { PUBLIC_OWNER } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { InvalidParameters } from "../response";
 
 type CategoryParams = {
+	owner: Uint8Array;
 	address: string;
-	categoryCode: number;
-	subcategoryCode: number;
-	networkId?: number;
+	category: number;
+	subcategory: number;
+	network?: number;
 };
 
 type TagParams = {
+	owner: Uint8Array;
 	tag: string;
 	address: string;
-	networkId?: number;
+	network?: number;
 };
 
 export function coerceNetworkId(network?: string | null): number | undefined {
@@ -34,9 +37,10 @@ export function coerceTagParams(
 	}
 
 	return {
+		owner: PUBLIC_OWNER,
 		tag,
 		address,
-		networkId,
+		network: networkId,
 	};
 }
 
@@ -45,7 +49,7 @@ export function coerceCatetoryWriteParams(
 ): Required<CategoryParams> | Response {
 	const p = coerceCategoryParams(params);
 	if (p instanceof Response) return p;
-	if (p.networkId === undefined) return InvalidParameters;
+	if (p.network === undefined) return InvalidParameters;
 	return p as Required<CategoryParams>;
 }
 
@@ -54,23 +58,24 @@ export function coerceCategoryParams(
 ): CategoryParams | Response {
 	const { cat, subcat, address, network } = params;
 
-	const categoryCode = Number(cat);
-	const subcategoryCode = Number(subcat);
+	const category = Number(cat);
+	const subcategory = Number(subcat);
 
 	const networkId = coerceNetworkId(network);
 
 	if (
-		!Number.isInteger(categoryCode) ||
-		!Number.isInteger(subcategoryCode) ||
+		!Number.isInteger(category) ||
+		!Number.isInteger(subcategory) ||
 		address === undefined
 	) {
 		return InvalidParameters;
 	}
 
 	return {
+		owner: PUBLIC_OWNER,
 		address,
-		categoryCode,
-		subcategoryCode,
-		networkId,
+		category,
+		subcategory,
+		network: networkId,
 	};
 }

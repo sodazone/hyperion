@@ -126,7 +126,7 @@ export class AddressDB {
         raw=excluded.raw
     `,
 			[
-				b(owner),
+				owner,
 				b(address),
 				network ?? null,
 				category,
@@ -158,9 +158,18 @@ export class AddressDB {
         DELETE FROM entity_category
         WHERE owner=? AND address=? AND network IS ?
           AND category=? AND subcategory=?`,
-				[b(owner), b(address), network ?? null, category, subcategory],
+				[owner, b(address), network ?? null, category, subcategory],
 			).changes ?? 0
 		);
+	}
+
+	hasEntity(args: { owner: Uint8Array; address: Uint8Array | string }) {
+		return !!this.db
+			.query(
+				`SELECT 1 FROM entity
+          WHERE owner=? AND address=? LIMIT 1`,
+			)
+			.get(args.owner, b(args.address));
 	}
 
 	hasCategory(args: {
@@ -177,7 +186,7 @@ export class AddressDB {
            AND category=? AND subcategory=? LIMIT 1`,
 			)
 			.get(
-				b(args.owner),
+				args.owner,
 				b(args.address),
 				args.network ?? null,
 				args.category,
@@ -240,7 +249,7 @@ export class AddressDB {
 				`SELECT 1 FROM entity_tag
          WHERE owner=? AND address=? AND network IS ? AND tag=? LIMIT 1`,
 			)
-			.get(b(args.owner), b(args.address), args.network ?? null, args.tag);
+			.get(args.owner, b(args.address), args.network ?? null, args.tag);
 	}
 
 	private queryAddresses({
@@ -469,7 +478,7 @@ export class AddressDB {
 		subcategory?: number;
 	}): Category[] {
 		const clauses: string[] = ["owner = ?", "address = ?"];
-		const params: SQLQueryBindings[] = [b(owner), b(address)];
+		const params: SQLQueryBindings[] = [owner, b(address)];
 
 		if (network !== undefined) {
 			clauses.push("network = ?");
@@ -523,16 +532,22 @@ export class AddressDB {
 		address: Uint8Array | string;
 		network?: number;
 	}): Tag[] {
+		const clauses: string[] = ["owner = ?", "address = ?"];
+		const params: SQLQueryBindings[] = [owner, b(address)];
+
+		if (network !== undefined) {
+			clauses.push("network = ?");
+			params.push(network);
+		}
+
 		const rows = this.all<Tag>(
 			`
       SELECT network, tag, timestamp, version, source, raw
       FROM entity_tag
-      WHERE owner=? AND address=? AND network IS ?
+      WHERE ${clauses.join(" AND ")}
       ORDER BY timestamp DESC
     `,
-			owner,
-			b(address),
-			network ?? null,
+			...params,
 		);
 
 		return rows.map(({ network, tag, timestamp, version, source, raw }) => ({

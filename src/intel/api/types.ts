@@ -1,5 +1,3 @@
-import type { HyperionDB } from "@/db";
-
 export type SanctionsResult = {
 	sanctioned: boolean;
 	lists: string[];
@@ -11,9 +9,19 @@ export type RiskResult = {
 	reasons: string[];
 };
 
+export type LabeledCategory = {
+	category: { code: number; label?: string };
+	subcategory: { code: number; label?: string };
+};
+
+export type StructuredTag = {
+	text: string;
+	prefix: string;
+};
+
 export type AddressAnalysis = {
 	sanctioned: SanctionsResult;
 	risk: RiskResult;
-	attribution: ReturnType<HyperionDB["getCategories"]>;
-	tags: ReturnType<HyperionDB["getTags"]>;
+	attribution: Array<LabeledCategory>;
+	tags: Array<StructuredTag>;
 };

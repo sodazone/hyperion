@@ -1,99 +1,63 @@
 import fs from "node:fs";
-import {
-	encodeCategorizedKey,
-	encodeTaggedKey,
-	encodeValue,
-	PUBLIC_OWNER,
-} from "@/db";
-import type { HyperionRecord } from "@/db/types";
+import { type Category, type Entity, PUBLIC_OWNER, type Tag } from "@/db";
 import { CAT, normalizeAddress } from "@/intel/mapping";
-import { createTag } from "@/intel/mapping/tags";
-import { KeyFamily } from "@/intel/types";
+import { sanitize } from "@/intel/mapping/strings";
 
 const NETWORK_POLKADOT = 0x0101;
 
-function mapCategory(address: string, campaign: string) {
-	const addressBytes = normalizeAddress(address);
-	const family = KeyFamily.Categorized;
-	const categoryCode = CAT.CYBERCRIME;
-	const subcategoryCode = 0x0005;
+function mapCategory(campaign: string): Category[] {
+	const category = CAT.CYBERCRIME;
+	const subcategory = 0x0005;
 
-	const key = encodeCategorizedKey({
-		owner: PUBLIC_OWNER,
-		family,
-		address: addressBytes,
-		networkId: NETWORK_POLKADOT,
-		categoryCode,
-		subcategoryCode,
-	});
-
-	return {
-		key,
-		value: encodeValue(
-			{
-				source: "polkadot-js",
-				timestamp: Date.now(),
-				version: 0,
-			},
-			{
-				canonical: {
-					address,
-				},
-				data: {
-					campaign,
-				},
-			},
-		),
-	};
+	return [
+		{
+			category,
+			network: NETWORK_POLKADOT,
+			subcategory,
+			timestamp: Date.now(),
+			source: "polkadot-js",
+			version: 0,
+			raw: campaign,
+		},
+	];
 }
 
-function mapDomainTag(address: string, domain: string): HyperionRecord {
-	const addressBytes = normalizeAddress(address);
-	const { tagCode, tagValue } = createTag("phishing_domain", domain);
-	const key = encodeTaggedKey({
-		owner: PUBLIC_OWNER,
-		address: addressBytes,
-		family: KeyFamily.Tagged,
-		networkId: NETWORK_POLKADOT,
-		tagCode,
-	});
-
-	return {
-		key,
-		value: encodeValue(
-			{
-				source: "polkadot-js",
-				timestamp: Date.now(),
-				version: 0,
-			},
-			{
-				canonical: {
-					address,
-				},
-				data: tagValue,
-			},
-		),
-	};
+function mapDomainTag(domain: string): Tag[] {
+	return [
+		{
+			tag: `phishing_domain:${sanitize(domain)}`,
+			network: NETWORK_POLKADOT,
+			timestamp: Date.now(),
+			source: "polkadot-js",
+			version: 0,
+		},
+	];
 }
 
-export function parse(path: string): HyperionRecord[] {
+export function parse(path: string): Entity[] {
 	const raw = fs.readFileSync(path, "utf8");
 	const json = JSON.parse(raw) as Record<string, string[]>;
 
-	const records: HyperionRecord[] = [];
+	const entities: Entity[] = [];
 
 	for (const [domain, addresses] of Object.entries(json)) {
 		if (!Array.isArray(addresses)) continue;
 
 		for (const address of addresses) {
 			try {
-				records.push(mapCategory(address, domain));
-				records.push(mapDomainTag(address, domain));
+				const entity = {
+					owner: PUBLIC_OWNER,
+					address: normalizeAddress(address),
+					address_formatted: address,
+					categories: mapCategory(domain),
+					tags: mapDomainTag(domain),
+				};
+				entities.push(entity);
 			} catch (err) {
 				console.warn(`Skipping invalid address ${address}:`, err);
 			}
 		}
 	}
 
-	return records;
+	return entities;
 }

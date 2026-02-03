@@ -71,8 +71,6 @@ export function EntityDetailPage(
 
 	const entity = analyzeAddressAllNetworks(db, address);
 
-	console.log(JSON.stringify(entity, null, 2));
-
 	if (!entity || entity.networks.length === 0) {
 		throw new Error("Entity not found");
 	}

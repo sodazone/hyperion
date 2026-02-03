@@ -1,44 +1,24 @@
-import {
-	encodeCategorizedKey,
-	encodeTaggedKey,
-	encodeValue,
-	PUBLIC_OWNER,
-} from "@/db";
-import type { HyperionRecord } from "@/db/types";
+import { type Category, type Entity, PUBLIC_OWNER, type Tag } from "@/db";
 import { normalizeAddress } from "@/intel/mapping";
-import { createTag } from "@/intel/mapping/tags";
-import { KeyFamily } from "@/intel/types";
 import { classifyPolkadotBalance } from "./balance";
 import type { MerkleAccount } from "./crawler";
 
-function makeMerkleValue(address: string, value: unknown) {
-	return encodeValue(
-		{
-			source: "subscan",
-			timestamp: Date.now(),
-			version: 0,
-		},
-		{
-			canonical: {
-				address,
-			},
-			data: value,
-		},
-	);
+function createTag(prefix: string, text: string): { tag: string } {
+	return {
+		tag: `${prefix}:${text}`,
+	};
 }
+
+type Classification =
+	| { category: number; subcategory: number }
+	| { tag: string };
 
 function classify(
 	networkId: number,
 	account: MerkleAccount,
-): Array<
-	| {
-			categoryCode: number;
-			subcategoryCode: number;
-	  }
-	| { tagCode: Uint8Array; tagValue: unknown }
-> {
+): Array<Classification> {
 	const { tag_type, tag_sub_type, tag_name, address_type } = account;
-	const classifications = [];
+	const classifications: Classification[] = [];
 
 	if (account.count_extrinsic > 10_000) {
 		classifications.push(createTag("tx_class", "high_count"));
@@ -53,23 +33,23 @@ function classify(
 	if (tag_type === "Exchange") {
 		if (tag_sub_type === "Mandatory KYC and AML") {
 			classifications.push({
-				categoryCode: 0x0001,
-				subcategoryCode: 0x0001,
+				category: 0x0001,
+				subcategory: 0x0001,
 			});
 		} else if (tag_sub_type === "Optional KYC and AML") {
 			classifications.push({
-				categoryCode: 0x0001,
-				subcategoryCode: 0x0002,
+				category: 0x0001,
+				subcategory: 0x0002,
 			});
 		} else if (tag_sub_type === "Inactive") {
 			classifications.push({
-				categoryCode: 0x0001,
-				subcategoryCode: 0x0003,
+				category: 0x0001,
+				subcategory: 0x0003,
 			});
 		} else if (tag_sub_type === "OTC") {
 			classifications.push({
-				categoryCode: 0x0001,
-				subcategoryCode: 0x0004,
+				category: 0x0001,
+				subcategory: 0x0004,
 			});
 		} else {
 			console.log("Unknown Exchange sub-type:", tag_sub_type);
@@ -94,20 +74,20 @@ function classify(
 	else if (tag_type === "Service") {
 		if (tag_sub_type === "Financial Service") {
 			classifications.push({
-				categoryCode: 0x0006,
-				subcategoryCode: 0x0001,
+				category: 0x0006,
+				subcategory: 0x0001,
 			});
 		} else if (tag_sub_type === "Custody") {
 			classifications.push({
-				categoryCode: 0x0006,
-				subcategoryCode: 0x0002,
+				category: 0x0006,
+				subcategory: 0x0002,
 			});
 		} else {
 			console.log("Unknown Service sub-type:", tag_sub_type);
 			throw new Error(`Unknown Service sub-type: ${tag_sub_type}`);
 			/*classifications.push({
-        categoryCode: 0x0006,
-        subcategoryCode: 0x0000,
+        category: 0x0006,
+        subcategory: 0x0000,
       });*/
 		}
 
@@ -125,8 +105,8 @@ function classify(
 	else if (tag_type === "High Risk Organization") {
 		if (tag_sub_type === "High Risk Exchanges") {
 			classifications.push({
-				categoryCode: 0x0007,
-				subcategoryCode: 0x0001,
+				category: 0x0007,
+				subcategory: 0x0001,
 			});
 			if (tag_name) {
 				classifications.push(createTag("exchange_name", tag_name));
@@ -137,8 +117,8 @@ function classify(
 				`Unknown High Risk Organization sub-type: ${tag_sub_type}`,
 			);
 			/*classifications.push({
-				categoryCode: 0x0007,
-				subcategoryCode: 0x0000,
+				category: 0x0007,
+				subcategory: 0x0000,
 			});*/
 		}
 
@@ -158,59 +138,44 @@ function classify(
 	);
 }
 
-export function toHyperionRecords(
-	networkId: number,
-	item: MerkleAccount,
-): Array<HyperionRecord> {
+export function toHyperionEntity(network: number, item: MerkleAccount): Entity {
 	const { account } = item;
 
-	const records = [];
 	const address = normalizeAddress(account.address);
-	const classifications = classify(networkId, item);
+	const classifications = classify(network, item);
+
+	const tags: Array<Tag> = [];
+	const categories: Array<Category> = [];
 
 	for (const classification of classifications) {
-		if ("tagCode" in classification) {
-			const family = KeyFamily.Tagged;
-			const { tagCode } = classification;
+		if ("tag" in classification) {
+			const { tag } = classification;
 
-			const key = encodeTaggedKey({
-				owner: PUBLIC_OWNER,
-				family,
-				address,
-				networkId,
-				tagCode,
-			});
-
-			const value = makeMerkleValue(account.address, classification.tagValue);
-			records.push({
-				key,
-				value,
+			tags.push({
+				source: "subscan",
+				network,
+				tag,
+				timestamp: Date.now(),
+				version: 0,
 			});
 		} else {
-			const family = KeyFamily.Categorized;
-			const { categoryCode, subcategoryCode } = classification;
-
-			const key = encodeCategorizedKey({
-				owner: PUBLIC_OWNER,
-				family,
-				address,
-				networkId,
-				categoryCode,
-				subcategoryCode,
-			});
-
-			const value = makeMerkleValue(account.address, {
-				name: item.tag_name,
-				subType: item.tag_sub_type,
-				type: item.tag_type,
-			});
-
-			records.push({
-				key,
-				value,
+			const { category, subcategory } = classification;
+			categories.push({
+				subcategory,
+				category,
+				source: "subscan",
+				network,
+				timestamp: Date.now(),
+				version: 0,
 			});
 		}
 	}
 
-	return records;
+	return {
+		owner: PUBLIC_OWNER,
+		address,
+		address_formatted: account.address,
+		tags,
+		categories,
+	};
 }

@@ -1,4 +1,4 @@
-import type { HyperionDB } from "@/db";
+import { type HyperionDB, PUBLIC_OWNER } from "@/db";
 import { analyzeAddress, analyzeAddressAllNetworks } from "@/intel/api";
 import { InternalServerError, InvalidParameters, NotFound } from "../response";
 import { owned } from "./owned";
@@ -20,10 +20,9 @@ function getAddressByNetwork(
 		}
 
 		if (
-			!db.hasCategory({
+			!db.hasEntity({
+				owner: PUBLIC_OWNER,
 				address,
-				networkId,
-				categoryCode: 0,
 			})
 		) {
 			return NotFound;
@@ -93,8 +92,9 @@ function getAddressTags(
 		}
 
 		const entries = db.getTags({
+			owner: PUBLIC_OWNER,
 			address,
-			networkId,
+			network: networkId,
 		});
 
 		if (entries === undefined || entries.length === 0) {
@@ -125,7 +125,7 @@ function getAddressTagByNetwork(
 			});
 		}
 
-		const result = db.getTag(params);
+		const result = db.getTags(params);
 
 		if (result === undefined) {
 			return NotFound;

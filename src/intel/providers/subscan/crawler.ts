@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { HyperionRecord } from "@/db/types";
-import { toHyperionRecords } from "./mapping";
+import type { Entity } from "@/db";
+import { toHyperionEntity } from "./mapping";
 
 export interface MerkleAccount {
 	account: {
@@ -91,7 +91,7 @@ export async function* fetchMerkleAccounts({
 	apiUrl: string;
 	networkId: number;
 	row?: number;
-}): AsyncGenerator<HyperionRecord> {
+}): AsyncGenerator<Entity> {
 	const fetch = fetchPage(apiUrl, row);
 
 	const first = await fetch(0);
@@ -121,7 +121,7 @@ export async function* fetchMerkleAccounts({
 
 		for (const item of response.data.list) {
 			uniqueCount++;
-			yield* toHyperionRecords(networkId, item);
+			yield toHyperionEntity(networkId, item);
 		}
 
 		await writeCheckpoint(dataPath, {

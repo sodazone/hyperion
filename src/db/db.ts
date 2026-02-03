@@ -30,6 +30,7 @@ export async function createHyperionDB(path: string) {
 		deleteCategory: db.deleteCategory.bind(db),
 		getCategories: db.queryCategories.bind(db),
 		hasCategory: db.hasCategory.bind(db),
+		hasEntity: db.hasEntity.bind(db),
 		putTag: db.upsertTag.bind(db),
 		getTags: db.queryTags.bind(db),
 		hasTag: db.hasTag.bind(db),
