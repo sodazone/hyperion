@@ -1,49 +1,15 @@
 import { ConsoleApp } from "@/console/app";
-import { EntityDetailsView } from "@/console/entity.detail";
-import { EntitiesView } from "@/console/entity.list";
-import type { NetworkInfos } from "@/console/extra.infos";
-import { type Entity, type HyperionDB, PUBLIC_OWNER } from "@/db";
+import { EntityDetailsView } from "@/console/public/entity/entity.detail";
+import { EntitiesList } from "@/console/public/entity/entity.list";
+import { PUBLIC_OWNER } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
-import { NetworkMap } from "@/intel/mapping";
-import type { AuthApi } from "@/server/auth/stytch";
 import { coerceNetworkId } from "@/server/intel/params";
 import { render } from "@/server/render";
-import type { EntityRow } from "./types";
-
-type Context = {
-	db: HyperionDB;
-	networkInfos: NetworkInfos;
-	authApi: AuthApi;
-};
-
-const enrichRows = (rows: Entity[]): Array<EntityRow> => {
-	return rows.map((e) => {
-		const networksSet = new Set<number>();
-		const categoriesSet = new Set<number>();
-		const tagsSet = new Set<string>();
-
-		e.categories?.forEach((c) => {
-			networksSet.add(c.network);
-			categoriesSet.add(c.category);
-		});
-		e.tags?.forEach((t) => {
-			networksSet.add(t.network);
-			tagsSet.add(t.tag);
-		});
-
-		return {
-			...e,
-			sets: {
-				networks: Array.from(networksSet).map(NetworkMap.toURN),
-				categories: Array.from(categoriesSet),
-				tags: Array.from(tagsSet),
-			},
-		};
-	});
-};
+import type { PageContext } from "../../types";
+import { enrichEntityRows } from "../../util";
 
 export async function EntityListPage(
-	{ db, networkInfos, authApi }: Context,
+	{ db, networkInfos, authApi }: PageContext,
 	req: Bun.BunRequest,
 ) {
 	const url = new URL(req.url);
@@ -64,7 +30,7 @@ export async function EntityListPage(
 	});
 
 	const page = {
-		rows: enrichRows(rows),
+		rows: enrichEntityRows(rows),
 		cursorNext,
 		cursorCurrent: cursor,
 		filters: {
@@ -75,20 +41,20 @@ export async function EntityListPage(
 	};
 
 	if (req.headers.get("HX-Request")) {
-		return render(<EntitiesView ctx={{ networkInfos }} page={page} />);
+		return render(<EntitiesList ctx={{ networkInfos }} page={page} />);
 	}
 
 	const user = await authApi.getAuthenticatedUser(req);
 
 	return render(
 		<ConsoleApp member={user} path="/console/entities">
-			<EntitiesView ctx={{ networkInfos }} page={page} />
+			<EntitiesList ctx={{ networkInfos }} page={page} />
 		</ConsoleApp>,
 	);
 }
 
 export function EntityDetailPage(
-	{ db, networkInfos }: Context,
+	{ db, networkInfos }: PageContext,
 	req: Bun.BunRequest<"/console/entities/:id">,
 ) {
 	const address = req.params.id;

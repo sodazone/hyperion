@@ -1,10 +1,10 @@
+import { CopyButton } from "@/console//components/btn.copy";
+import { SplitBadge } from "@/console/components/badge";
+import { ChevronLeftIcon } from "@/console/components/icons";
+import { NetworkIcon } from "@/console/components/network.icon";
+import type { NetworkInfos } from "@/console/extra.infos";
 import type { AddressAnalysis, AddressAnalysisAllNetworks } from "@/intel/api";
 import { NetworkMap } from "@/intel/mapping";
-import { SplitBadge } from "./components/badge";
-import { CopyButton } from "./components/btn.copy";
-import { ChevronLeftIcon } from "./components/icons";
-import { NetworkIcon } from "./components/network.icon";
-import type { NetworkInfos } from "./extra.infos";
 
 function EntityHeader({ address }: { address: string }) {
 	return (

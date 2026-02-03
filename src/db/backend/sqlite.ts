@@ -3,6 +3,10 @@ import { decodeCursor, encodeCursor } from "../cursors";
 import type { Category, Entity, Tag } from "../model";
 import { b, cleanFilter } from "./util";
 
+function parseRaw<T>(raw: unknown): T | undefined {
+	return raw ? JSON.parse(raw as string) : undefined;
+}
+
 export class AddressDB {
 	private db: Database;
 
@@ -162,13 +166,16 @@ export class AddressDB {
 		);
 	}
 
-	hasEntity(args: { owner: Uint8Array; address: Uint8Array | string }) {
+	hasEntity({
+		owner,
+		address,
+	}: {
+		owner: Uint8Array;
+		address: Uint8Array | string;
+	}) {
 		return !!this.db
-			.query(
-				`SELECT 1 FROM entity
-          WHERE owner=? AND address=? LIMIT 1`,
-			)
-			.get(args.owner, b(args.address));
+			.query("SELECT 1 FROM entity WHERE owner=? AND address=? LIMIT 1")
+			.get(owner, b(address));
 	}
 
 	hasCategory(args: {
@@ -249,6 +256,82 @@ export class AddressDB {
          WHERE owner=? AND address=? AND network IS ? AND tag=? LIMIT 1`,
 			)
 			.get(args.owner, b(args.address), args.network ?? null, args.tag);
+	}
+
+	findEntity({
+		owner,
+		address,
+		network,
+	}: {
+		owner: Uint8Array;
+		address: Uint8Array | string;
+		network?: number;
+	}): Entity | undefined {
+		const addr = b(address);
+
+		const base = this.db
+			.query(
+				`
+        SELECT address, address_formatted
+        FROM entity
+        WHERE owner=? AND address=? LIMIT 1
+      `,
+			)
+			.get(owner, addr) as
+			| { address: Uint8Array; address_formatted: string }
+			| undefined;
+
+		if (!base) return;
+
+		const entity: Required<Entity> = {
+			owner,
+			address: base.address,
+			address_formatted: base.address_formatted,
+			tags: [],
+			categories: [],
+		};
+
+		// tags
+		const tagRows = this.all<Tag>(
+			`
+        SELECT network, tag, timestamp, version, source, raw
+        FROM entity_tag
+        WHERE owner=? AND address=? ${network !== undefined ? "AND network=?" : ""}
+        ORDER BY timestamp DESC
+      `,
+			...(network !== undefined ? [owner, addr, network] : [owner, addr]),
+		);
+
+		for (const r of tagRows) {
+			entity.tags.push({
+				...r,
+				source: r.source ?? undefined,
+				raw: parseRaw(r.raw),
+				network: r.network ?? 0,
+			});
+		}
+
+		// categories
+		const catRows = this.all<Category>(
+			`
+        SELECT network, category, subcategory, timestamp, version, source, raw
+        FROM entity_category
+        WHERE owner=? AND address=? ${network !== undefined ? "AND network=?" : ""}
+        ORDER BY timestamp DESC
+      `,
+			...(network !== undefined ? [owner, addr, network] : [owner, addr]),
+		);
+
+		for (const r of catRows) {
+			entity.categories.push({
+				...r,
+				source: r.source ?? undefined,
+				raw: parseRaw(r.raw),
+				network: r.network ?? 0,
+			});
+		}
+
+		return entity;
 	}
 
 	private queryAddresses({
@@ -419,7 +502,7 @@ export class AddressDB {
 					version,
 					network: network ?? 0,
 					source: source ?? undefined,
-					raw: raw ? JSON.parse(raw as string) : undefined,
+					raw: parseRaw(raw),
 				});
 			}
 		}
@@ -443,7 +526,7 @@ export class AddressDB {
 					version,
 					network: network ?? 0,
 					source: source ?? undefined,
-					raw: raw ? JSON.parse(raw as string) : undefined,
+					raw: parseRaw(raw),
 				});
 			}
 		}
@@ -510,7 +593,7 @@ export class AddressDB {
 				timestamp,
 				version,
 				source: source ?? undefined,
-				raw: raw ? JSON.parse(raw as string) : undefined,
+				raw: parseRaw(raw),
 			}),
 		);
 	}
@@ -548,11 +631,11 @@ export class AddressDB {
 			timestamp,
 			version,
 			source: source ?? undefined,
-			raw: raw ? JSON.parse(raw as string) : undefined,
+			raw: parseRaw(raw),
 		}));
 	}
 
-	batchUpsert(records: Entity[]) {
+	upsertEntities(records: Entity[]) {
 		this.db.run("BEGIN");
 
 		try {

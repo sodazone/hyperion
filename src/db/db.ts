@@ -31,10 +31,11 @@ export async function createHyperionDB(path: string) {
 		getCategories: db.queryCategories.bind(db),
 		hasCategory: db.hasCategory.bind(db),
 		hasEntity: db.hasEntity.bind(db),
+		findEntity: db.findEntity.bind(db),
 		putTag: db.upsertTag.bind(db),
 		getTags: db.queryTags.bind(db),
 		hasTag: db.hasTag.bind(db),
-		batchUpsert: db.batchUpsert.bind(db),
+		upsertEntities: db.upsertEntities.bind(db),
 		search: {
 			findEntities: db.queryEntities.bind(db),
 		},
