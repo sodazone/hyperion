@@ -1,8 +1,33 @@
-import { type HyperionDB, PUBLIC_OWNER } from "@/db";
+import { type Category, type HyperionDB, PUBLIC_OWNER } from "@/db";
 import { CategoriesMap } from "@/intel/mapping";
 import { CAT } from "@/intel/mapping/categories";
 import { computeRisk } from "./risk";
-import type { AddressAnalysis, SanctionsResult } from "./types";
+import type {
+	AddressAnalysis,
+	LabeledCategory,
+	SanctionsResult,
+	StructuredTag,
+} from "./types";
+
+function asLabeledCategory(category: Category): LabeledCategory {
+	return {
+		category: {
+			code: category.category,
+			label: CategoriesMap.getLabel(category.category),
+		},
+		subcategory: {
+			code: category.subcategory,
+			label: CategoriesMap.getLabel(category.category, category.subcategory),
+		},
+	};
+}
+
+function asStructuredTag({ tag }: { tag: string }): StructuredTag {
+	if (tag.indexOf(":") === -1) return { text: tag, prefix: "tag" };
+
+	const [prefix, text] = tag.split(":");
+	return { text: text ?? "", prefix: prefix ?? "" };
+}
 
 export function checkSanctions(
 	db: HyperionDB,
@@ -27,19 +52,20 @@ export function checkSanctions(
 }
 
 function computeSanctionsFromAttribution(
-	attribution: Array<{
-		category: number;
-		subcategory: number;
-	}>,
+	attribution: Array<LabeledCategory>,
 ): SanctionsResult {
-	const sanctions = attribution.filter((a) => a.category === CAT.SANCTIONS);
+	const sanctions = attribution.filter(
+		(a) => a.category.code === CAT.SANCTIONS,
+	);
 
 	if (sanctions.length === 0) return { sanctioned: false, lists: [] };
 
 	return {
 		sanctioned: true,
 		lists: sanctions.map(
-			(a) => CategoriesMap.getLabel(a.category, a.subcategory) ?? "Unknown",
+			(a) =>
+				CategoriesMap.getLabel(a.category.code, a.subcategory.code) ??
+				"Unknown",
 		),
 	};
 }
@@ -49,7 +75,10 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 	const tags = db.getTags({ owner: PUBLIC_OWNER, address });
 
 	type Bucket = {
-		attribution: typeof categories;
+		attribution: Array<{
+			category: { code: number; label?: string };
+			subcategory: { code: number; label?: string };
+		}>;
 		tags: typeof tags;
 	};
 
@@ -58,7 +87,7 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 	for (const c of categories) {
 		if (c.network === undefined) continue;
 		const bucket = byNetwork.get(c.network) ?? { attribution: [], tags: [] };
-		bucket.attribution.push(c);
+		bucket.attribution.push(asLabeledCategory(c));
 		byNetwork.set(c.network, bucket);
 	}
 
@@ -80,7 +109,12 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 
 		networks.push({
 			networkId,
-			analysis: { sanctioned, risk, attribution, tags },
+			analysis: {
+				sanctioned,
+				risk,
+				attribution,
+				tags: tags.map(asStructuredTag),
+			},
 		});
 	}
 
@@ -98,12 +132,16 @@ export function analyzeAddress(
 	address: string,
 	network: number,
 ): AddressAnalysis {
-	const attribution = db.getCategories({
-		owner: PUBLIC_OWNER,
-		address,
-		network,
-	});
-	const tags = db.getTags({ owner: PUBLIC_OWNER, address, network });
+	const attribution = db
+		.getCategories({
+			owner: PUBLIC_OWNER,
+			address,
+			network,
+		})
+		.map(asLabeledCategory);
+	const tags = db
+		.getTags({ owner: PUBLIC_OWNER, address, network })
+		.map(asStructuredTag);
 
 	const sanctioned = checkSanctions(db, address, network);
 	const risk = computeRisk(sanctioned, attribution, tags);

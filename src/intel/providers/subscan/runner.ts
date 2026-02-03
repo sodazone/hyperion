@@ -1,8 +1,7 @@
 import { config } from "@/config";
-import type { HyperionDB } from "@/db";
-import type { HyperionRecord } from "@/db/types";
+import type { Entity, HyperionDB } from "@/db";
+import { NetworkMap } from "@/intel/mapping";
 import { runWorker } from "@/intel/worker";
-import { NetworkMap } from "@/mapping";
 import { safePath } from "@/utils";
 import { updateData } from "../update";
 import { CHAINS, type SubscanChain } from "./chains";
@@ -38,7 +37,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 				throw new Error(`Network ID not found ${chain.urn}`);
 			}
 
-			await runWorker<HyperionRecord, WorkerParams>(
+			await runWorker<Entity, WorkerParams>(
 				new URL("./worker.ts", import.meta.url),
 				{
 					apiUrl: chain.subscanUrl,
@@ -47,7 +46,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 				},
 				async (batch) => {
 					console.log(`[${chain.name}] writing ${batch.length} records`);
-					await api.batch(batch);
+					api.batchUpsert(batch);
 				},
 			);
 		},

@@ -205,6 +205,8 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 					type="button"
 					id="previous-button"
 					className="flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 disabled:opacity-40 hover:bg-zinc-900"
+					hx-on:click="history.back()"
+					disabled={!cursorCurrent}
 				>
 					<ChevronLeftIcon /> <span>Previous</span>
 				</button>
@@ -213,130 +215,15 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 					type="button"
 					id="next-button"
 					className="flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 disabled:opacity-40 hover:bg-zinc-900"
+					hx-get={`/console/entities?cursor=${cursorNext ?? ""}`}
+					hx-target="#entity-section"
+					hx-swap="outerHTML"
+					hx-push-url="true"
+					disabled={!cursorNext}
 				>
 					<span>Next</span> <ChevronRightIcon />
 				</button>
 			</div>
-
-			{/* Client-side pagination logic */}
-			<script>
-				{`
-          (function () {
-            if (window.__entityPaginationInstalled) return;
-
-            window.__entityPaginationInstalled = true;
-
-            window.entityPageStack = window.entityPageStack || [];
-
-            function getCurrentFilters(root) {
-              const form = root.querySelector('form');
-              const params = new URLSearchParams();
-              if (!form) return params;
-
-              const formData = new FormData(form);
-              for (const [k, v] of formData.entries()) {
-                if (v) params.set(k, v.toString());
-              }
-              return params;
-            }
-
-            function updateButtons(root) {
-              const prevBtn = root.querySelector('#previous-button');
-              const nextBtn = root.querySelector('#next-button');
-
-              const cursorNext = root.dataset.cursorNext;
-
-              if (prevBtn) {
-                prevBtn.onclick = () => goBackward(root);
-                prevBtn.disabled = window.entityPageStack.length <= 1;
-              }
-
-              if (nextBtn) {
-                nextBtn.onclick = () => goForward(root);
-                nextBtn.disabled = !cursorNext;
-              }
-            }
-
-            function goForward(root) {
-              const cursorNext = root.dataset.cursorNext;
-              if (!cursorNext) return;
-
-              window.entityPageStack.push(cursorNext);
-
-              const params = getCurrentFilters(root);
-              params.set('cursor', cursorNext);
-
-              const url = '/console/entities?' + params.toString();
-
-              htmx.ajax('GET', url, {
-                target: '#entity-section',
-                swap: 'outerHTML',
-                push: url,
-              });
-            }
-
-            function goBackward(root) {
-              if (window.entityPageStack.length <= 1) return;
-
-              window.entityPageStack.pop();
-
-              const prevCursor =
-                window.entityPageStack[window.entityPageStack.length - 1];
-
-              const params = getCurrentFilters(root);
-              params.set('cursor', prevCursor);
-
-              const url = '/console/entities?' + params.toString();
-
-              htmx.ajax('GET', url, {
-                target: '#entity-section',
-                swap: 'outerHTML',
-                push: url
-              });
-            }
-
-            function resetPagination(root) {
-              window.entityPageStack = [];
-              root.dataset.cursorCurrent = '';
-              root.dataset.cursorNext = '';
-            }
-
-            htmx.onLoad((el) => {
-              if (el.id !== 'entity-section') return;
-
-              if (window.entityPageStack.length === 0) {
-                window.entityPageStack.push(el.dataset.cursorCurrent ?? '');
-              }
-
-              updateButtons(el);
-
-              const form = el.querySelector('form');
-              if (form) {
-                form.addEventListener('htmx:configRequest', () => {
-                  resetPagination(el);
-                  window.entityPageStack.push('');
-                }, { once: true });
-              }
-            });
-
-            document.body.addEventListener('htmx:historyRestore', (event) => {
-              const section = document.getElementById('entity-section');
-              if (section) updateButtons(section);
-            }, { once: true });
-
-            htmx.on('#entity-section', 'htmx:afterSwap', (event) => {
-              updateButtons(event.target);
-            });
-
-            // initial state
-            const section = document.getElementById('entity-section');
-            if (window.entityPageStack.length === 0) {
-              window.entityPageStack.push(section.dataset.cursorCurrent ?? '');
-            }
-            updateButtons(section);
-          })();
-            `}
-			</script>
 		</section>
 	);
 }

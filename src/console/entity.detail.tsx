@@ -157,9 +157,9 @@ function CategoriesPanel({
 			<div className="flex flex-wrap gap-2">
 				{attribution.map((a, i) => (
 					<SplitBadge
-						key={`${a.category}:${a.subcategory}:${i}`}
-						left={a.category.label ?? a.category}
-						right={a.subcategory.label ?? a.subcategory.code}
+						key={`${a.category.code}:${a.subcategory.code}:${i}`}
+						left={a.category.label ?? ""}
+						right={a.subcategory.label ?? ""}
 					/>
 				))}
 			</div>
@@ -177,8 +177,8 @@ function TagsPanel({ tags }: { tags: AddressAnalysis["tags"] }) {
 			</h3>
 
 			<div className="flex flex-wrap gap-2">
-				{tags.map(({ tag }) => (
-					<SplitBadge key={tag.code} left={tag.type} right={tag.name} />
+				{tags.map(({ text, prefix }) => (
+					<SplitBadge key={`${text}:${prefix}`} left={prefix} right={text} />
 				))}
 			</div>
 		</div>
@@ -189,7 +189,15 @@ function BackButton() {
 	return (
 		<a
 			href="/console/entities"
-			hx-on="click: history.back()"
+			hx-on:click={`
+              const referrer = document.referrer;
+              const origin = window.location.origin;
+              const prevPath = referrer.startsWith(origin) ? new URL(referrer).pathname : '';
+              if (prevPath.startsWith('/console/entities')) {
+                window.history.back();
+                event.preventDefault();
+              }
+            `}
 			className="inline-flex items-center gap-1  text-zinc-400 hover:text-zinc-200"
 		>
 			<ChevronLeftIcon /> <span>Back</span>
