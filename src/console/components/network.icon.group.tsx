@@ -2,7 +2,7 @@ import type { NetworkInfos } from "../extra.infos";
 import { NetworkIcon } from "./network.icon";
 
 type NetworkIconGroupProps = {
-	urns: string[];
+	urns: Array<string | undefined>;
 	max?: number;
 	size?: number;
 	networkInfos: NetworkInfos;

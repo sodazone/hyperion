@@ -1,7 +1,7 @@
 import type { NetworkInfos } from "../extra.infos";
 
 type NetworkIconProps = {
-	urn: string;
+	urn?: string;
 	name?: string;
 	showName?: boolean;
 	size?: number;
@@ -14,6 +14,8 @@ export function NetworkIcon({
 	size = 16,
 	networkInfos,
 }: NetworkIconProps) {
+	if (urn === undefined) return null;
+
 	const { resolveNetworkIcon, resolveNetworkName } = networkInfos;
 
 	const icon = resolveNetworkIcon(urn);

@@ -1,5 +1,4 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
-import { NetworkMap } from "@/intel/mapping";
 import { decodeCursor, encodeCursor } from "../cursors";
 import type { Category, Entity, Tag } from "../model";
 import { b, cleanFilter } from "./util";
@@ -346,7 +345,7 @@ export class AddressDB {
 		cursor?: string;
 		limit?: number;
 	}): {
-		rows: Array<Entity & { networks: string[] }>;
+		rows: Array<Entity>;
 		cursorNext?: string;
 	} {
 		const limit = opts.limit ?? 25;
@@ -390,7 +389,7 @@ export class AddressDB {
 			...addresses.map((a) => a.address),
 		);
 
-		const map = new Map<string, Entity & { networks: string[] }>();
+		const map = new Map<string, Entity>();
 		const keyOf = (a: Uint8Array) => Buffer.from(a).toString("hex");
 
 		for (const { address, address_formatted } of addresses) {
@@ -400,7 +399,6 @@ export class AddressDB {
 				address_formatted,
 				tags: [],
 				categories: [],
-				networks: [],
 			});
 		}
 
@@ -415,9 +413,6 @@ export class AddressDB {
 		} of tagRows) {
 			const entity = map.get(keyOf(address));
 			if (entity !== undefined) {
-				const networkUrn = NetworkMap.toURN(network ?? 0) ?? "unknown";
-				if (entity.networks.indexOf(networkUrn) === -1)
-					entity.networks.push(networkUrn);
 				entity?.tags?.push({
 					tag,
 					timestamp,
@@ -441,9 +436,6 @@ export class AddressDB {
 		} of catRows) {
 			const entity = map.get(keyOf(address));
 			if (entity !== undefined) {
-				const networkUrn = NetworkMap.toURN(network ?? 0) ?? "unknown";
-				if (entity.networks.indexOf(networkUrn) === -1)
-					entity.networks.push(networkUrn);
 				entity.categories?.push({
 					category,
 					subcategory,

@@ -2,16 +2,44 @@ import { ConsoleApp } from "@/console/app";
 import { EntityDetailsView } from "@/console/entity.detail";
 import { EntitiesView } from "@/console/entity.list";
 import type { NetworkInfos } from "@/console/extra.infos";
-import { type HyperionDB, PUBLIC_OWNER } from "@/db";
+import { type Entity, type HyperionDB, PUBLIC_OWNER } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
+import { NetworkMap } from "@/intel/mapping";
 import type { AuthApi } from "@/server/auth/stytch";
 import { coerceNetworkId } from "@/server/intel/params";
 import { render } from "@/server/render";
+import type { EntityRow } from "./types";
 
 type Context = {
 	db: HyperionDB;
 	networkInfos: NetworkInfos;
 	authApi: AuthApi;
+};
+
+const enrichRows = (rows: Entity[]): Array<EntityRow> => {
+	return rows.map((e) => {
+		const networksSet = new Set<number>();
+		const categoriesSet = new Set<number>();
+		const tagsSet = new Set<string>();
+
+		e.categories?.forEach((c) => {
+			networksSet.add(c.network);
+			categoriesSet.add(c.category);
+		});
+		e.tags?.forEach((t) => {
+			networksSet.add(t.network);
+			tagsSet.add(t.tag);
+		});
+
+		return {
+			...e,
+			sets: {
+				networks: Array.from(networksSet).map(NetworkMap.toURN),
+				categories: Array.from(categoriesSet),
+				tags: Array.from(tagsSet),
+			},
+		};
+	});
 };
 
 export async function EntityListPage(
@@ -29,14 +57,14 @@ export async function EntityListPage(
 		owner: PUBLIC_OWNER,
 		network,
 		cursor,
-		//tag: "phishing_domain:polkadot-bonus.network",
+		// tag: "phishing_domain:polkadot-bonus.network",
 		category: Number.isNaN(category) ? undefined : category,
 		limit: 15,
 		address: search,
 	});
 
 	const page = {
-		rows,
+		rows: enrichRows(rows),
 		cursorNext,
 		cursorCurrent: cursor,
 		filters: {

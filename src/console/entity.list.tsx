@@ -1,4 +1,3 @@
-import type { Entity } from "@/db";
 import { topLevelCategories } from "@/intel/mapping";
 import { CopyButton } from "./components/btn.copy";
 import { CategoryBadge } from "./components/category.badge";
@@ -10,9 +9,10 @@ import {
 } from "./components/icons";
 import { NetworkIconGroup } from "./components/network.icon.group";
 import type { NetworkInfos } from "./extra.infos";
+import type { EntityRow } from "./types";
 
 type EntityPage = {
-	rows: Array<Entity & { networks: string[] }>;
+	rows: Array<EntityRow>;
 	cursorNext?: string | null;
 	cursorCurrent?: string | null;
 	filters: {
@@ -185,11 +185,11 @@ export function EntitiesView({ page, ctx: { networkInfos } }: Props) {
 								<td className="px-4 py-2 text-zinc-300">
 									<NetworkIconGroup
 										networkInfos={networkInfos}
-										urns={e.networks}
+										urns={e.sets.networks}
 									/>
 								</td>
 								<td className="px-4 py-2 text-zinc-300">
-									{e.categories?.map(({ category }) => (
+									{e.sets.categories?.map((category) => (
 										<CategoryBadge key={category} categoryCode={category} />
 									))}
 								</td>
