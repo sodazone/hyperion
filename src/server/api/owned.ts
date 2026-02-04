@@ -52,7 +52,7 @@ async function postCategory(
 	const body = await req.json();
 	if (body instanceof Response) return body;
 
-	const result = await db.putCategory({ ...params, owner: ownerHash }, body);
+	const result = db.putCategory({ ...params, raw: body, owner: ownerHash });
 
 	return Response.json(result);
 }
@@ -67,7 +67,7 @@ async function deleteCategory(
 	const params = coerceCatetoryWriteParams(req.params);
 	if (params instanceof Response) return params;
 
-	const result = await db.deleteCategory({
+	const result = db.deleteCategory({
 		...params,
 		owner: ownerHash,
 	});

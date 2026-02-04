@@ -166,6 +166,23 @@ export class AddressDB {
 		);
 	}
 
+	deleteEntity({
+		owner,
+		address,
+	}: {
+		owner: Uint8Array;
+		address: Uint8Array | string;
+	}) {
+		return (
+			this.db.run(
+				`
+        DELETE FROM entity
+        WHERE owner=? AND address=?`,
+				[owner, b(address)],
+			).changes ?? 0
+		);
+	}
+
 	hasEntity({
 		owner,
 		address,
@@ -198,6 +215,56 @@ export class AddressDB {
 				args.category,
 				args.subcategory ?? 0,
 			);
+	}
+
+	deleteAllCategories({
+		owner,
+		address,
+		network,
+	}: {
+		owner: Uint8Array;
+		address: Uint8Array | string;
+		network?: number;
+	}) {
+		const params: SQLQueryBindings[] = [owner, b(address)];
+		const where = ["owner = ?", "address = ?"];
+
+		if (network !== undefined) {
+			where.push("network = ?");
+			params.push(network);
+		}
+
+		const sql = `
+        DELETE FROM entity_category
+        WHERE ${where.join(" AND ")}
+      `;
+
+		return this.db.run(sql, params).changes ?? 0;
+	}
+
+	deleteAllTags({
+		owner,
+		address,
+		network,
+	}: {
+		owner: Uint8Array;
+		address: Uint8Array | string;
+		network?: number;
+	}) {
+		const params: SQLQueryBindings[] = [owner, b(address)];
+		const where = ["owner = ?", "address = ?"];
+
+		if (network !== undefined) {
+			where.push("network = ?");
+			params.push(network);
+		}
+
+		const sql = `
+        DELETE FROM entity_tag
+        WHERE ${where.join(" AND ")}
+      `;
+
+		return this.db.run(sql, params).changes ?? 0;
 	}
 
 	upsertTag({

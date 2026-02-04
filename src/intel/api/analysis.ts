@@ -6,7 +6,6 @@ import type {
 	AddressAnalysis,
 	LabeledCategory,
 	SanctionsResult,
-	StructuredTag,
 } from "./types";
 
 function asLabeledCategory(category: Category): LabeledCategory {
@@ -20,13 +19,6 @@ function asLabeledCategory(category: Category): LabeledCategory {
 			label: CategoriesMap.getLabel(category.category, category.subcategory),
 		},
 	};
-}
-
-function asStructuredTag({ tag }: { tag: string }): StructuredTag {
-	if (tag.indexOf(":") === -1) return { text: tag, prefix: "tag" };
-
-	const [prefix, text] = tag.split(":");
-	return { text: text ?? "", prefix: prefix ?? "" };
 }
 
 export function checkSanctions(
@@ -113,7 +105,7 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 				sanctioned,
 				risk,
 				attribution,
-				tags: tags.map(asStructuredTag),
+				tags: tags.map((tag) => tag.tag),
 			},
 		});
 	}
@@ -141,7 +133,7 @@ export function analyzeAddress(
 		.map(asLabeledCategory);
 	const tags = db
 		.getTags({ owner: PUBLIC_OWNER, address, network })
-		.map(asStructuredTag);
+		.map((tag) => tag.tag);
 
 	const sanctioned = checkSanctions(db, address, network);
 	const risk = computeRisk(sanctioned, attribution, tags);

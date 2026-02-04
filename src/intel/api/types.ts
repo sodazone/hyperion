@@ -14,14 +14,9 @@ export type LabeledCategory = {
 	subcategory: { code: number; label?: string };
 };
 
-export type StructuredTag = {
-	text: string;
-	prefix: string;
-};
-
 export type AddressAnalysis = {
 	sanctioned: SanctionsResult;
 	risk: RiskResult;
 	attribution: Array<LabeledCategory>;
-	tags: Array<StructuredTag>;
+	tags: Array<string>;
 };

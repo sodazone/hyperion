@@ -5,7 +5,7 @@ export function TagRow(t?: { network?: number; tag?: string }) {
 	return (
 		<div className="flex items-center gap-2 tag-row">
 			<select
-				name="tag_network[]"
+				name="tags[][network]"
 				defaultValue={t?.network ?? 768}
 				className="bg-zinc-900 px-2 py-2 text-xs rounded"
 			>
@@ -15,7 +15,7 @@ export function TagRow(t?: { network?: number; tag?: string }) {
 			</select>
 
 			<input
-				name="tag_value[]"
+				name="tags[][tag]"
 				defaultValue={t?.tag ?? ""}
 				placeholder="tag"
 				className="flex-1 bg-zinc-900 px-3 py-2 text-sm rounded"
@@ -35,12 +35,11 @@ export function TagRow(t?: { network?: number; tag?: string }) {
 export function CategoryRow({
 	network = 768,
 	category,
-	subcategory = 0,
 }: Partial<Category> = {}) {
 	return (
 		<div className="flex items-center gap-2 category-row">
 			<select
-				name="cat_network[]"
+				name="categories[][network]"
 				required
 				defaultValue={network}
 				className="bg-zinc-900 px-2 py-2 text-xs rounded"
@@ -52,7 +51,7 @@ export function CategoryRow({
 
 			<select
 				required
-				name="cat_category[]"
+				name="categories[][category]"
 				defaultValue={category}
 				className="bg-zinc-900 px-2 py-2 text-xs rounded"
 			>
@@ -62,14 +61,6 @@ export function CategoryRow({
 					</option>
 				))}
 			</select>
-
-			<input
-				name="cat_subcategory[]"
-				type="number"
-				required
-				defaultValue={subcategory}
-				className="w-20 bg-zinc-900 px-2 py-2 text-xs rounded"
-			/>
 
 			<button
 				type="button"
