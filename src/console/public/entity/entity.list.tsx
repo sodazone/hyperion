@@ -35,7 +35,10 @@ export function EntitiesList({ page, ctx: { url } }: Props) {
 			hasNext={!!cursorNext}
 			hasPrev={!!cursorCurrent}
 		>
-			<TopBar left={<SearchFilters path={path} filters={filters} />} />
+			<TopBar
+				left={<h1 className="text-lg font-semibold">Public Entities</h1>}
+			/>
+			<SearchFilters path={path} filters={filters} />
 			<EntityTable
 				rowLink={(e: EntityRow) => `/console/entities/${e.address_formatted}`}
 				rows={rows}

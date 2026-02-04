@@ -36,7 +36,7 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 			hasPrev={!!cursorCurrent}
 		>
 			<TopBar
-				left={<SearchFilters path={path} filters={filters} />}
+				left={<h1 className="text-lg font-semibold">Watchlist</h1>}
 				right={
 					<button
 						type="button"
@@ -52,6 +52,8 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 					</button>
 				}
 			/>
+
+			<SearchFilters path={path} filters={filters} />
 
 			<EntityTable
 				rows={rows}
@@ -75,14 +77,13 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 
 						<button
 							type="button"
-							className="ui-btn"
+							className=""
 							hx-delete={`/console/watchlist/${row.address_formatted}`}
 							hx-target="#main-content"
 							hx-on:click="event.stopPropagation()"
 							hx-confirm="Are you sure you want to delete this watchlist entry?"
 						>
-							<span className="text-red-900">✕</span>
-							<span>Delete</span>
+							<span>delete</span>
 						</button>
 					</div>
 				)}
