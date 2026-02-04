@@ -43,7 +43,7 @@ export function Sidebar({ member }: Props) {
 							className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 							data-href="/console/alerts"
 							hx-get="/console/alerts"
-							hx-target="#main-panel"
+							hx-target="#main-content"
 							hx-push-url="true"
 						>
 							Alerts
@@ -54,7 +54,7 @@ export function Sidebar({ member }: Props) {
 									className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 									data-href="/console/rules"
 									hx-get="/console/rules"
-									hx-target="#main-panel"
+									hx-target="#main-content"
 									hx-push-url="true"
 								>
 									Rules
@@ -63,7 +63,7 @@ export function Sidebar({ member }: Props) {
 									className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 									data-href="/console/destinations"
 									hx-get="/console/destinations"
-									hx-target="#main-panel"
+									hx-target="#main-content"
 									hx-push-url="true"
 								>
 									Destinations
@@ -84,7 +84,7 @@ export function Sidebar({ member }: Props) {
 							className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 							data-href="/console/entities"
 							hx-get="/console/entities"
-							hx-target="#main-panel"
+							hx-target="#main-content"
 							hx-push-url="true"
 						>
 							Public Registry
@@ -94,7 +94,7 @@ export function Sidebar({ member }: Props) {
 								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 								data-href="/console/watchlist"
 								hx-get="/console/watchlist"
-								hx-target="#main-panel"
+								hx-target="#main-content"
 								hx-push-url="true"
 							>
 								My Watchlist
