@@ -1,5 +1,5 @@
 import { hashOwner } from "@/auth";
-import { coerceNetworkId } from "@/server/intel/params";
+import { coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
 import { InvalidParameters, Unauthorized } from "@/server/response";
 import { ConsoleApp } from "../../app";
@@ -94,12 +94,12 @@ export async function WatchlistPage(
 	};
 
 	if (req.headers.get("HX-Request")) {
-		return render(<WatchlistList ctx={{ networkInfos }} page={page} />);
+		return render(<WatchlistList ctx={{ networkInfos, url }} page={page} />);
 	}
 
 	return render(
 		<ConsoleApp member={user} path="/console/watchlist">
-			<WatchlistList ctx={{ networkInfos }} page={page} />
+			<WatchlistList ctx={{ networkInfos, url }} page={page} />
 		</ConsoleApp>,
 	);
 }

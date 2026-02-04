@@ -2,5 +2,5 @@
 
 button,
 select {
-	@apply cursor-pointer;
+	@apply cursor-pointer disabled:cursor-default;
 }

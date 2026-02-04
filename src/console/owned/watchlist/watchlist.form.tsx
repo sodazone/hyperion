@@ -6,10 +6,6 @@ import { CategoryRow, TagRow } from "./watchlist.form.rows";
 export function WatchlistForm({ entity }: { entity?: Entity }) {
 	const isEdit = !!entity;
 
-	const action = isEdit
-		? `/console/watchlist/${entity.address_formatted}`
-		: "/console/watchlist";
-
 	const method = isEdit ? "hx-put" : "hx-post";
 	const inputClass =
 		"w-full px-3 py-2 text-sm bg-transparent border-b border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:border-zinc-300 focus:outline-none";
@@ -23,9 +19,10 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 						hx-get="/console/watchlist"
 						hx-target="#main-content"
 						hx-push-url="true"
-						className="text-zinc-400 hover:text-zinc-200"
+						className="inline-flex items-center gap-1  text-zinc-400 hover:text-zinc-200"
 					>
-						<ChevronLeftIcon size={24} /> Back
+						<ChevronLeftIcon size={24} />
+						<span>Back</span>
 					</button>
 				}
 				right={
@@ -36,13 +33,14 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 			/>
 
 			<form
-				{...{ [method]: action }}
-				hx-target="#main-content"
+				{...{ [method]: "/console/watchlist" }}
+				hx-target="#error"
 				hx-swap="innerHTML"
-				hx-push-url="true"
 				hx-disabled-elt="button[type=submit]"
 				className="space-y-4 p-4 min-w-xl max-w-xl mx-auto"
 			>
+				<div id="error"></div>
+
 				{/* Address */}
 				<input
 					name="address"
@@ -110,7 +108,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 
 					<button
 						type="submit"
-						className="rounded bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700"
+						className="rounded bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700 disabled:opacity-40"
 					>
 						{isEdit ? "Save" : "Add"}
 					</button>

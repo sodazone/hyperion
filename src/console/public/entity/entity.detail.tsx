@@ -1,5 +1,5 @@
 import { CopyButton } from "@/console//components/btn.copy";
-import { SplitBadge } from "@/console/components/badge";
+import { SplitBadge, TagBadge } from "@/console/components/badge";
 import { ChevronLeftIcon } from "@/console/components/icons";
 import { NetworkIcon } from "@/console/components/network.icon";
 import type { NetworkInfos } from "@/console/extra.infos";
@@ -177,8 +177,8 @@ function TagsPanel({ tags }: { tags: AddressAnalysis["tags"] }) {
 			</h3>
 
 			<div className="flex flex-wrap gap-2">
-				{tags.map(({ text, prefix }) => (
-					<SplitBadge key={`${text}:${prefix}`} left={prefix} right={text} />
+				{tags.map((tag) => (
+					<TagBadge key={tag} tag={tag} />
 				))}
 			</div>
 		</div>
@@ -200,7 +200,7 @@ function BackButton() {
             `}
 			className="inline-flex items-center gap-1  text-zinc-400 hover:text-zinc-200"
 		>
-			<ChevronLeftIcon /> <span>Back</span>
+			<ChevronLeftIcon size={24} /> <span>Back</span>
 		</a>
 	);
 }

@@ -1,4 +1,3 @@
-import { hashOwner } from "@/auth";
 import { loadExtraInfos } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
 import {
@@ -6,15 +5,15 @@ import {
 	WatchlistFormPage,
 	WatchlistPage,
 	WatchlistTagRowPage,
-} from "@/console/my/watchlist/watchlist.pages";
+} from "@/console/owned/watchlist/watchlist.pages";
 import {
 	EntityDetailPage,
 	EntityListPage,
 } from "@/console/public/entity/entity.pages";
 import { createHyperionDB, type HyperionDB } from "@/db";
-import { normalizeAddress } from "@/intel/mapping";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
+import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import {
 	getOwnerHashFromRequest,
@@ -22,8 +21,11 @@ import {
 	loadJWKS,
 } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
-import { intel } from "./intel/routes";
-import { InternalServerError, NotFound, Unauthorized } from "./response";
+import { Unauthorized } from "./response";
+import {
+	WatchlistDeleteHandler,
+	WatchlistPostHandler,
+} from "./watchlist/forms";
 
 export type Serve = {
 	shutdown: (signal: string) => Promise<void>;
@@ -73,60 +75,11 @@ export async function serve({
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/console/watchlist": {
 				GET: async (req) => WatchlistPage(ctx, req),
-				POST: async (req) => {
-					const user = await authApi.getAuthenticatedUser(req);
-					if (!user) return Unauthorized;
-
-					const formData = await req.formData();
-					const address = formData.get("address")?.toString();
-					const networkParam = formData.get("network")?.toString();
-					const category = formData.get("category")?.toString();
-					const tags = formData.get("tags")?.toString();
-					console.log(formData);
-
-					if (!address || !networkParam || !category || !tags) {
-						return Response.json(
-							{ error: "Missing required fields" },
-							{ status: 400 },
-						);
-					}
-
-					const network = Number(networkParam);
-					const timestamp = Date.now();
-					const source = user.email;
-					const version = 0;
-
-					try {
-						db.upsertEntities([
-							{
-								owner: hashOwner(user.email),
-								address: normalizeAddress(address),
-								address_formatted: address,
-								categories: [
-									{
-										category: Number(category),
-										subcategory: 0,
-										timestamp,
-										source,
-										version,
-										network,
-									},
-								],
-								tags: tags.split(",").map((t) => ({
-									tag: t.trim(),
-									timestamp,
-									source,
-									version,
-									network,
-								})),
-							},
-						]);
-						return NotFound;
-					} catch (error) {
-						console.error(error);
-						return InternalServerError;
-					}
-				},
+				POST: async (req) => WatchlistPostHandler(ctx, req),
+				PUT: async (req) => WatchlistPostHandler(ctx, req),
+			},
+			"/console/watchlist/:address": {
+				DELETE: async (req) => WatchlistDeleteHandler(ctx, req),
 			},
 			"/console/watchlist/form/:address": async (req) =>
 				WatchlistFormPage(ctx, req),

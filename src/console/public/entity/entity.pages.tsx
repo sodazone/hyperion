@@ -3,7 +3,7 @@ import { EntityDetailsView } from "@/console/public/entity/entity.detail";
 import { EntitiesList } from "@/console/public/entity/entity.list";
 import { PUBLIC_OWNER } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
-import { coerceNetworkId } from "@/server/intel/params";
+import { coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
 import type { PageContext } from "../../types";
 import { enrichEntityRows } from "../../util";
@@ -41,14 +41,14 @@ export async function EntityListPage(
 	};
 
 	if (req.headers.get("HX-Request")) {
-		return render(<EntitiesList ctx={{ networkInfos }} page={page} />);
+		return render(<EntitiesList ctx={{ networkInfos, url }} page={page} />);
 	}
 
 	const user = await authApi.getAuthenticatedUser(req);
 
 	return render(
 		<ConsoleApp member={user} path="/console/entities">
-			<EntitiesList ctx={{ networkInfos }} page={page} />
+			<EntitiesList ctx={{ networkInfos, url }} page={page} />
 		</ConsoleApp>,
 	);
 }

@@ -2,6 +2,13 @@ import type { Entity } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import type { EntityRow } from "./types";
 
+export function withCursor(url: URL, cursor?: string | null) {
+	if (cursor) url.searchParams.set("cursor", cursor);
+	else url.searchParams.delete("cursor");
+
+	return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
 export const enrichEntityRows = (rows: Entity[]): Array<EntityRow> => {
 	return rows.map((e) => {
 		const networksSet = new Set<number>();
