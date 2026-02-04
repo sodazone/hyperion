@@ -1,4 +1,5 @@
 import { topLevelCategories } from "@/intel/mapping";
+import { NetworkCache } from "../network.cache";
 import { ChevronUpDownIcon, SearchIcon } from "./icons";
 
 export type Filters = {
@@ -36,67 +37,28 @@ export function SearchFilters({ path, filters }: Props) {
 					name="q"
 					defaultValue={filters.q}
 					placeholder="Search address..."
-					className="w-full pl-8 pr-3 py-2 text-sm bg-transparent
-                 border-b border-zinc-800
-                 text-zinc-100
-                 placeholder-zinc-600
-                 focus:border-zinc-300
-                 focus:outline-none"
+					className="ui-input w-full pl-8 pr-3 py-2"
 				/>
 			</div>
 
 			{/* Network Filter */}
-			<div className="relative w-40">
-				<select
-					name="networkId"
-					defaultValue={filters.networkId ?? "*"}
-					className="
-             w-full
-             border
-             border-zinc-900
-             bg-zinc-950
-             text-zinc-400
-             text-sm
-             px-3
-             py-2
-             rounded-md
-             appearance-none
-             hover:text-zinc-200
-             hover:bg-zinc-900
-             focus:outline-none
-           "
-				>
+			<div className="ui-select w-40">
+				<select name="networkId" defaultValue={filters.networkId ?? "*"}>
 					<option value="*">All Networks</option>
-					<option value="768">Ethereum</option>
-					<option value="257">Polkadot Asset Hub</option>
-					<option value="1280">Bitcoin</option>
+					{NetworkCache.all().map(({ name, id }) => (
+						<option key={id} value={id}>
+							{name}
+						</option>
+					))}
 				</select>
-				<div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-zinc-600">
+				<div className="ui-select-btn">
 					<ChevronUpDownIcon />
 				</div>
 			</div>
 
 			{/* Category Filter */}
-			<div className="relative w-40">
-				<select
-					name="category"
-					defaultValue={filters.category ?? "*"}
-					className="
-             w-full
-             border
-             border-zinc-900
-             bg-zinc-950
-             text-zinc-400
-             text-sm
-             px-3
-             py-2
-             rounded-md
-             appearance-none
-             hover:text-zinc-200
-             hover:bg-zinc-900
-             focus:outline-none
-           "
-				>
+			<div className="ui-select w-40">
+				<select name="category" defaultValue={filters.category ?? "*"}>
 					<option value="*">All Categories</option>
 					{topLevelCategories.map(({ category, label }) => (
 						<option key={category} value={category}>
@@ -104,7 +66,7 @@ export function SearchFilters({ path, filters }: Props) {
 						</option>
 					))}
 				</select>
-				<div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-zinc-600">
+				<div className="ui-select-btn">
 					<ChevronUpDownIcon />
 				</div>
 			</div>

@@ -1,24 +1,30 @@
+import { ChevronUpDownIcon } from "@/console/components/icons";
+import { NetworkCache } from "@/console/network.cache";
 import type { Category } from "@/db";
 import { topLevelCategories } from "@/intel/mapping";
 
 export function TagRow(t?: { network?: number; tag?: string }) {
 	return (
 		<div className="flex items-center gap-2 tag-row">
-			<select
-				name="tags[][network]"
-				defaultValue={t?.network ?? 768}
-				className="bg-zinc-900 px-2 py-2 text-xs rounded"
-			>
-				<option value="768">ETH</option>
-				<option value="257">DOT</option>
-				<option value="1280">BTC</option>
-			</select>
+			<div className="ui-select">
+				<select name="tags[][network]" defaultValue={t?.network ?? 768}>
+					{NetworkCache.all().map(({ name, id }) => (
+						<option key={id} value={id}>
+							{name}
+						</option>
+					))}
+				</select>
+				<div className="ui-select-btn">
+					<ChevronUpDownIcon />
+				</div>
+			</div>
 
 			<input
+				type="text"
 				name="tags[][tag]"
 				defaultValue={t?.tag ?? ""}
 				placeholder="tag"
-				className="flex-1 bg-zinc-900 px-3 py-2 text-sm rounded"
+				className="flex-1 px-3 py-2 input-ui"
 			/>
 
 			<button
@@ -38,29 +44,31 @@ export function CategoryRow({
 }: Partial<Category> = {}) {
 	return (
 		<div className="flex items-center gap-2 category-row">
-			<select
-				name="categories[][network]"
-				required
-				defaultValue={network}
-				className="bg-zinc-900 px-2 py-2 text-xs rounded"
-			>
-				<option value="768">ETH</option>
-				<option value="257">DOT</option>
-				<option value="1280">BTC</option>
-			</select>
+			<div className="ui-select">
+				<select name="categories[][network]" required defaultValue={network}>
+					{NetworkCache.all().map(({ name, id }) => (
+						<option key={id} value={id}>
+							{name}
+						</option>
+					))}
+				</select>
+				<div className="ui-select-btn">
+					<ChevronUpDownIcon />
+				</div>
+			</div>
 
-			<select
-				required
-				name="categories[][category]"
-				defaultValue={category}
-				className="bg-zinc-900 px-2 py-2 text-xs rounded"
-			>
-				{topLevelCategories.map(({ category, label }) => (
-					<option key={category} value={category}>
-						{label}
-					</option>
-				))}
-			</select>
+			<div className="ui-select">
+				<select required name="categories[][category]" defaultValue={category}>
+					{topLevelCategories.map(({ category, label }) => (
+						<option key={category} value={category}>
+							{label}
+						</option>
+					))}
+				</select>
+				<div className="ui-select-btn">
+					<ChevronUpDownIcon />
+				</div>
+			</div>
 
 			<button
 				type="button"

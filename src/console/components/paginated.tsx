@@ -20,7 +20,7 @@ export function Paginated({
 					type="button"
 					hx-on:click="history.back()"
 					disabled={!hasPrev}
-					className="rounded-md border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900 disabled:opacity-40 disabled:hover:bg-transparent flex gap-2"
+					className="ui-btn"
 				>
 					<ChevronLeftIcon /> <span>Previous</span>
 				</button>
@@ -31,7 +31,7 @@ export function Paginated({
 					hx-target="#main-content"
 					hx-push-url="true"
 					disabled={!hasNext}
-					className="rounded-md border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900 disabled:opacity-40 disabled:hover:bg-transparent flex gap-2"
+					className="ui-btn"
 				>
 					<span>Next</span> <ChevronRightIcon />
 				</button>

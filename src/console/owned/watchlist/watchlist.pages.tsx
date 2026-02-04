@@ -26,7 +26,7 @@ export async function WatchlistCategoryRowPage(req: Request) {
 }
 
 export async function WatchlistFormPage(
-	{ db, networkInfos, authApi }: PageContext,
+	{ db, authApi }: PageContext,
 	req: Bun.BunRequest<"/console/watchlist/form/:address">,
 ) {
 	const user = await authApi.getAuthenticatedUser(req);
@@ -55,7 +55,7 @@ export async function WatchlistFormPage(
 }
 
 export async function WatchlistPage(
-	{ db, networkInfos, authApi }: PageContext,
+	{ db, authApi }: PageContext,
 	req: Bun.BunRequest,
 ) {
 	const user = await authApi.getAuthenticatedUser(req);
@@ -94,12 +94,12 @@ export async function WatchlistPage(
 	};
 
 	if (req.headers.get("HX-Request")) {
-		return render(<WatchlistList ctx={{ networkInfos, url }} page={page} />);
+		return render(<WatchlistList ctx={{ url }} page={page} />);
 	}
 
 	return render(
 		<ConsoleApp member={user} path="/console/watchlist">
-			<WatchlistList ctx={{ networkInfos, url }} page={page} />
+			<WatchlistList ctx={{ url }} page={page} />
 		</ConsoleApp>,
 	);
 }

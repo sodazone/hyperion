@@ -3,7 +3,6 @@ import { Paginated } from "@/console/components/paginated";
 import { SearchFilters } from "@/console/components/search.filters";
 import { TopBar } from "@/console/components/top.bar";
 import { withCursor } from "@/console/util";
-import type { NetworkInfos } from "../../extra.infos";
 import type { EntityRow } from "../../types";
 
 type EntityPage = {
@@ -20,12 +19,11 @@ type EntityPage = {
 type Props = {
 	page: EntityPage;
 	ctx: {
-		networkInfos: NetworkInfos;
 		url: URL;
 	};
 };
 
-export function EntitiesList({ page, ctx: { networkInfos, url } }: Props) {
+export function EntitiesList({ page, ctx: { url } }: Props) {
 	const { rows, cursorNext, cursorCurrent, filters } = page;
 
 	const nextUrl = withCursor(url, cursorNext);
@@ -41,7 +39,6 @@ export function EntitiesList({ page, ctx: { networkInfos, url } }: Props) {
 			<EntityTable
 				rowLink={(e: EntityRow) => `/console/entities/${e.address_formatted}`}
 				rows={rows}
-				networkInfos={networkInfos}
 			/>
 		</Paginated>
 	);

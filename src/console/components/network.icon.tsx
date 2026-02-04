@@ -1,25 +1,22 @@
-import type { NetworkInfos } from "../extra.infos";
+import { NetworkCache } from "@/console/network.cache";
 
 type NetworkIconProps = {
 	urn?: string;
-	name?: string;
 	showName?: boolean;
 	size?: number;
-	networkInfos: NetworkInfos;
 };
 
 export function NetworkIcon({
 	urn,
 	showName = false,
 	size = 16,
-	networkInfos,
 }: NetworkIconProps) {
-	if (urn === undefined) return null;
+	if (!urn) return null;
 
-	const { resolveNetworkIcon, resolveNetworkName } = networkInfos;
+	const net = NetworkCache.fromURN(urn);
 
-	const icon = resolveNetworkIcon(urn);
-	const label = resolveNetworkName(urn) ?? urn;
+	const label = net?.name ?? urn;
+	const icon = net?.icon;
 
 	return (
 		<span className="inline-flex items-center gap-1.5">
