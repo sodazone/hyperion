@@ -17,7 +17,7 @@ export function EntityTable({
 }) {
 	return (
 		<div id="entity-table" className="flex-1 overflow-auto">
-			<table className="w-full table-fixed text-sm">
+			<table className="w-full table-auto md:table-fixed text-sm">
 				<colgroup>
 					<col className="w-40" />
 					<col className="w-20" />

@@ -17,14 +17,14 @@ export function SearchFilters({ path, filters }: Props) {
 	return (
 		<form
 			id="search-filters-form"
-			className="flex flex-wrap items-center gap-2"
+			className="flex flex-wrap items-center gap-2 md:gap-4 border-b border-zinc-800 py-4 px-2"
 			hx-get={path}
 			hx-target="#main-content"
 			hx-trigger="change from:select, reset"
 			hx-push-url="true"
 		>
 			{/* Search Input */}
-			<div className="relative w-80 mr-4">
+			<div className="relative flex-1 min-w-50 md:w-80">
 				<button
 					type="submit"
 					className="absolute left-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-zinc-600 hover:text-zinc-100"
@@ -41,33 +41,35 @@ export function SearchFilters({ path, filters }: Props) {
 				/>
 			</div>
 
-			{/* Network Filter */}
-			<div className="ui-select w-40">
-				<select name="networkId" defaultValue={filters.networkId ?? "*"}>
-					<option value="*">All Networks</option>
-					{NetworkCache.all().map(({ name, id }) => (
-						<option key={id} value={id}>
-							{name}
-						</option>
-					))}
-				</select>
-				<div className="ui-select-btn">
-					<ChevronUpDownIcon />
+			<div className="flex gap-2 md:gap-4 flex-1 min-w-37.5">
+				{/* Network Filter */}
+				<div className="ui-select w-40">
+					<select name="networkId" defaultValue={filters.networkId ?? "*"}>
+						<option value="*">All Networks</option>
+						{NetworkCache.all().map(({ name, id }) => (
+							<option key={id} value={id}>
+								{name}
+							</option>
+						))}
+					</select>
+					<div className="ui-select-btn">
+						<ChevronUpDownIcon />
+					</div>
 				</div>
-			</div>
 
-			{/* Category Filter */}
-			<div className="ui-select w-40">
-				<select name="category" defaultValue={filters.category ?? "*"}>
-					<option value="*">All Categories</option>
-					{topLevelCategories.map(({ category, label }) => (
-						<option key={category} value={category}>
-							{label}
-						</option>
-					))}
-				</select>
-				<div className="ui-select-btn">
-					<ChevronUpDownIcon />
+				{/* Category Filter */}
+				<div className="ui-select w-40">
+					<select name="category" defaultValue={filters.category ?? "*"}>
+						<option value="*">All Categories</option>
+						{topLevelCategories.map(({ category, label }) => (
+							<option key={category} value={category}>
+								{label}
+							</option>
+						))}
+					</select>
+					<div className="ui-select-btn">
+						<ChevronUpDownIcon />
+					</div>
 				</div>
 			</div>
 

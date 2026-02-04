@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
 button {
-    @apply cursor-pointer;
+	@apply cursor-pointer;
 }
 
 input[type="text"].ui-input {
-    @apply text-sm bg-transparent border-b border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:border-zinc-300 focus:outline-none;
+	@apply text-sm bg-transparent border rounded-md border-zinc-900 text-zinc-100 placeholder-zinc-600 focus:border-zinc-300 focus:outline-none;
 }
 
 button.ui-btn {
-    @apply flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 cursor-pointer hover:text-zinc-200 hover:bg-zinc-900 disabled:hover:text-zinc-400 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-default focus:outline-none;
+	@apply flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 cursor-pointer hover:text-zinc-200 hover:bg-zinc-900 disabled:hover:text-zinc-400 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-default focus:outline-none;
 }
 
 div.ui-select {
-    @apply relative;
+	@apply relative;
 
-    .ui-select-btn {
-        @apply pointer-events-none absolute inset-y-0 right-2 flex items-center text-zinc-600;
-    }
+	.ui-select-btn {
+		@apply pointer-events-none absolute inset-y-0 right-2 flex items-center text-zinc-600;
+	}
 
-    select {
-        @apply w-full border border-zinc-900 bg-zinc-950 text-zinc-400 text-sm px-3 py-2 rounded-md appearance-none hover:text-zinc-200 hover:bg-zinc-900 focus:outline-none cursor-pointer;
-    }
+	select {
+		@apply w-full border border-zinc-900 bg-zinc-950 text-zinc-400 text-sm px-3 py-2 rounded-md appearance-none hover:text-zinc-200 hover:bg-zinc-900 focus:outline-none cursor-pointer;
+	}
 }
