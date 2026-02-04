@@ -53,8 +53,8 @@ export async function EntityListPage(
 	);
 }
 
-export function EntityDetailPage(
-	{ db }: PageContext,
+export async function EntityDetailPage(
+	{ db, authApi }: PageContext,
 	req: Bun.BunRequest<"/console/entities/:id">,
 ) {
 	const address = req.params.id;
@@ -73,8 +73,10 @@ export function EntityDetailPage(
 		return render(<EntityDetailsView entity={entity} />);
 	}
 
+	const user = await authApi.getAuthenticatedUser(req);
+
 	return render(
-		<ConsoleApp path="/console/entities">
+		<ConsoleApp member={user} path="/console/entities">
 			<EntityDetailsView entity={entity} />
 		</ConsoleApp>,
 	);

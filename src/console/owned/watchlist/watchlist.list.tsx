@@ -1,5 +1,5 @@
 import { EntityTable } from "@/console/components/entity.table";
-import { PencilIcon, PlusIcon } from "@/console/components/icons";
+import { PlusIcon } from "@/console/components/icons";
 import { Paginated } from "@/console/components/paginated";
 import { SearchFilters } from "@/console/components/search.filters";
 import { TopBar } from "@/console/components/top.bar";
@@ -45,9 +45,7 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 						hx-push-url="true"
 						className="ui-btn"
 					>
-						<span className="text-zinc-600">
-							<PlusIcon size={18} />
-						</span>
+						<PlusIcon size={18} />
 						<span>Add Entity</span>
 					</button>
 				}
@@ -60,33 +58,6 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 				rowLink={(row: EntityRow) =>
 					`/console/watchlist/form/${row.address_formatted}`
 				}
-				actions={(row: EntityRow) => (
-					<div className="flex space-x-2">
-						<button
-							type="button"
-							hx-get={`/console/watchlist/form/${row.address_formatted}`}
-							hx-target="#main-content"
-							hx-on:click="event.stopPropagation()"
-							className="ui-btn"
-						>
-							<span className="text-zinc-600">
-								<PencilIcon />
-							</span>
-							<span>Edit</span>
-						</button>
-
-						<button
-							type="button"
-							className=""
-							hx-delete={`/console/watchlist/${row.address_formatted}`}
-							hx-target="#main-content"
-							hx-on:click="event.stopPropagation()"
-							hx-confirm="Are you sure you want to delete this watchlist entry?"
-						>
-							<span>delete</span>
-						</button>
-					</div>
-				)}
 			/>
 		</Paginated>
 	);
