@@ -26,7 +26,7 @@ export function EntityTable({
 					{actions && <col className="w-20" />}
 				</colgroup>
 
-				<thead className="sticky top-0 bg-zinc-950 text-xs uppercase tracking-wide text-zinc-500">
+				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500">
 					<tr>
 						<th className="px-4 py-2 text-left">Address</th>
 						<th className="px-4 py-2 text-left">Networks</th>
@@ -41,7 +41,7 @@ export function EntityTable({
 					</tr>
 				</thead>
 
-				<tbody className="divide-y divide-zinc-800">
+				<tbody className="divide-y divide-zinc-900/90">
 					{rows.length === 0 && (
 						<tr>
 							<td
@@ -56,7 +56,7 @@ export function EntityTable({
 					{rows.map((e) => (
 						<tr
 							key={e.address_formatted}
-							className="hover:bg-zinc-900 cursor-pointer transition-colors"
+							className="hover:bg-teal-300/10 cursor-pointer transition-colors duration-75"
 							hx-get={rowLink(e)}
 							hx-target="#main-content"
 							hx-push-url="true"

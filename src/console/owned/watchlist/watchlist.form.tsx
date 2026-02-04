@@ -7,27 +7,48 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 	const method = isEdit ? "hx-put" : "hx-post";
 
 	return (
-		<section className="h-full min-h-screen bg-zinc-950 flex flex-col items-center p-6 overflow-auto">
-			<div className="w-full mb-4">
+		<section className="h-full min-h-screen flex flex-col mt-14 max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
+			<div className="flex gap-6 items-center">
 				<BackButton href="/console/watchlist" />
-			</div>
 
-			<h1 className="text-xl font-semibold text-zinc-300 mb-6 text-center">
-				{isEdit ? "Edit Watchlist" : "Add to Watchlist"}
-			</h1>
+				<h1 className="text-lg font-semibold text-zinc-300">
+					{isEdit ? "Edit Watchlist" : "Add to Watchlist"}
+				</h1>
+				{isEdit && (
+					<button
+						type="button"
+						hx-delete={`/console/watchlist/${entity.address_formatted}`}
+						hx-target="#main-content"
+						hx-on:click="event.stopPropagation()"
+						hx-confirm="Are you sure you want to delete this watchlist entry?"
+						className="ml-auto px-2"
+					>
+						<span className="text-zinc-400 hover:text-red-400 text-sm">
+							Delete
+						</span>
+					</button>
+				)}
+			</div>
 
 			<form
 				{...{ [method]: "/console/watchlist" }}
 				hx-target="#address-error"
 				hx-disabled-elt="button[type=submit]"
-				className="w-full max-w-lg border border-zinc-900 p-6 rounded-md space-y-4"
+				className="w-full border border-zinc-900 p-6 rounded-md space-y-4"
 			>
 				{/* Error div */}
 				<div id="address-error" className="text-sm"></div>
 
 				{/* Address */}
+				<label
+					htmlFor="input-address"
+					className="text-xs uppercase font-semibold text-zinc-500"
+				>
+					Address
+				</label>
 				<input
 					name="address"
+					id="input-address"
 					required
 					readOnly={isEdit}
 					defaultValue={entity?.address_formatted}
@@ -38,14 +59,14 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 
 				{/* Tags */}
 				<div className="space-y-2">
-					<div className="flex items-center justify-between text-xs text-zinc-500">
-						<span>Tags</span>
+					<div className="flex items-center justify-between text-sm text-zinc-500">
+						<span className="text-xs uppercase font-semibold">Tags</span>
 						<button
 							type="button"
 							hx-get="/console/watchlist/form/rows/tag"
 							hx-target="#tag-list"
 							hx-swap="beforeend"
-							className="text-zinc-400 hover:text-zinc-200 text-xs"
+							className="text-zinc-400 hover:text-zinc-200 text-sm bg-zinc-900 rounded-md py-1 px-2"
 						>
 							+ Add
 						</button>
@@ -59,14 +80,14 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 
 				{/* Categories */}
 				<div className="space-y-2">
-					<div className="flex items-center justify-between text-xs text-zinc-500">
-						<span>Categories</span>
+					<div className="flex items-center justify-between text-sm text-zinc-500">
+						<span className="text-xs uppercase font-semibold">Categories</span>
 						<button
 							type="button"
 							hx-get="/console/watchlist/form/rows/category"
 							hx-target="#cat-list"
 							hx-swap="beforeend"
-							className="text-zinc-400 hover:text-zinc-200 text-xs"
+							className="text-zinc-400 hover:text-zinc-200 text-sm bg-zinc-900 rounded-md py-1 px-2"
 						>
 							+ Add
 						</button>
@@ -89,7 +110,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 					>
 						Cancel
 					</button>
-					<button type="submit" disabled className="ui-btn">
+					<button type="submit" className="ui-btn">
 						{isEdit ? "Save" : "Add"}
 					</button>
 				</div>

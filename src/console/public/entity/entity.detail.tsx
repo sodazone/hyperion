@@ -7,7 +7,7 @@ import { NetworkMap } from "@/intel/mapping";
 
 function EntityHeader({ address }: { address: string }) {
 	return (
-		<div className="flex flex-col gap-1 pb-4">
+		<div className="flex flex-col gap-1">
 			<span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
 				Address
 			</span>
@@ -55,7 +55,7 @@ function SanctionsPanel({ sanctioned, lists }: AddressAnalysis["sanctioned"]) {
 
 	return (
 		<div>
-			<h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
 				Sanctions
 			</h3>
 			<ul className="list-inside text-sm text-zinc-300">
@@ -187,9 +187,11 @@ type Props = {
 
 export function EntityDetailsView({ entity }: Props) {
 	return (
-		<section className="h-full overflow-auto bg-zinc-950 p-6 space-y-8">
-			<BackButton href="/console/entities" />
-			<EntityHeader address={entity.address} />
+		<section className="flex h-full flex-col mt-14 max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
+			<div className="flex items-center gap-6">
+				<BackButton href="/console/entities" />
+				<EntityHeader address={entity.address} />
+			</div>
 
 			<div className="space-y-8">
 				{entity.networks.map((n) => (

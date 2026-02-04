@@ -17,7 +17,7 @@ export function SearchFilters({ path, filters }: Props) {
 	return (
 		<form
 			id="search-filters-form"
-			className="flex flex-wrap items-center gap-2 md:gap-4 border-b border-zinc-800 py-4 px-2"
+			className="flex flex-col md:items-center gap-2 md:flex-row md:gap-4 border-b border-zinc-800 py-4 px-2"
 			hx-get={path}
 			hx-target="#main-content"
 			hx-trigger="change from:select, reset"
@@ -41,7 +41,7 @@ export function SearchFilters({ path, filters }: Props) {
 				/>
 			</div>
 
-			<div className="flex gap-2 md:gap-4 flex-1 min-w-37.5">
+			<div className="flex flex-col md:flex-row gap-2 md:gap-4 flex-1 min-w-37.5">
 				{/* Network Filter */}
 				<div className="ui-select w-40">
 					<select name="networkId" defaultValue={filters.networkId ?? "*"}>
@@ -76,7 +76,7 @@ export function SearchFilters({ path, filters }: Props) {
 			<input
 				type="reset"
 				value="Reset All"
-				className="cursor-pointer text-sm text-zinc-400 hover:text-zinc-200 ml-4"
+				className="cursor-pointer w-fit text-sm text-zinc-400 hover:text-zinc-200 ml-4"
 				hx-on:click={`
              window.entityPageStack = [];
 
