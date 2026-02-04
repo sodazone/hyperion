@@ -19,7 +19,6 @@ export function SearchFilters({ path, filters }: Props) {
 			className="flex flex-wrap items-center gap-2"
 			hx-get={path}
 			hx-target="#main-content"
-			hx-swap="outerHTML"
 			hx-trigger="change from:select, reset"
 			hx-push-url="true"
 		>

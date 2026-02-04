@@ -1,6 +1,6 @@
 import { CopyButton } from "@/console//components/btn.copy";
 import { SplitBadge, TagBadge } from "@/console/components/badge";
-import { ChevronLeftIcon } from "@/console/components/icons";
+import { BackButton } from "@/console/components/btn.back";
 import { NetworkIcon } from "@/console/components/network.icon";
 import type { NetworkInfos } from "@/console/extra.infos";
 import type { AddressAnalysis, AddressAnalysisAllNetworks } from "@/intel/api";
@@ -185,26 +185,6 @@ function TagsPanel({ tags }: { tags: AddressAnalysis["tags"] }) {
 	);
 }
 
-function BackButton() {
-	return (
-		<a
-			href="/console/entities"
-			hx-on:click={`
-              const referrer = document.referrer;
-              const origin = window.location.origin;
-              const prevPath = referrer.startsWith(origin) ? new URL(referrer).pathname : '';
-              if (prevPath.startsWith('/console/entities')) {
-                window.history.back();
-                event.preventDefault();
-              }
-            `}
-			className="inline-flex items-center gap-1  text-zinc-400 hover:text-zinc-200"
-		>
-			<ChevronLeftIcon size={24} /> <span>Back</span>
-		</a>
-	);
-}
-
 type Props = {
 	entity: AddressAnalysisAllNetworks;
 	ctx: {
@@ -215,7 +195,7 @@ type Props = {
 export function EntityDetailsView({ entity, ctx: { networkInfos } }: Props) {
 	return (
 		<section className="h-full overflow-auto bg-zinc-950 p-6 space-y-8">
-			<BackButton />
+			<BackButton href="/console/entities" />
 			<EntityHeader address={entity.address} />
 
 			<div className="space-y-8">

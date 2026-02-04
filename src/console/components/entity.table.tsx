@@ -46,7 +46,7 @@ export function EntityTable({
 							key={e.address_formatted}
 							className="hover:bg-zinc-900 cursor-pointer"
 							hx-get={rowLink(e)}
-							hx-target="#main-panel"
+							hx-target="#main-content"
 							hx-push-url="true"
 						>
 							<td className="px-4 py-2 font-mono text-xs text-zinc-200">

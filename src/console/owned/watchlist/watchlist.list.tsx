@@ -44,7 +44,6 @@ export function WatchlistList({ page, ctx: { networkInfos, url } }: Props) {
 						type="button"
 						hx-get="/console/watchlist/form/__new__"
 						hx-target="#main-content"
-						hx-swap="outerHTML"
 						className="flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200  hover:bg-zinc-900"
 					>
 						<span className="text-zinc-600">
@@ -67,7 +66,6 @@ export function WatchlistList({ page, ctx: { networkInfos, url } }: Props) {
 							type="button"
 							hx-get={`/console/watchlist/form/${row.address_formatted}`}
 							hx-target="#main-content"
-							hx-swap="outerHTML"
 							hx-on:click="event.stopPropagation()"
 							className="flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200  hover:bg-zinc-900"
 						>
@@ -82,7 +80,6 @@ export function WatchlistList({ page, ctx: { networkInfos, url } }: Props) {
 							className="flex items-center space-x-2 rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200  hover:bg-zinc-900"
 							hx-delete={`/console/watchlist/${row.address_formatted}`}
 							hx-target="#main-content"
-							hx-swap="outerHTML"
 							hx-on:click="event.stopPropagation()"
 							hx-confirm="Are you sure you want to delete this watchlist entry?"
 						>
