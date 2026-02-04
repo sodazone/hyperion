@@ -8,7 +8,7 @@ type Props = {
 	children: JSX.Element;
 };
 
-export function ConsoleApp({ member, path, children }: Props) {
+export function ConsoleApp({ member, children }: Props) {
 	return (
 		<html lang="en" className="h-full">
 			<head>
@@ -28,11 +28,11 @@ export function ConsoleApp({ member, path, children }: Props) {
 				<div className="flex h-full flex-col">
 					{/* Main */}
 					<div className="flex flex-1 overflow-hidden">
-						<Sidebar member={member} path={path ?? "/"} />
+						<Sidebar member={member} />
 
 						{/* Content Area */}
 						<main
-							id="main-panel"
+							id="main-content"
 							className="flex flex-1 flex-col overflow-hidden"
 						>
 							{children}

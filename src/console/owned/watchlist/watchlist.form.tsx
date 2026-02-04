@@ -1,5 +1,4 @@
-import { ChevronLeftIcon } from "@/console/components/icons";
-import { TopBar } from "@/console/components/top.bar";
+import { BackButton } from "@/console/components/btn.back";
 import type { Entity } from "@/db";
 import { CategoryRow, TagRow } from "./watchlist.form.rows";
 
@@ -11,26 +10,12 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 		"w-full px-3 py-2 text-sm bg-transparent border-b border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:border-zinc-300 focus:outline-none";
 
 	return (
-		<div id="main-content" className="flex flex-col h-full">
-			<TopBar
-				left={
-					<button
-						type="button"
-						hx-get="/console/watchlist"
-						hx-target="#main-content"
-						hx-push-url="true"
-						className="inline-flex items-center gap-1  text-zinc-400 hover:text-zinc-200"
-					>
-						<ChevronLeftIcon size={24} />
-						<span>Back</span>
-					</button>
-				}
-				right={
-					<span className="text-sm font-medium text-zinc-300">
-						{isEdit ? "Edit Watchlist" : "Add to Watchlist"}
-					</span>
-				}
-			/>
+		<section className="h-full overflow-auto bg-zinc-950 p-6 space-y-8">
+			<BackButton href="/console/watchlist" />
+
+			<h1 className="text-lg font-medium text-zinc-300">
+				{isEdit ? "Edit Watchlist" : "Add to Watchlist"}
+			</h1>
 
 			<form
 				{...{ [method]: "/console/watchlist" }}
@@ -114,6 +99,6 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 					</button>
 				</div>
 			</form>
-		</div>
+		</section>
 	);
 }
