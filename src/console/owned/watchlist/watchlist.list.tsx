@@ -44,6 +44,7 @@ export function WatchlistList({ page, ctx: { networkInfos, url } }: Props) {
 						type="button"
 						hx-get="/console/watchlist/form/__new__"
 						hx-target="#main-content"
+						hx-push-url="true"
 						className="flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200  hover:bg-zinc-900"
 					>
 						<span className="text-zinc-600">
