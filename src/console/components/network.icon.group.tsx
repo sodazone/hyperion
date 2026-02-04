@@ -1,18 +1,15 @@
-import type { NetworkInfos } from "../extra.infos";
 import { NetworkIcon } from "./network.icon";
 
 type NetworkIconGroupProps = {
 	urns: Array<string | undefined>;
 	max?: number;
 	size?: number;
-	networkInfos: NetworkInfos;
 };
 
 export function NetworkIconGroup({
 	urns,
 	max = 3,
 	size = 18,
-	networkInfos,
 }: NetworkIconGroupProps) {
 	const visible = urns.slice(0, max);
 	const extra = urns.length - visible.length;
@@ -25,7 +22,7 @@ export function NetworkIconGroup({
 						key={urn}
 						className="flex items-center justify-center rounded-full border border-zinc-900 bg-zinc-950 p-1"
 					>
-						<NetworkIcon networkInfos={networkInfos} urn={urn} size={size} />
+						<NetworkIcon urn={urn} size={size} />
 					</span>
 				))}
 			</span>

@@ -1,10 +1,5 @@
 const NetworkURNMap: Record<string, number> = {
 	// ────────────────────────────────
-	// Reserved / special (0x0000–0x00FF)
-	// ────────────────────────────────
-	any: 0x0000, // global / wildcard
-
-	// ────────────────────────────────
 	// Polkadot ecosystem (0x0100–0x01FF)
 	// ────────────────────────────────
 	"urn:ocn:polkadot:0": 0x0100,
@@ -74,6 +69,8 @@ const NetworkURNMapReverse: Record<number, string> = Object.fromEntries(
 	Object.entries(NetworkURNMap).map(([k, v]) => [v, k]),
 );
 
+const entries = Object.entries(NetworkURNMap) as [string, number][];
+
 export const NetworkMap = {
 	fromURN(urn: string): number | undefined {
 		return NetworkURNMap[urn];
@@ -81,7 +78,7 @@ export const NetworkMap = {
 	toURN(networkId: number): string | undefined {
 		return NetworkURNMapReverse[networkId];
 	},
-	entries(): Readonly<Record<string, number>> {
-		return NetworkURNMap;
+	entries(): [string, number][] {
+		return entries;
 	},
 };

@@ -9,7 +9,7 @@ import type { PageContext } from "../../types";
 import { enrichEntityRows } from "../../util";
 
 export async function EntityListPage(
-	{ db, networkInfos, authApi }: PageContext,
+	{ db, authApi }: PageContext,
 	req: Bun.BunRequest,
 ) {
 	const url = new URL(req.url);
@@ -41,20 +41,20 @@ export async function EntityListPage(
 	};
 
 	if (req.headers.get("HX-Request")) {
-		return render(<EntitiesList ctx={{ networkInfos, url }} page={page} />);
+		return render(<EntitiesList ctx={{ url }} page={page} />);
 	}
 
 	const user = await authApi.getAuthenticatedUser(req);
 
 	return render(
 		<ConsoleApp member={user} path="/console/entities">
-			<EntitiesList ctx={{ networkInfos, url }} page={page} />
+			<EntitiesList ctx={{ url }} page={page} />
 		</ConsoleApp>,
 	);
 }
 
 export function EntityDetailPage(
-	{ db, networkInfos }: PageContext,
+	{ db }: PageContext,
 	req: Bun.BunRequest<"/console/entities/:id">,
 ) {
 	const address = req.params.id;
@@ -70,12 +70,12 @@ export function EntityDetailPage(
 	}
 
 	if (req.headers.get("HX-Request")) {
-		return render(<EntityDetailsView ctx={{ networkInfos }} entity={entity} />);
+		return render(<EntityDetailsView entity={entity} />);
 	}
 
 	return render(
 		<ConsoleApp path="/console/entities">
-			<EntityDetailsView ctx={{ networkInfos }} entity={entity} />
+			<EntityDetailsView entity={entity} />
 		</ConsoleApp>,
 	);
 }

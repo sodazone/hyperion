@@ -457,6 +457,27 @@ export class AddressDB {
 			p.push(tag);
 		}
 
+		// network only filter
+		if (network !== undefined && category === undefined && tag === undefined) {
+			clauses.push(`
+        EXISTS (
+          SELECT 1 FROM entity_category ec
+          WHERE ec.owner = e.owner
+            AND ec.address = e.address
+            AND ec.network = ?
+        )
+        OR
+        EXISTS (
+          SELECT 1 FROM entity_tag et
+          WHERE et.owner = e.owner
+            AND et.address = e.address
+            AND et.network = ?
+        )
+      `);
+
+			p.push(network, network);
+		}
+
 		if (address !== undefined) {
 			clauses.push("e.address = ?");
 			p.push(b(address));

@@ -32,7 +32,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 					readOnly={isEdit}
 					defaultValue={entity?.address_formatted}
 					placeholder="Address"
-					className="w-full px-3 py-2 text-sm bg-transparent border-b border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-300"
+					className="w-full px-3 py-2 ui-input"
 					type="text"
 				/>
 
@@ -89,11 +89,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 					>
 						Cancel
 					</button>
-					<button
-						type="submit"
-						disabled
-						className="rounded bg-zinc-800 px-3 py-1.5 text-sm hover:bg-zinc-700 disabled:opacity-40"
-					>
+					<button type="submit" disabled className="ui-btn">
 						{isEdit ? "Save" : "Add"}
 					</button>
 				</div>

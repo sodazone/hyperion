@@ -1,5 +1,5 @@
-import { loadExtraInfos } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
+import { initNetworkCache } from "@/console/network.cache";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
@@ -46,10 +46,11 @@ export async function serve({
 
 	await loadJWKS(jwks);
 
-	const networkInfos = await loadExtraInfos();
+	await initNetworkCache();
+
 	const authApi = createAuthApi();
 
-	const ctx = { db, networkInfos, authApi };
+	const ctx = { db, authApi };
 
 	const listener = Bun.serve({
 		hostname,

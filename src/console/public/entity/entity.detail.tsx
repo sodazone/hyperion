@@ -2,7 +2,6 @@ import { CopyButton } from "@/console//components/btn.copy";
 import { SplitBadge, TagBadge } from "@/console/components/badge";
 import { BackButton } from "@/console/components/btn.back";
 import { NetworkIcon } from "@/console/components/network.icon";
-import type { NetworkInfos } from "@/console/extra.infos";
 import type { AddressAnalysis, AddressAnalysisAllNetworks } from "@/intel/api";
 import { NetworkMap } from "@/intel/mapping";
 
@@ -24,11 +23,9 @@ function EntityHeader({ address }: { address: string }) {
 function NetworkSection({
 	networkId,
 	analysis,
-	networkInfos,
 }: {
 	networkId: number;
 	analysis: AddressAnalysis;
-	networkInfos: NetworkInfos;
 }) {
 	return (
 		<section className="space-y-6 rounded-lg border border-zinc-900 bg-zinc-950/60 p-5">
@@ -37,7 +34,6 @@ function NetworkSection({
 					<NetworkIcon
 						urn={NetworkMap.toURN(networkId) ?? "unknown"}
 						showName={true}
-						networkInfos={networkInfos}
 					/>
 				</h2>
 
@@ -187,12 +183,9 @@ function TagsPanel({ tags }: { tags: AddressAnalysis["tags"] }) {
 
 type Props = {
 	entity: AddressAnalysisAllNetworks;
-	ctx: {
-		networkInfos: NetworkInfos;
-	};
 };
 
-export function EntityDetailsView({ entity, ctx: { networkInfos } }: Props) {
+export function EntityDetailsView({ entity }: Props) {
 	return (
 		<section className="h-full overflow-auto bg-zinc-950 p-6 space-y-8">
 			<BackButton href="/console/entities" />
@@ -204,7 +197,6 @@ export function EntityDetailsView({ entity, ctx: { networkInfos } }: Props) {
 						key={n.networkId}
 						networkId={n.networkId}
 						analysis={n.analysis}
-						networkInfos={networkInfos}
 					/>
 				))}
 			</div>

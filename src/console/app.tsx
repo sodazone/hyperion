@@ -33,6 +33,7 @@ export function ConsoleApp({ member, children }: Props) {
 						{/* Content Area */}
 						<main
 							id="main-content"
+							hx-history-elt="true"
 							className="flex flex-1 flex-col overflow-hidden"
 						>
 							{children}
