@@ -4,7 +4,12 @@ import type { Category, Entity, Tag } from "../model";
 import { b, cleanFilter } from "./util";
 
 function parseRaw<T>(raw: unknown): T | undefined {
-	return raw ? JSON.parse(raw as string) : undefined;
+	if (!raw) return undefined;
+	try {
+		return JSON.parse(raw as string);
+	} catch {
+		return undefined;
+	}
 }
 
 export class AddressDB {
