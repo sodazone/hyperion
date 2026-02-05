@@ -1,3 +1,4 @@
+import { createMonitorFromDB } from "@/alerting/monitor";
 import { getNetworkIconFile } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
 import { initNetworkCache } from "@/console/network.cache";
@@ -45,6 +46,9 @@ export async function serve({
 	await initNetworkCache();
 
 	const authApi = createAuthApi();
+
+	const monitor = createMonitorFromDB(db);
+	monitor.start();
 
 	const ctx = { db, authApi };
 
@@ -150,6 +154,9 @@ export async function serve({
 		try {
 			listener.stop();
 			console.log("HTTP server stopped");
+
+			monitor.stop();
+			console.log("Monitor stopped");
 
 			db.close();
 			console.log("Database closed");

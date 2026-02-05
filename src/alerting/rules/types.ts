@@ -1,3 +1,5 @@
+import type { HyperionDB } from "@/db";
+
 export interface BaseEvent<T extends string = string, P = unknown> {
 	type: T;
 	chain: string;
@@ -15,7 +17,7 @@ export type TransferPayload = {
 	from: string;
 	to: string;
 	amount: bigint;
-	usdAmount: number;
+	amountUsd: number;
 	asset: {
 		id: string;
 		symbol: string;
@@ -61,6 +63,7 @@ export interface StateStore {
 
 export interface RuleContext {
 	state: StateStore;
+	db: HyperionDB;
 	now: () => number;
 }
 
@@ -82,6 +85,9 @@ export type RuleDependency =
 			chain: string;
 			address: string;
 			asset: string;
+	  }
+	| {
+			kind: "transfer";
 	  }
 	| {
 			kind: "custom";

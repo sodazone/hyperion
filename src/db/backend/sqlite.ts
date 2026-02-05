@@ -22,6 +22,10 @@ export class AddressDB {
 
 	private init() {
 		this.db.run(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+      PRAGMA busy_timeout = 5000;
+
       PRAGMA foreign_keys = ON;
 
       CREATE TABLE IF NOT EXISTS entity (
@@ -207,19 +211,28 @@ export class AddressDB {
 		category: number;
 		subcategory?: number;
 	}) {
-		return !!this.db
-			.query(
-				`SELECT 1 FROM entity_category
-         WHERE owner=? AND address=? AND network IS ?
-           AND category=? AND subcategory=? LIMIT 1`,
-			)
-			.get(
-				args.owner,
-				b(args.address),
-				args.network ?? null,
-				args.category,
-				args.subcategory ?? 0,
-			);
+		const clauses = ["owner = ?", "address = ?", "category = ?"];
+		const params: SQLQueryBindings[] = [
+			args.owner,
+			b(args.address),
+			args.category,
+		];
+
+		if (args.network !== undefined) {
+			clauses.push("network = ?");
+			params.push(args.network);
+		}
+
+		if (args.subcategory !== undefined) {
+			clauses.push("subcategory = ?");
+			params.push(args.subcategory);
+		}
+
+		const sql = `SELECT 1 FROM entity_category WHERE ${clauses.join(
+			" AND ",
+		)} LIMIT 1`;
+
+		return !!this.db.query(sql).get(...params);
 	}
 
 	deleteAllCategories({
@@ -320,14 +333,30 @@ export class AddressDB {
 		owner: Uint8Array;
 		address: Uint8Array | string;
 		network?: number;
-		tag: string;
+		tag?: string;
+		tagPrefix?: string;
 	}) {
-		return !!this.db
-			.query(
-				`SELECT 1 FROM entity_tag
-         WHERE owner=? AND address=? AND network IS ? AND tag=? LIMIT 1`,
-			)
-			.get(args.owner, b(args.address), args.network ?? null, args.tag);
+		const clauses = ["owner = ?", "address = ?"];
+		const params: SQLQueryBindings[] = [args.owner, b(args.address)];
+
+		if (args.network !== undefined) {
+			clauses.push("network = ?");
+			params.push(args.network);
+		}
+
+		if (args.tag !== undefined) {
+			clauses.push("tag = ?");
+			params.push(args.tag);
+		} else if (args.tagPrefix !== undefined) {
+			clauses.push("tag LIKE ?");
+			params.push(`${args.tagPrefix}%`);
+		}
+
+		const sql = `SELECT 1 FROM entity_tag WHERE ${clauses.join(
+			" AND ",
+		)} LIMIT 1`;
+
+		return !!this.db.query(sql).get(...params);
 	}
 
 	findEntity({

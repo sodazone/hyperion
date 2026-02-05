@@ -1,10 +1,12 @@
-import type { Alert, AnyEvent, Rule, RuleContext } from "./types";
+import { EventEmitter } from "node:events";
+import type { AnyEvent, Rule, RuleContext } from "./types";
 
-export class RuleEngine {
+export class RuleEngine extends EventEmitter {
 	#rules: Rule<AnyEvent>[];
 	#lastAlertTimes: Record<string, number>;
 
 	constructor(rules: Rule<AnyEvent>[]) {
+		super();
 		this.#rules = rules;
 		this.#lastAlertTimes = {};
 	}
@@ -23,8 +25,8 @@ export class RuleEngine {
 		});
 	}
 
-	async evaluate(event: AnyEvent, ctx: RuleContext): Promise<Alert[]> {
-		const alerts: Alert[] = [];
+	async evaluate(event: AnyEvent, ctx: RuleContext): Promise<void> {
+		// TODO: local context in the scope of the rule, i.e. from event to alert..
 		const now = ctx.now();
 
 		await Promise.all(
@@ -52,11 +54,10 @@ export class RuleEngine {
 								message: `Rule ${rule.id} triggered`,
 								level: 0,
 							};
-					alerts.push(alert);
+					this.emit("alert", alert);
 				}
 			}),
 		);
-		return alerts;
 	}
 
 	start(): void {

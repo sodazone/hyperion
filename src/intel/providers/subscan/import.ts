@@ -1,14 +1,12 @@
-import { createDatabase, createHyperionDB } from "@/db";
+import { createHyperionDB } from "@/db";
 import { merkleSubscan } from "./runner";
-
-const db = await createDatabase("./.db/current");
 
 const t0 = performance.now();
 
-const api = createHyperionDB(db);
+const db = await createHyperionDB("./.db/current");
 
 for (const job of merkleSubscan) {
-	await job.run(api);
+	await job.run(db);
 }
 
 const t1 = performance.now();
