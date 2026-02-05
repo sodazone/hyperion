@@ -46,8 +46,10 @@ export class SubscriptionManager extends EventEmitter {
 				this.removeStorageSubscription(dep);
 			}
 		}
-	} // TODO: generalize subscriptions :)
-	privateaddTransferSubscription() {
+	}
+
+	// TODO: generalize subscriptions :)
+	private addTransferSubscription() {
 		const subKey = "transfers";
 		const existing = this.#active.get(subKey);
 		if (existing) {
