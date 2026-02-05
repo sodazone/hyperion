@@ -94,9 +94,9 @@ export async function serve({
 			"/console/watchlist/form/:address": async (req) =>
 				WatchlistFormPage(ctx, req),
 			"/console/watchlist/form/rows/tag": async (req) =>
-				WatchlistTagRowPage(req),
+				WatchlistTagRowPage(ctx, req),
 			"/console/watchlist/form/rows/category": async (req) =>
-				WatchlistCategoryRowPage(req),
+				WatchlistCategoryRowPage(ctx, req),
 			"/uptime": () => Response.json({ ok: true, uptime: process.uptime() }),
 			"/docs": apiDocs,
 			"/openapi.json": () =>
