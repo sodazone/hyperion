@@ -2,7 +2,7 @@ import { PUBLIC_OWNER } from "@/db";
 import { CAT } from "@/intel/mapping";
 import type { AnyEvent, Rule } from "../types";
 
-const USD_THRESHOLD = 50_000;
+const USD_THRESHOLD = 30_000;
 
 export const exchangeLargeTransferRule: Rule<AnyEvent> = {
 	id: "exchange-large-transfer",
@@ -18,8 +18,6 @@ export const exchangeLargeTransferRule: Rule<AnyEvent> = {
 
 		const { from, to, amountUsd } = event.payload;
 
-		console.log(from, to, amountUsd);
-
 		if (!amountUsd || amountUsd < USD_THRESHOLD) return false;
 
 		const isExchange =
@@ -34,27 +32,43 @@ export const exchangeLargeTransferRule: Rule<AnyEvent> = {
 				category: CAT.EXCHANGE,
 			});
 
-		console.log(isExchange);
-
 		if (!isExchange) return false;
 
 		return true;
 	},
 
-	alertTemplate: (event, _ctx) => {
+	alertTemplate: (event, ctx) => {
 		if (event.type !== "transfer") {
 			throw new Error("Invalid event type");
 		}
 
 		const { from, to, amountUsd, asset } = event.payload;
 
+		const fromEntity = ctx.db.findEntity({
+			owner: PUBLIC_OWNER,
+			address: from,
+		});
+		const toEntity = ctx.db.findEntity({
+			owner: PUBLIC_OWNER,
+			address: to,
+		});
+
 		return {
 			ruleId: "exchange-large-transfer",
 			level: 7,
 			message: `Large transfer involving exchange: $${amountUsd.toLocaleString()}`,
 			metadata: {
-				from,
-				to,
+				event,
+				from: {
+					address: from,
+					tags: fromEntity?.tags || [],
+					categories: fromEntity?.categories || [],
+				},
+				to: {
+					address: to,
+					tags: toEntity?.tags || [],
+					categories: toEntity?.categories || [],
+				},
 				asset,
 				amountUsd,
 			},

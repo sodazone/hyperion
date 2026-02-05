@@ -47,7 +47,7 @@ export async function serve({
 
 	const authApi = createAuthApi();
 
-	const monitor = createMonitorFromDB(db);
+	const monitor = await createMonitorFromDB(db);
 	monitor.start();
 
 	const ctx = { db, authApi };

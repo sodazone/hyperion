@@ -1,6 +1,7 @@
 import { type Alert, type AnyEvent, type Rule, RuleEngine } from "@/alerting";
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB } from "@/db";
+import { safeStringify } from "@/utils/strings";
 import { STATIC_RULES } from "./rules/bundles/static";
 import { InMemoryStateStore } from "./rules/state";
 import { createDummyOcelloidsClient } from "./streams/ocelloids";
@@ -35,7 +36,7 @@ export function createMonitor({
 	engine.on("alert", async (alert: Alert) => {
 		// await db.saveAlert(alert);
 		// TODO: send alert to egress system
-		console.log("Alert triggered:", alert);
+		console.log("Alert triggered:", safeStringify(alert, 2));
 	});
 
 	for (const rule of rules) {
@@ -55,8 +56,8 @@ export function createMonitor({
 	};
 }
 
-export function createMonitorFromDB(db: HyperionDB): Monitor {
-	const client = createDummyOcelloidsClient();
+export async function createMonitorFromDB(db: HyperionDB): Promise<Monitor> {
+	const client = await createDummyOcelloidsClient();
 	//const rules = db.loadRules?.() ?? [];
 	const rules = STATIC_RULES;
 

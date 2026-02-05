@@ -1,60 +1,71 @@
+import { here } from "@/utils";
 import type { AnyEvent } from "../rules";
 
-// TODO: Real interface
 export type OcelloidsClient = {
 	subscribeStorage: (
 		params: { chain: string; key: string },
 		emit: (msg: AnyEvent) => void,
 	) => () => void;
+
 	subscribeTransfers: (emit: (msg: AnyEvent) => void) => () => void;
 };
 
-function randomUsd() {
-	const base = Math.random() * 50_000;
-	const spike = Math.random() < 0.1 ? Math.random() * 1_000_000 : 0;
-	return Math.round(base + spike);
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function createDummyOcelloidsClient(): OcelloidsClient {
+export async function createDummyOcelloidsClient(): Promise<OcelloidsClient> {
+	const fromHere = here(import.meta);
+	const file = Bun.file(fromHere("../../../tests/__data__/transfers-fat.json"));
+	const transfers: any[] = await file.json();
+
 	return {
-		subscribeStorage: (_params: { chain: string; key: string }, _emit) => {
-			// Implement the subscription logic here
-			return () => {
-				// Implement the logic to unsubscribe
-			};
+		subscribeStorage: (_params, _emit) => {
+			return () => {};
 		},
+
 		subscribeTransfers: (emit) => {
+			let cancelled = false;
+
 			console.log("Subscribing to transfers...");
-			const id = setInterval(() => {
-				try {
-					console.log("Transferring...");
-					const amountUsd = randomUsd();
 
-					const event: AnyEvent = {
-						type: "transfer",
-						chain: "urn:ocn:polkadot:1000",
-						blockHeight: "10000",
-						timestamp: Date.now(),
-						payload: {
-							from: "11Rq57qP9eN3eXULWvLmKBoHzGdRU9ubbuCExn4m27h94t7",
-							to: "113EhPbHBC5EDaPGTFo5UJ6zkAGm6LuW6NyourkLfe63M54",
-							amountUsd,
-							amount: BigInt(Math.floor(amountUsd * 1e6)),
-							asset: {
-								id: "xxx",
-								symbol: "XX",
-								decimals: 18,
+			(async () => {
+				for (const tx of transfers) {
+					if (cancelled) break;
+
+					try {
+						const event: AnyEvent = {
+							type: "transfer",
+							chain: tx.network,
+							blockHeight: tx.blockNumber,
+							txHash: tx.txPrimary,
+							blockHash: tx.blockHash,
+							timestamp: tx.sentAt ?? Date.now(),
+							payload: {
+								from: tx.from,
+								to: tx.to,
+								amount: BigInt(tx.amount),
+								amountUsd: tx.usd,
+								asset: {
+									id: tx.asset,
+									symbol: tx.symbol,
+									decimals: tx.decimals,
+								},
 							},
-						},
-					};
+						};
 
-					emit(event);
-				} catch (e) {
-					console.error("interval crash", e);
+						emit(event);
+					} catch (err) {
+						console.error("Failed to emit transfer:", err);
+					}
+
+					await sleep(100); // wait before next
 				}
-			}, 1_000);
+			})();
 
-			return () => clearInterval(id);
+			return () => {
+				cancelled = true;
+			};
 		},
 	};
 }

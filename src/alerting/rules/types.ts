@@ -4,6 +4,7 @@ export interface BaseEvent<T extends string = string, P = unknown> {
 	type: T;
 	chain: string;
 	blockHeight: string;
+	blockHash: string;
 	txHash?: string;
 	timestamp?: number;
 
