@@ -420,9 +420,10 @@ export class AddressDB {
 		cursor?: string;
 		limit?: number;
 	}): { address: Uint8Array; address_formatted: string }[] {
-		const clauses = ["e.owner=?"];
-		const p: SQLQueryBindings[] = [b(owner)];
+		const clauses: string[] = ["e.owner=?"];
+		const params: SQLQueryBindings[] = [b(owner)];
 
+		// Filter by category/subcategory
 		if (category !== undefined) {
 			clauses.push(`
         EXISTS (
@@ -430,17 +431,17 @@ export class AddressDB {
           FROM entity_category ec
           WHERE ec.owner = e.owner
             AND ec.address = e.address
-            ${network !== undefined ? "AND ec.network=?" : ""}
-            AND ec.category=?
-            ${subcategory !== undefined ? "AND ec.subcategory=?" : ""}
+            AND ec.category = ?
+            ${subcategory !== undefined ? "AND ec.subcategory = ?" : ""}
+            ${network !== undefined ? "AND ec.network = ?" : ""}
         )
       `);
-
-			if (network !== undefined) p.push(network);
-			p.push(category);
-			if (subcategory !== undefined) p.push(subcategory);
+			params.push(category);
+			if (subcategory !== undefined) params.push(subcategory);
+			if (network !== undefined) params.push(network);
 		}
 
+		// Filter by tag
 		if (tag !== undefined) {
 			clauses.push(`
         EXISTS (
@@ -448,57 +449,57 @@ export class AddressDB {
           FROM entity_tag et
           WHERE et.owner = e.owner
             AND et.address = e.address
-            ${network !== undefined ? "AND et.network=?" : ""}
-            AND et.tag=?
+            AND et.tag = ?
+            ${network !== undefined ? "AND et.network = ?" : ""}
         )
       `);
-
-			if (network !== undefined) p.push(network);
-			p.push(tag);
+			params.push(tag);
+			if (network !== undefined) params.push(network);
 		}
 
-		// network only filter
+		// Filter by network only
 		if (network !== undefined && category === undefined && tag === undefined) {
 			clauses.push(`
-        EXISTS (
-          SELECT 1 FROM entity_category ec
-          WHERE ec.owner = e.owner
-            AND ec.address = e.address
-            AND ec.network = ?
-        )
-        OR
-        EXISTS (
-          SELECT 1 FROM entity_tag et
-          WHERE et.owner = e.owner
-            AND et.address = e.address
-            AND et.network = ?
+        (
+          EXISTS (
+            SELECT 1 FROM entity_category ec
+            WHERE ec.owner = e.owner
+              AND ec.address = e.address
+              AND ec.network = ?
+          )
+          OR
+          EXISTS (
+            SELECT 1 FROM entity_tag et
+            WHERE et.owner = e.owner
+              AND et.address = e.address
+              AND et.network = ?
+          )
         )
       `);
-
-			p.push(network, network);
+			params.push(network, network);
 		}
 
 		if (address !== undefined) {
 			clauses.push("e.address = ?");
-			p.push(b(address));
+			params.push(b(address));
 		}
 
 		if (cursor) {
 			clauses.push("e.address > ?");
-			p.push(decodeCursor(cursor));
+			params.push(decodeCursor(cursor));
 		}
 
 		const rows = this.db
 			.query(
 				`
-        SELECT e.address, e.address_formatted
-        FROM entity e
-        WHERE ${clauses.join(" AND ")}
-        ORDER BY e.address
-        LIMIT ?
-        `,
+      SELECT e.address, e.address_formatted
+      FROM entity e
+      WHERE ${clauses.join(" AND ")}
+      ORDER BY e.address
+      LIMIT ?
+    `,
 			)
-			.all(...p, limit) as Array<{
+			.all(...params, limit) as Array<{
 			address: Uint8Array;
 			address_formatted: string;
 		}>;
@@ -515,21 +516,17 @@ export class AddressDB {
 		address?: string;
 		cursor?: string;
 		limit?: number;
-	}): {
-		rows: Array<Entity>;
-		cursorNext?: string;
-	} {
+	}): { rows: Array<Entity>; cursorNext?: string } {
 		const limit = opts.limit ?? 25;
-		const queryOpts = {
-			...opts,
-			address: opts.address?.trim() || undefined,
+
+		const addresses = this.queryAddresses({
+			owner: opts.owner,
 			network: cleanFilter(opts.network),
 			category: cleanFilter(opts.category),
 			subcategory: cleanFilter(opts.subcategory),
 			tag: cleanFilter(opts.tag),
-		};
-		const addresses = this.queryAddresses({
-			...queryOpts,
+			address: opts.address?.trim() || undefined,
+			cursor: opts.cursor,
 			limit: limit + 1,
 		});
 
@@ -542,20 +539,20 @@ export class AddressDB {
 
 		const tagRows = this.all<{ address: Uint8Array } & Tag>(
 			`
-      SELECT address, tag, timestamp, version, source, raw, network
-      FROM entity_tag
-      WHERE owner=? AND address IN (${addresses.map(() => "?").join(",")})
-      `,
+    SELECT address, tag, timestamp, version, source, raw, network
+    FROM entity_tag
+    WHERE owner=? AND address IN (${addresses.map(() => "?").join(",")})
+    `,
 			ownerBuf,
 			...addresses.map((a) => a.address),
 		);
 
 		const catRows = this.all<{ address: Uint8Array } & Category>(
 			`
-      SELECT address, category, subcategory, timestamp, version, source, raw, network
-      FROM entity_category
-      WHERE owner=? AND address IN (${addresses.map(() => "?").join(",")})
-      `,
+    SELECT address, category, subcategory, timestamp, version, source, raw, network
+    FROM entity_category
+    WHERE owner=? AND address IN (${addresses.map(() => "?").join(",")})
+    `,
 			ownerBuf,
 			...addresses.map((a) => a.address),
 		);
@@ -583,8 +580,8 @@ export class AddressDB {
 			network,
 		} of tagRows) {
 			const entity = map.get(keyOf(address));
-			if (entity !== undefined) {
-				entity?.tags?.push({
+			if (entity) {
+				entity.tags?.push({
 					tag,
 					timestamp,
 					version,
@@ -606,7 +603,7 @@ export class AddressDB {
 			network,
 		} of catRows) {
 			const entity = map.get(keyOf(address));
-			if (entity !== undefined) {
+			if (entity) {
 				entity.categories?.push({
 					category,
 					subcategory,

@@ -1,11 +1,42 @@
 @import "tailwindcss";
 
+.scrollbar-ui {
+	scrollbar-width: thin; /* Firefox */
+	scrollbar-color: rgba(113, 113, 122, 0.4) transparent;
+}
+
+/* WebKit (Chrome/Safari/Edge) */
+.scrollbar-ui::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.scrollbar-ui::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-ui::-webkit-scrollbar-thumb {
+	opacity: 1; /* remove the 0 opacity */
+	transition: background-color 150ms ease;
+	background-color: rgba(113, 113, 122, 0.35); /* zinc-500 */
+	border-radius: 9999px;
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+.scrollbar-ui:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(161, 161, 170, 0.6); /* zinc-400 */
+}
+
+.scrollbar-ui:hover::-webkit-scrollbar-thumb {
+	background-color: rgba(161, 161, 170, 0.6); /* zinc-400 */
+}
+
 button {
 	@apply cursor-pointer;
 }
 
 input[type="text"].ui-input {
-	@apply text-sm bg-transparent border rounded-md border-zinc-900 text-zinc-100 placeholder-zinc-600 focus:border-zinc-300 focus:outline-none;
+	@apply text-sm bg-transparent border rounded-md border-zinc-900 text-zinc-100 placeholder-zinc-600 focus:bg-teal-700/5 focus:outline-none;
 }
 
 button.ui-btn {

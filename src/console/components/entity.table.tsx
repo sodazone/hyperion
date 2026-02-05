@@ -7,13 +7,11 @@ import { NetworkIconGroup } from "./network.icon.group";
 export function EntityTable({
 	rows,
 	rowLink,
-	actions,
 	empty,
 }: {
 	rows: EntityRow[];
 	rowLink: (row: EntityRow) => string;
 	empty?: React.ReactNode;
-	actions?: (row: EntityRow) => React.ReactNode;
 }) {
 	return (
 		<div id="entity-table" className="flex-1 overflow-auto">
@@ -23,31 +21,21 @@ export function EntityTable({
 					<col className="w-20" />
 					<col className="w-20" />
 					<col className="w-20" />
-					{actions && <col className="w-20" />}
 				</colgroup>
 
-				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500">
+				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500 z-10">
 					<tr>
 						<th className="px-4 py-2 text-left">Address</th>
 						<th className="px-4 py-2 text-left">Networks</th>
-
-						{/* hide on small */}
-						<th className="px-4 py-2 text-left hidden md:table-cell">
-							Categories
-						</th>
-						<th className="px-4 py-2 text-left hidden md:table-cell">Tags</th>
-
-						{actions && <th className="px-4 py-2 text-left">Actions</th>}
+						<th className="px-4 py-2 text-left">Categories</th>
+						<th className="px-4 py-2 text-left">Tags</th>
 					</tr>
 				</thead>
 
 				<tbody className="divide-y divide-zinc-900/90">
 					{rows.length === 0 && (
 						<tr>
-							<td
-								colSpan={actions ? 5 : 4}
-								className="px-4 py-16 text-center text-zinc-500"
-							>
+							<td colSpan={4} className="px-4 py-16 text-center text-zinc-500">
 								{empty ?? "No entities found"}
 							</td>
 						</tr>
@@ -56,7 +44,7 @@ export function EntityTable({
 					{rows.map((e) => (
 						<tr
 							key={e.address_formatted}
-							className="hover:bg-teal-300/10 cursor-pointer transition-colors duration-75"
+							className="hover:bg-teal-700/5 cursor-pointer transition-colors duration-75"
 							hx-get={rowLink(e)}
 							hx-target="#main-content"
 							hx-push-url="true"
@@ -76,33 +64,37 @@ export function EntityTable({
 								<NetworkIconGroup urns={e.sets.networks} />
 							</td>
 
-							{/* Categories (desktop only) */}
-							<td className="px-4 py-2 hidden md:table-cell">
-								<div className="flex gap-1 flex-wrap max-h-10 overflow-hidden">
-									{e.sets.categories.length ? (
-										e.sets.categories.map((c) => (
-											<CategoryBadge key={c} categoryCode={c} />
-										))
-									) : (
-										<span className="text-zinc-500">-</span>
-									)}
-								</div>
+							{/* Categories */}
+							<td className="px-4 py-2">
+								{e.sets.categories.length > 0 ? (
+									<div className="flex items-center gap-1 truncate">
+										<CategoryBadge categoryCode={e.sets.categories[0] ?? 0} />
+
+										{e.sets.categories.length > 1 && (
+											<span className="text-xs text-zinc-500">
+												+{e.sets.categories.length - 1}
+											</span>
+										)}
+									</div>
+								) : (
+									<span className="text-zinc-500">-</span>
+								)}
 							</td>
 
-							{/* Tags (desktop only) */}
-							<td className="px-4 py-2 hidden md:table-cell">
-								<div className="flex gap-1 flex-wrap max-h-10 overflow-hidden">
-									{e.sets.tags.length ? (
-										e.sets.tags.map((t) => <TagBadge key={t} tag={t} />)
-									) : (
-										<span className="text-zinc-500">-</span>
-									)}
-								</div>
-							</td>
+							{/* Tags */}
+							<td className="px-4 py-2">
+								{e.sets.tags.length > 0 ? (
+									<div className="flex gap-1 items-center">
+										<TagBadge tag={e.sets.tags[0] ?? ""} />
 
-							{actions && (
-								<td className="px-4 py-2 text-zinc-300">{actions(e)}</td>
-							)}
+										{e.sets.tags.length > 1 && (
+											<span>+{e.sets.tags.length - 1}</span>
+										)}
+									</div>
+								) : (
+									<span className="text-zinc-500">-</span>
+								)}
+							</td>
 						</tr>
 					))}
 				</tbody>

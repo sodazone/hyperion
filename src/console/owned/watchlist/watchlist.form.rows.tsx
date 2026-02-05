@@ -21,6 +21,7 @@ export function TagRow(t?: { network?: number; tag?: string }) {
 
 			<input
 				type="text"
+				required
 				name="tags[][tag]"
 				defaultValue={t?.tag ?? ""}
 				placeholder="tag"
