@@ -39,7 +39,7 @@ const CATEGORY_STYLE: Record<
 };
 
 const BASE_CLASS =
-	"inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border backdrop-blur-sm";
+	"inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border";
 
 function getCategoryLabel(categoryCode: number, subcategoryCode?: number) {
 	const category = CategoriesMap.getLabel(categoryCode);
@@ -59,7 +59,7 @@ export function CategoryBadge({
 }) {
 	const style =
 		CATEGORY_STYLE[categoryCode]?.className ??
-		"bg-slate-400/10 text-slate-300 border-slate-400/20";
+		"bg-slate-400/10 text-slate-300 border-slate-400/20 truncate";
 
 	const label = getCategoryLabel(categoryCode, subcategoryCode);
 

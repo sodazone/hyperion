@@ -25,7 +25,7 @@ export async function EntityListPage(
 		cursor,
 		// tag: "phishing_domain:polkadot-bonus.network",
 		category: Number.isNaN(category) ? undefined : category,
-		limit: 15,
+		limit: 35,
 		address: search,
 	});
 

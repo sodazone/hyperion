@@ -30,7 +30,7 @@ export async function WatchlistFormPage(
 	req: Bun.BunRequest<"/console/watchlist/form/:address">,
 ) {
 	const user = await authApi.getAuthenticatedUser(req);
-	if (!user) return Unauthorized;
+	if (user == null) return Unauthorized;
 
 	const address = req.params.address;
 
@@ -59,10 +59,7 @@ export async function WatchlistPage(
 	req: Bun.BunRequest,
 ) {
 	const user = await authApi.getAuthenticatedUser(req);
-
-	if (user == null) {
-		return Unauthorized;
-	}
+	if (user == null) return Unauthorized;
 
 	const url = new URL(req.url);
 
@@ -76,7 +73,6 @@ export async function WatchlistPage(
 		owner,
 		network,
 		cursor,
-		// tag: "phishing_domain:polkadot-bonus.network",
 		category: Number.isNaN(category) ? undefined : category,
 		limit: 15,
 		address: search,

@@ -12,10 +12,10 @@ export function Paginated({
 	children: React.ReactNode;
 }) {
 	return (
-		<section className="flex h-full flex-col mt-14 max-w-full md:w-4xl lg:w-5xl md:mx-auto">
+		<section className="flex flex-col min-h-0 max-w-full md:w-4xl lg:w-5xl md:mx-auto">
 			{children}
 
-			<div className="flex justify-end border-t border-zinc-800 bg-zinc-950 px-4 py-3 text-sm space-x-2">
+			<div className="flex justify-end border-t border-zinc-800 bg-zinc-950 px-4 py-3 text-sm space-x-2 shrink-0">
 				<button
 					type="button"
 					hx-on:click="history.back()"

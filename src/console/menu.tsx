@@ -1,5 +1,5 @@
 import type { Member } from "@/auth/types";
-import { BellIcon, TagIcon } from "./components/icons";
+import { BellIcon, MenuCloserIcon, TagIcon } from "./components/icons";
 
 type Props = {
 	member?: Member | null;
@@ -19,10 +19,10 @@ export function Sidebar({ member }: Props) {
 				<button
 					type="button"
 					id="sidebar-toggle"
-					className="p-2 rounded bg-zinc-800 text-zinc-400 hover:text-zinc-200"
+					className="p-2 rounded text-zinc-400 hover:text-zinc-200"
 					aria-label="Open menu"
 				>
-					☰
+					<MenuCloserIcon />
 				</button>
 			</div>
 
@@ -38,7 +38,7 @@ export function Sidebar({ member }: Props) {
 				className="fixed top-0 left-0 z-50 w-full max-w-xs h-full md:w-64 md:relative md:flex flex-col border-r border-zinc-800 bg-zinc-950 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out"
 			>
 				{/* Brand (desktop inside sidebar) */}
-				<div className="hidden md:flex items-center gap-2 px-4 py-4 border-b border-zinc-800 h-18">
+				<div className="flex items-center gap-2 px-4 py-4 border-b border-zinc-800 h-18">
 					<a href="/" className="flex items-center gap-2">
 						<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
 						<div className="flex flex-col">

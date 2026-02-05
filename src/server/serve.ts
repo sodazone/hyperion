@@ -1,3 +1,4 @@
+import { getNetworkIconFile } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
 import { initNetworkCache } from "@/console/network.cache";
 import {
@@ -64,6 +65,19 @@ export async function serve({
 				return file
 					? new Response(file)
 					: new Response("Not found", { status: 404 });
+			},
+			"/img/networks/:name": ({ params }) => {
+				const file = getNetworkIconFile(params.name);
+
+				if (!file) {
+					return new Response("Not found", { status: 404 });
+				}
+
+				return new Response(file, {
+					headers: {
+						"Cache-Control": "public, max-age=31536000, immutable",
+					},
+				});
 			},
 			"/styles.css": Bun.file("./src/static/styles.min.css"),
 			"/login": {

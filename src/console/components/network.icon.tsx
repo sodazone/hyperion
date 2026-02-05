@@ -21,7 +21,14 @@ export function NetworkIcon({
 	return (
 		<span className="inline-flex items-center gap-1.5">
 			{icon ? (
-				<img src={icon} alt={label} width={size} height={size} loading="lazy" />
+				<img
+					className="rounded-full"
+					src={icon}
+					alt={label}
+					width={size}
+					height={size}
+					loading="lazy"
+				/>
 			) : (
 				<span
 					className="flex items-center justify-center rounded-full bg-zinc-800 text-[10px] text-zinc-400"

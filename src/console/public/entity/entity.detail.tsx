@@ -28,7 +28,7 @@ function NetworkSection({
 	analysis: AddressAnalysis;
 }) {
 	return (
-		<section className="space-y-6 rounded-lg border border-zinc-900 bg-zinc-950/60 p-5">
+		<section className="space-y-6 rounded-lg md:border md:border-zinc-900 bg-zinc-950/60 p-5">
 			<div className="flex items-center justify-between">
 				<h2 className="text-sm font-semibold text-zinc-200">
 					<NetworkIcon
@@ -187,7 +187,7 @@ type Props = {
 
 export function EntityDetailsView({ entity }: Props) {
 	return (
-		<section className="flex h-full flex-col mt-14 max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
+		<section className="flex h-full flex-col max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
 			<div className="flex items-center gap-6">
 				<BackButton href="/console/entities" />
 				<EntityHeader address={entity.address} />

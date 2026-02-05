@@ -7,7 +7,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 	const method = isEdit ? "hx-put" : "hx-post";
 
 	return (
-		<section className="h-full min-h-screen flex flex-col mt-14 max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
+		<section className="h-full min-h-screen flex flex-col max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
 			<div className="flex gap-6 items-center">
 				<BackButton href="/console/watchlist" />
 
