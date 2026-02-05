@@ -1,16 +1,13 @@
 import type { HyperionDB } from "@/db";
-import { getOwnerHashFromRequest } from "../auth/jwks";
-import { InternalServerError, NotFound, Unauthorized } from "../response";
+import { InternalServerError, NotFound } from "../response";
 import { coerceCategoryParams, coerceCatetoryWriteParams } from "./params";
 
 async function getCategory(
+	ownerHash: Uint8Array,
 	db: HyperionDB,
 	req: Bun.BunRequest<"/v1/private/category/:address/:cat/:subcat/:network">,
 ) {
 	try {
-		const ownerHash = await getOwnerHashFromRequest(req);
-		if (ownerHash === null) return Unauthorized;
-
 		const params = coerceCategoryParams(req.params);
 		if (params instanceof Response) return params;
 
@@ -40,12 +37,10 @@ async function getCategory(
 }
 
 async function postCategory(
+	ownerHash: Uint8Array,
 	db: HyperionDB,
 	req: Bun.BunRequest<"/v1/private/category/:address/:cat/:subcat/:network">,
 ) {
-	const ownerHash = await getOwnerHashFromRequest(req);
-	if (ownerHash === null) return Unauthorized;
-
 	const params = coerceCatetoryWriteParams(req.params);
 	if (params instanceof Response) return params;
 
@@ -58,12 +53,10 @@ async function postCategory(
 }
 
 async function deleteCategory(
+	ownerHash: Uint8Array,
 	db: HyperionDB,
 	req: Bun.BunRequest<"/v1/private/category/:address/:cat/:subcat/:network">,
 ) {
-	const ownerHash = await getOwnerHashFromRequest(req);
-	if (ownerHash === null) return Unauthorized;
-
 	const params = coerceCatetoryWriteParams(req.params);
 	if (params instanceof Response) return params;
 

@@ -16,13 +16,8 @@ import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
 import { intel } from "./api/routes";
 import { images } from "./assets/img";
-import {
-	getOwnerHashFromRequest,
-	type JWKSSource,
-	loadJWKS,
-} from "./auth/jwks";
+import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
-import { Unauthorized } from "./response";
 import {
 	WatchlistDeleteHandler,
 	WatchlistPostHandler,
@@ -121,23 +116,25 @@ export async function serve({
 				intel.getAddressTags(db, req),
 			"/v1/public/tag/:address/:tag/:network": (req) =>
 				intel.getAddressTagByNetwork(db, req),
-			"/v1/private/me": async (req) => {
-				const ownerHash = await getOwnerHashFromRequest(req);
-				if (ownerHash === null) return Unauthorized;
-				return Response.json({
-					hash: Buffer.from(ownerHash).toString("hex"),
-				});
-			},
+			"/v1/private/me": async (req) =>
+				withOwnerFromJWT(req, async (owner) =>
+					Response.json({
+						hash: Buffer.from(owner).toString("hex"),
+					}),
+				),
 			"/v1/private/category/:address/:cat/:subcat/:network": {
-				GET: async (req) => {
-					return await intel.owned.getCategory(db, req);
-				},
-				POST: async (req) => {
-					return await intel.owned.postCategory(db, req);
-				},
-				DELETE: async (req) => {
-					return await intel.owned.deleteCategory(db, req);
-				},
+				GET: async (req) =>
+					withOwnerFromJWT(req, async (owner) =>
+						intel.owned.getCategory(owner, db, req),
+					),
+				POST: async (req) =>
+					withOwnerFromJWT(req, async (owner) =>
+						intel.owned.postCategory(owner, db, req),
+					),
+				DELETE: async (req) =>
+					withOwnerFromJWT(req, async (owner) =>
+						intel.owned.deleteCategory(owner, db, req),
+					),
 			},
 		},
 	});

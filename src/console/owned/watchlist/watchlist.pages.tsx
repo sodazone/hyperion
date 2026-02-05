@@ -1,66 +1,55 @@
-import { hashOwner } from "@/auth";
 import { coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
-import { InvalidParameters, Unauthorized } from "@/server/response";
+import { InvalidParameters } from "@/server/response";
 import { ConsoleApp } from "../../app";
-import type { PageContext } from "../../types";
+import { withAuth } from "../../auth";
 import { enrichEntityRows } from "../../util";
 import { WatchlistForm } from "./watchlist.form";
 import { CategoryRow, TagRow } from "./watchlist.form.rows";
 import { WatchlistList } from "./watchlist.list";
 
-export async function WatchlistTagRowPage(req: Request) {
+export const WatchlistTagRowPage = withAuth(async ({ req }) => {
 	if (!req.headers.get("HX-Request")) {
 		return InvalidParameters;
 	}
 
 	return render(<TagRow />);
-}
+});
 
-export async function WatchlistCategoryRowPage(req: Request) {
+export const WatchlistCategoryRowPage = withAuth(async ({ req }) => {
 	if (!req.headers.get("HX-Request")) {
 		return InvalidParameters;
 	}
 
 	return render(<CategoryRow />);
-}
+});
 
-export async function WatchlistFormPage(
-	{ db, authApi }: PageContext,
-	req: Bun.BunRequest<"/console/watchlist/form/:address">,
-) {
-	const user = await authApi.getAuthenticatedUser(req);
-	if (user == null) return Unauthorized;
+export const WatchlistFormPage = withAuth<"/console/watchlist/form/:address">(
+	async ({ db, req, user, ownerHash }) => {
+		const address = req.params.address;
 
-	const address = req.params.address;
+		const entity =
+			address && address !== "__new__"
+				? db.findEntity({ owner: ownerHash, address })
+				: undefined;
 
-	const entity =
-		address && address !== "__new__"
-			? db.findEntity({ owner: hashOwner(user.email), address })
-			: undefined;
+		const form = <WatchlistForm entity={entity} />;
 
-	const form = <WatchlistForm entity={entity} />;
+		// htmx fragment
+		if (req.headers.get("HX-Request")) {
+			return render(form);
+		}
 
-	// htmx fragment
-	if (req.headers.get("HX-Request")) {
-		return render(form);
-	}
+		// full page
+		return render(
+			<ConsoleApp member={user} path="/console/watchlist">
+				{form}
+			</ConsoleApp>,
+		);
+	},
+);
 
-	// full page
-	return render(
-		<ConsoleApp member={user} path="/console/watchlist">
-			{form}
-		</ConsoleApp>,
-	);
-}
-
-export async function WatchlistPage(
-	{ db, authApi }: PageContext,
-	req: Bun.BunRequest,
-) {
-	const user = await authApi.getAuthenticatedUser(req);
-	if (user == null) return Unauthorized;
-
+export const WatchlistPage = withAuth(async ({ db, req, user, ownerHash }) => {
 	const url = new URL(req.url);
 
 	const cursor = url.searchParams.get("cursor") ?? undefined;
@@ -68,9 +57,8 @@ export async function WatchlistPage(
 	const category = Number(url.searchParams.get("category") ?? undefined);
 	const search = url.searchParams.get("q") ?? undefined;
 
-	const owner = hashOwner(user.email);
 	const { rows, cursorNext } = db.search.findEntities({
-		owner,
+		owner: ownerHash,
 		network,
 		cursor,
 		category: Number.isNaN(category) ? undefined : category,
@@ -98,4 +86,4 @@ export async function WatchlistPage(
 			<WatchlistList ctx={{ url }} page={page} />
 		</ConsoleApp>,
 	);
-}
+});

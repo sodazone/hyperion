@@ -1,5 +1,6 @@
 import * as jose from "jose";
 import { hashOwner } from "@/auth";
+import { Unauthorized } from "../response";
 
 export type JWKSSource = string | { keys: jose.JWK[] };
 
@@ -62,4 +63,14 @@ export async function getOwnerHashFromRequest(
 		console.error("JWT verification failed:", err);
 		return null;
 	}
+}
+
+export async function withOwnerFromJWT(
+	req: Bun.BunRequest,
+	handler: (owner: Uint8Array) => Promise<Response>,
+) {
+	const ownerHash = await getOwnerHashFromRequest(req);
+	if (!ownerHash) return Unauthorized;
+
+	return handler(ownerHash);
 }

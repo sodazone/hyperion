@@ -18,8 +18,8 @@ export function createAuthApi() {
 
 	const StytchSessionToken = "stytch_session_token";
 
-	async function getAuthenticatedUser(
-		req: Bun.BunRequest,
+	async function getAuthenticatedUser<T extends string = string>(
+		req: Bun.BunRequest<T>,
 	): Promise<Member | null> {
 		try {
 			const sessionToken = req.cookies.get(StytchSessionToken);
