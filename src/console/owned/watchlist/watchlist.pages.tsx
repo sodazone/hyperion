@@ -2,7 +2,7 @@ import { coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
 import { InvalidParameters } from "@/server/response";
 import { ConsoleApp } from "../../app";
-import { withAuth } from "../../auth";
+import { withAuth } from "../../authenticated";
 import { enrichEntityRows } from "../../util";
 import { WatchlistForm } from "./watchlist.form";
 import { CategoryRow, TagRow } from "./watchlist.form.rows";
