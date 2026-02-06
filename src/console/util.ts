@@ -34,3 +34,12 @@ export const enrichEntityRows = (rows: Entity[]): Array<EntityRow> => {
 		};
 	});
 };
+
+export function truncMid(str: string, startLength = 6, endLength = 6) {
+	if (!str) return str;
+
+	const slen = str.startsWith("0x") ? startLength + 2 : startLength;
+
+	if (str.length <= slen + endLength) return str;
+	return `${str.slice(0, slen)}…${str.slice(-endLength)}`;
+}

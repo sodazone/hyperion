@@ -4,7 +4,7 @@ import { NetworkIcon } from "@/console/components/network.icon";
 import { Paginated } from "@/console/components/paginated";
 import { SearchFilters } from "@/console/components/search.filters";
 import { TopBar } from "@/console/components/top.bar";
-import { withCursor } from "@/console/util";
+import { truncMid, withCursor } from "@/console/util";
 import type { Alert, AlertActor } from "@/db/model";
 import { NetworkMap } from "@/intel/mapping";
 
@@ -45,12 +45,13 @@ function AlertCards({ rows }: { rows: Alert[] }) {
 						key={alert.id}
 						className="
               flex flex-col gap-3
-              rounded-lg
+              max-w-full
+              md:rounded-lg
               bg-zinc-900/90
-              border border-zinc-800
+              md:border
+              md:border-zinc-800
               p-5
               shadow-md
-              hover:bg-zinc-900
               transition-colors
             "
 					>
@@ -61,7 +62,7 @@ function AlertCards({ rows }: { rows: Alert[] }) {
 							<SeverityBadge level={alert.level} />
 						</div>
 
-						<div className="text-zinc-100 text-base font-semibold leading-snug">
+						<div className="text-zinc-100 text-base font-semibold leading-snug truncate">
 							{alert.message}
 						</div>
 
@@ -73,14 +74,16 @@ function AlertCards({ rows }: { rows: Alert[] }) {
 											{a.role}
 										</span>
 										<span className="flex gap-1 items-center font-mono">
-											{a.address_formatted}
+											<span className="truncate">
+												{truncMid(a.address_formatted)}
+											</span>
 											<CopyButton
 												title="Copy Address"
 												text={a.address_formatted}
 											/>
 										</span>
 										{a.labels && a.labels.length > 0 && (
-											<span className="text-zinc-500 text-xs">
+											<span className="text-zinc-500 text-xs truncate">
 												{a.labels.join(", ")}
 											</span>
 										)}
@@ -109,18 +112,18 @@ function AlertCards({ rows }: { rows: Alert[] }) {
 								</div>
 							)}
 							{alert.block_hash && (
-								<div className="flex gap-2">
+								<div className="flex flex-wrap gap-2">
 									<span className="text-zinc-500 w-16 capitalize">Block</span>
-									<span className="font-mono">{alert.block_hash}</span>
+									<span className="font-mono truncate">{alert.block_hash}</span>
 									<span className="text-xs text-zinc-500 font-mono">
 										(#{alert.block_number})
 									</span>
 								</div>
 							)}
 							{alert.tx_hash && (
-								<div className="flex gap-2">
+								<div className="flex flex-wrap gap-2">
 									<span className="text-zinc-500 w-16 capitalize">Tx</span>
-									<span className="font-mono">{alert.tx_hash}</span>
+									<span className="font-mono truncate">{alert.tx_hash}</span>
 								</div>
 							)}
 						</div>
