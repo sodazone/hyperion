@@ -34,7 +34,7 @@ export function ConsoleApp({ member, children }: Props) {
 						<main
 							id="main-content"
 							hx-history-elt="true"
-							className="flex flex-1 flex-col overflow-auto scrollbar-ui mt-16 md:mt-6"
+							className="flex flex-1 flex-col overflow-auto scrollbar-ui pt-16 md:pt-6"
 						>
 							{children}
 						</main>
