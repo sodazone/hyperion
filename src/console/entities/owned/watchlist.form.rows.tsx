@@ -25,7 +25,7 @@ export function TagRow(t?: { network?: number; tag?: string }) {
 				name="tags[][tag]"
 				defaultValue={t?.tag ?? ""}
 				placeholder="tag"
-				className="flex-1 px-3 py-2 input-ui"
+				className="ui-input flex-1 px-3 py-2"
 			/>
 
 			<button

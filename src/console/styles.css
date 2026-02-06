@@ -1,56 +1,55 @@
 @import "tailwindcss";
 
-.scrollbar-ui {
-	scrollbar-width: thin; /* Firefox */
-	scrollbar-color: rgba(113, 113, 122, 0.4) transparent;
+@layer base {
+	.scrollbar-ui {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(113, 113, 122, 0.4) transparent;
+	}
+
+	.scrollbar-ui::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	.scrollbar-ui::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.scrollbar-ui::-webkit-scrollbar-thumb {
+		background-color: rgba(113, 113, 122, 0.35);
+		border-radius: 9999px;
+		border: 2px solid transparent;
+		background-clip: content-box;
+		transition: background-color 150ms ease;
+	}
+
+	.scrollbar-ui:hover::-webkit-scrollbar-thumb {
+		background-color: rgba(161, 161, 170, 0.6);
+	}
+
+	button {
+		@apply cursor-pointer;
+	}
 }
 
-/* WebKit (Chrome/Safari/Edge) */
-.scrollbar-ui::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-}
+@layer components {
+	.ui-input {
+		@apply text-sm bg-transparent border rounded-md border-zinc-900 text-zinc-100 placeholder-zinc-600 focus:bg-teal-700/5 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-0;
+	}
 
-.scrollbar-ui::-webkit-scrollbar-track {
-	background: transparent;
-}
+	.ui-btn {
+		@apply flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 disabled:opacity-40 disabled:cursor-default focus:outline-none;
+	}
 
-.scrollbar-ui::-webkit-scrollbar-thumb {
-	opacity: 1; /* remove the 0 opacity */
-	transition: background-color 150ms ease;
-	background-color: rgba(113, 113, 122, 0.35); /* zinc-500 */
-	border-radius: 9999px;
-	border: 2px solid transparent;
-	background-clip: content-box;
-}
-.scrollbar-ui:hover::-webkit-scrollbar-thumb {
-	background-color: rgba(161, 161, 170, 0.6); /* zinc-400 */
-}
-
-.scrollbar-ui:hover::-webkit-scrollbar-thumb {
-	background-color: rgba(161, 161, 170, 0.6); /* zinc-400 */
-}
-
-button {
-	@apply cursor-pointer;
-}
-
-input[type="text"].ui-input {
-	@apply text-sm bg-transparent border rounded-md border-zinc-900 text-zinc-100 placeholder-zinc-600 focus:bg-teal-700/5 focus:outline-none;
-}
-
-button.ui-btn {
-	@apply flex space-x-2 items-center rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 cursor-pointer hover:text-zinc-200 hover:bg-zinc-900 disabled:hover:text-zinc-400 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-default focus:outline-none;
-}
-
-div.ui-select {
-	@apply relative;
+	.ui-select {
+		@apply relative;
+	}
 
 	.ui-select-btn {
 		@apply pointer-events-none absolute inset-y-0 right-2 flex items-center text-zinc-600;
 	}
 
-	select {
+	.ui-select select {
 		@apply w-full border border-zinc-900 bg-zinc-950 text-zinc-400 text-sm px-3 py-2 rounded-md appearance-none hover:text-zinc-200 hover:bg-zinc-900 focus:outline-none cursor-pointer;
 	}
 }
