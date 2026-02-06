@@ -10,7 +10,7 @@ export function Sidebar({ member }: Props) {
 
 	return (
 		<>
-			<div className="md:hidden flex items-center justify-between p-2 w-full fixed top-0.5">
+			<div className="md:hidden flex items-center justify-between p-2 w-full fixed top-0 bg-linear-to-b from-zinc-950/90 via-zinc-950/75 to-zinc-950/0">
 				<a href="/" className="flex items-center gap-2">
 					<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
 					<span className="text-sm font-semibold text-zinc-200">Hyperion</span>
