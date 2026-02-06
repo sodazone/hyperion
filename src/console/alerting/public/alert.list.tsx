@@ -48,8 +48,6 @@ function AlertCards({ rows }: { rows: Alert[] }) {
               max-w-full
               md:rounded-lg
               bg-zinc-900/90
-              md:border
-              md:border-zinc-800
               p-5
               shadow-md
               transition-colors
