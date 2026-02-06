@@ -1,12 +1,12 @@
 import { ConsoleApp } from "@/console/app";
-import { EntityDetailsView } from "@/console/public/entity/entity.detail";
-import { EntitiesList } from "@/console/public/entity/entity.list";
 import { PUBLIC_OWNER } from "@/db";
 import { analyzeAddressAllNetworks } from "@/intel/api";
 import { coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
 import type { PageContext } from "../../types";
 import { enrichEntityRows } from "../../util";
+import { EntityDetailsView } from "./entity.detail";
+import { EntitiesList } from "./entity.list";
 
 export async function EntityListPage(
 	{ db, authApi }: PageContext,
@@ -19,7 +19,7 @@ export async function EntityListPage(
 	const category = Number(url.searchParams.get("category") ?? undefined);
 	const search = url.searchParams.get("q") ?? undefined;
 
-	const { rows, cursorNext } = db.search.findEntities({
+	const { rows, cursorNext } = db.entities.findEntities({
 		owner: PUBLIC_OWNER,
 		network,
 		cursor,

@@ -1,11 +1,10 @@
 import { CAT } from "@/intel/mapping";
-import type { AddressCategory, AddressTag } from "../types";
-import type { RiskResult, SanctionsResult } from "./types";
+import type { LabeledCategory, RiskResult, SanctionsResult } from "./types";
 
 export function computeRisk(
 	sanctions: SanctionsResult,
-	categories: Array<AddressCategory>,
-	tags: Array<AddressTag>,
+	categories: Array<LabeledCategory>,
+	tags: Array<string>,
 ): RiskResult {
 	const reasons: string[] = [];
 	let score = 0;
@@ -26,7 +25,7 @@ export function computeRisk(
 
 			case CAT.ANONYMIZING:
 				score += 50;
-				reasons.push(subcategory.label);
+				reasons.push(subcategory.label ?? "");
 				break;
 
 			case CAT.COMPROMISED:
@@ -46,7 +45,7 @@ export function computeRisk(
 						break;
 					default:
 						score += 30;
-						reasons.push(subcategory.label);
+						reasons.push(subcategory.label ?? "");
 						break;
 				}
 				break;
@@ -64,20 +63,20 @@ export function computeRisk(
 						break;
 					default:
 						score += 20;
-						reasons.push(subcategory.label);
+						reasons.push(subcategory.label ?? "");
 						break;
 				}
 				break;
 
 			case CAT.HIGH_RISK:
 				score += 15;
-				reasons.push(category.label);
+				reasons.push(category.label ?? "");
 				break;
 
 			case CAT.EXCHANGE:
 				if (subcategory.code === 0x0002) {
 					score += 10;
-					reasons.push(subcategory.label);
+					reasons.push(subcategory.label ?? "");
 				}
 				break;
 
@@ -88,9 +87,7 @@ export function computeRisk(
 
 	// Tag-based risk
 	if (tags.length > 0) {
-		const tagIndex = tags.findIndex(
-			({ tag }) => tag.type === "tx_class" && tag.name === "high_count",
-		);
+		const tagIndex = tags.indexOf("tx_class:high_count");
 		if (tagIndex > -1) {
 			score += 5;
 			reasons.push("High volume activity detected");

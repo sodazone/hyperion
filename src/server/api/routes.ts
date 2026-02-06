@@ -20,7 +20,7 @@ function getAddressByNetwork(
 		}
 
 		if (
-			!db.hasEntity({
+			!db.entities.hasEntity({
 				owner: PUBLIC_OWNER,
 				address,
 			})
@@ -63,11 +63,11 @@ function getAddressCategory(
 
 		if (exists) {
 			return new Response(null, {
-				status: db.hasCategory(params) ? 204 : 404,
+				status: db.entities.hasCategory(params) ? 204 : 404,
 			});
 		}
 
-		const entries = db.getCategories(params);
+		const entries = db.entities.findCategories(params);
 
 		if (!entries || entries.length === 0) {
 			return NotFound;
@@ -91,7 +91,7 @@ function getAddressTags(
 			return InvalidParameters;
 		}
 
-		const entries = db.getTags({
+		const entries = db.entities.findTags({
 			owner: PUBLIC_OWNER,
 			address,
 			network: networkId,
@@ -121,11 +121,11 @@ function getAddressTagByNetwork(
 
 		if (exists) {
 			return new Response(null, {
-				status: db.hasTag(params) ? 204 : 404,
+				status: db.entities.hasTag(params) ? 204 : 404,
 			});
 		}
 
-		const result = db.getTags(params);
+		const result = db.entities.findTags(params);
 
 		if (result === undefined) {
 			return NotFound;

@@ -1,17 +1,18 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
-import { getNetworkIconFile } from "@/console/extra.infos";
-import { LoginPage } from "@/console/login.page";
-import { initNetworkCache } from "@/console/network.cache";
+import { AlertListPage } from "@/console/alerting/public/alert.pages";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
 	WatchlistPage,
 	WatchlistTagRowPage,
-} from "@/console/owned/watchlist/watchlist.pages";
+} from "@/console/entities/owned/watchlist.pages";
 import {
 	EntityDetailPage,
 	EntityListPage,
-} from "@/console/public/entity/entity.pages";
+} from "@/console/entities/public/entity.pages";
+import { getNetworkIconFile } from "@/console/extra.infos";
+import { LoginPage } from "@/console/login.page";
+import { initNetworkCache } from "@/console/network.cache";
 import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
@@ -47,8 +48,8 @@ export async function serve({
 
 	const authApi = createAuthApi();
 
-	const monitor = await createMonitorFromDB(db);
-	monitor.start();
+	//const monitor = await createMonitorFromDB(db);
+	//monitor.start();
 
 	const ctx = { db, authApi };
 
@@ -58,7 +59,7 @@ export async function serve({
 		reusePort,
 
 		routes: {
-			"/": async (req) => EntityListPage(ctx, req),
+			"/": async (req) => AlertListPage(ctx, req),
 			"/img/:name": ({ params }) => {
 				const file = images[params.name];
 				return file
@@ -85,6 +86,7 @@ export async function serve({
 			},
 			"/logout": authApi.logout,
 			"/authenticate": authApi.authenticate,
+			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/entities": async (req) => EntityListPage(ctx, req),
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/console/watchlist": {
@@ -108,8 +110,8 @@ export async function serve({
 					headers: { "Cache-Control": "public, max-age=3600" },
 				}),
 			// "/db/stats": () => Response.json(kvs.getStats()),
-			"/v1/meta/networks": () => Response.json(db.getNetworksMeta()),
-			"/v1/meta/categories": () => Response.json(db.getCategoriesMeta()),
+			"/v1/meta/networks": () => Response.json(db.meta.getNetworksMeta()),
+			"/v1/meta/categories": () => Response.json(db.meta.getCategoriesMeta()),
 			"/v1/public/address/:address/:network": (req) =>
 				intel.getAddressByNetwork(db, req),
 			"/v1/public/address/:address": (req) =>
@@ -155,7 +157,7 @@ export async function serve({
 			listener.stop();
 			console.log("HTTP server stopped");
 
-			monitor.stop();
+			//monitor.stop();
 			console.log("Monitor stopped");
 
 			db.close();

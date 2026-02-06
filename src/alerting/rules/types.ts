@@ -1,4 +1,4 @@
-import type { HyperionDB } from "@/db";
+import type { Alert, HyperionDB } from "@/db";
 
 export interface BaseEvent<T extends string = string, P = unknown> {
 	type: T;
@@ -17,6 +17,8 @@ export interface BaseEvent<T extends string = string, P = unknown> {
 export type TransferPayload = {
 	from: string;
 	to: string;
+	fromFormatted: string;
+	toFormatted: string;
 	amount: bigint;
 	amountUsd: number;
 	asset: {
@@ -70,10 +72,18 @@ export interface RuleContext {
 
 export type AnyEvent = EventMap[keyof EventMap];
 
-type RuleMatcher<Event extends BaseEvent = AnyEvent> = (
+export type MatchResult<T> = {
+	matched: boolean;
+	data?: T;
+};
+
+export type RuleMatcher<
+	Event extends BaseEvent = AnyEvent,
+	Result = unknown,
+> = (
 	event: Event,
 	ctx: RuleContext,
-) => Promise<boolean> | boolean;
+) => Promise<MatchResult<Result>> | MatchResult<Result>;
 
 export type RuleDependency =
 	| {
@@ -96,18 +106,29 @@ export type RuleDependency =
 			filter: unknown;
 	  };
 
-export type Rule<Event extends BaseEvent = AnyEvent> = {
+export type Rule<Event extends BaseEvent = AnyEvent, Data = unknown> = {
 	id: string;
+	owner: Uint8Array;
 	bundle?: string;
 	priority?: number;
-	matcher: RuleMatcher;
+	matcher: RuleMatcher<Event, Data>;
 	dependencies?: RuleDependency[];
-	alertTemplate?: (event: Event, ctx: RuleContext) => Promise<Alert> | Alert;
+	alertTemplate?: (
+		event: Event,
+		ctx: RuleContext,
+		matched: Data,
+	) => Promise<Alert> | Alert;
 	cooldownMs?: number;
 };
 
-export type Alert = {
-	ruleId: string;
-	level: number;
-	message: string;
+export enum AlertLevel {
+	Info = 1,
+	Warning = 2,
+	Critical = 3,
+}
+
+export const AlertLevelLabel: Record<AlertLevel, string> = {
+	[AlertLevel.Info]: "info",
+	[AlertLevel.Warning]: "warning",
+	[AlertLevel.Critical]: "critical",
 };

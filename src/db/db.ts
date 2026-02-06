@@ -1,7 +1,8 @@
 import { mkdir } from "node:fs/promises";
 import { hashAuth } from "@/auth";
 import { CategoriesMap, NetworkMap } from "@/intel/mapping";
-import { AddressDB } from "./backend/sqlite";
+import { AlertsDB } from "./backend/sqlite/alerts.db";
+import { EntitiesDB } from "./backend/sqlite/entities.db";
 
 export const METADATA_VERSION = 0;
 export const PUBLIC_OWNER = hashAuth("HYPERION.PUBLIC");
@@ -14,37 +15,34 @@ export function isPublicOwner(owner: Uint8Array): boolean {
 	return true;
 }
 
-export async function createAddressDatabase(path: string) {
-	if (path === ":memory:") return new AddressDB(":memory:");
+export async function createEntitiesDB(path: string) {
+	if (path === ":memory:") return new EntitiesDB(":memory:");
 
-	if (path !== undefined) await mkdir(path, { recursive: true });
-	const db = new AddressDB(`${path}/entity_index.sqlite`);
-	return db;
+	await mkdir(path, { recursive: true });
+	return new EntitiesDB(`${path}/entities.sqlite`);
+}
+
+export async function createAlertsDB(path: string) {
+	if (path === ":memory:") return new AlertsDB(":memory:");
+
+	await mkdir(path, { recursive: true });
+	return new AlertsDB(`${path}/alerts.sqlite`);
 }
 
 export async function createHyperionDB(path: string) {
-	const db = await createAddressDatabase(path);
+	const entities = await createEntitiesDB(path);
+	const alerts = await createAlertsDB(path);
 
 	return {
-		putCategory: db.upsertCategory.bind(db),
-		deleteCategory: db.deleteCategory.bind(db),
-		getCategories: db.queryCategories.bind(db),
-		hasCategory: db.hasCategory.bind(db),
-		hasEntity: db.hasEntity.bind(db),
-		findEntity: db.findEntity.bind(db),
-		putTag: db.upsertTag.bind(db),
-		getTags: db.queryTags.bind(db),
-		hasTag: db.hasTag.bind(db),
-		upsertEntities: db.upsertEntities.bind(db),
-		deleteEntity: db.deleteEntity.bind(db),
-		deleteAllTags: db.deleteAllTags.bind(db),
-		deleteAllCategories: db.deleteAllCategories.bind(db),
-		search: {
-			findEntities: db.queryEntities.bind(db),
+		entities,
+		alerts,
+		meta: {
+			getNetworksMeta: () => NetworkMap.entries(),
+			getCategoriesMeta: () => CategoriesMap.entries(),
 		},
-		getNetworksMeta: () => NetworkMap.entries(),
-		getCategoriesMeta: () => CategoriesMap.entries(),
-		close: async () => db.close(),
+		close: async () => {
+			await Promise.all([entities.close(), alerts.close()]);
+		},
 	};
 }
 

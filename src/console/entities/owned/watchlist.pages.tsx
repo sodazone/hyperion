@@ -30,7 +30,7 @@ export const WatchlistFormPage = withAuth<"/console/watchlist/form/:address">(
 
 		const entity =
 			address && address !== "__new__"
-				? db.findEntity({ owner: ownerHash, address })
+				? db.entities.findEntity({ owner: ownerHash, address })
 				: undefined;
 
 		const form = <WatchlistForm entity={entity} />;
@@ -57,7 +57,7 @@ export const WatchlistPage = withAuth(async ({ db, req, user, ownerHash }) => {
 	const category = Number(url.searchParams.get("category") ?? undefined);
 	const search = url.searchParams.get("q") ?? undefined;
 
-	const { rows, cursorNext } = db.search.findEntities({
+	const { rows, cursorNext } = db.entities.findEntities({
 		owner: ownerHash,
 		network,
 		cursor,

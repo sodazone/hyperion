@@ -44,6 +44,8 @@ export async function createDummyOcelloidsClient(): Promise<OcelloidsClient> {
 							payload: {
 								from: tx.from,
 								to: tx.to,
+								fromFormatted: tx.fromFormatted,
+								toFormatted: tx.toFormatted,
 								amount: BigInt(tx.amount),
 								amountUsd: tx.usd,
 								asset: {

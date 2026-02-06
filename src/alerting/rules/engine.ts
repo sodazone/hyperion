@@ -26,35 +26,35 @@ export class RuleEngine extends EventEmitter {
 	}
 
 	async evaluate(event: AnyEvent, ctx: RuleContext): Promise<void> {
-		// TODO: local context in the scope of the rule, i.e. from event to alert..
 		const now = ctx.now();
 
 		await Promise.all(
 			this.#rules.map(async (rule) => {
-				if (rule.cooldownMs) {
-					const last = this.#lastAlertTimes[rule.id];
-					if (last && now - last < rule.cooldownMs) return;
-				}
-
-				let match: boolean;
 				try {
-					match = await rule.matcher(event, ctx);
-				} catch (error) {
-					console.error(`Error evaluating rule ${rule.id}:`, error);
-					return;
-				}
-				if (match) {
+					if (rule.cooldownMs) {
+						const last = this.#lastAlertTimes[rule.id];
+						if (last && now - last < rule.cooldownMs) return;
+					}
+
+					const result = await rule.matcher(event, ctx);
+					if (!result.matched) return;
+
 					if (rule.cooldownMs) {
 						this.#lastAlertTimes[rule.id] = now;
 					}
+
 					const alert = rule.alertTemplate
-						? await rule.alertTemplate(event, ctx)
+						? await rule.alertTemplate(event, ctx, result.data)
 						: {
-								ruleId: rule.id,
+								rule_id: rule.id,
+								timestamp: now,
 								message: `Rule ${rule.id} triggered`,
 								level: 0,
 							};
+
 					this.emit("alert", alert);
+				} catch (error) {
+					console.error(`Error evaluating rule ${rule.id}:`, error);
 				}
 			}),
 		);

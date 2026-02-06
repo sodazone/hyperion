@@ -26,7 +26,7 @@ export function checkSanctions(
 	address: string,
 	network: number,
 ): SanctionsResult {
-	const entries = db.getCategories({
+	const entries = db.entities.findCategories({
 		owner: PUBLIC_OWNER,
 		address,
 		network,
@@ -63,8 +63,11 @@ function computeSanctionsFromAttribution(
 }
 
 export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
-	const categories = db.getCategories({ owner: PUBLIC_OWNER, address });
-	const tags = db.getTags({ owner: PUBLIC_OWNER, address });
+	const categories = db.entities.findCategories({
+		owner: PUBLIC_OWNER,
+		address,
+	});
+	const tags = db.entities.findTags({ owner: PUBLIC_OWNER, address });
 
 	type Bucket = {
 		attribution: Array<{
@@ -95,7 +98,8 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 		analysis: AddressAnalysis;
 	}> = [];
 
-	for (const [networkId, { attribution, tags }] of byNetwork) {
+	for (const [networkId, { attribution, tags: structuredTag }] of byNetwork) {
+		const tags = structuredTag.map((tag) => tag.tag);
 		const sanctioned = computeSanctionsFromAttribution(attribution);
 		const risk = computeRisk(sanctioned, attribution, tags);
 
@@ -105,7 +109,7 @@ export function analyzeAddressAllNetworks(db: HyperionDB, address: string) {
 				sanctioned,
 				risk,
 				attribution,
-				tags: tags.map((tag) => tag.tag),
+				tags,
 			},
 		});
 	}
@@ -124,15 +128,15 @@ export function analyzeAddress(
 	address: string,
 	network: number,
 ): AddressAnalysis {
-	const attribution = db
-		.getCategories({
+	const attribution = db.entities
+		.findCategories({
 			owner: PUBLIC_OWNER,
 			address,
 			network,
 		})
 		.map(asLabeledCategory);
-	const tags = db
-		.getTags({ owner: PUBLIC_OWNER, address, network })
+	const tags = db.entities
+		.findTags({ owner: PUBLIC_OWNER, address, network })
 		.map((tag) => tag.tag);
 
 	const sanctioned = checkSanctions(db, address, network);

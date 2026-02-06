@@ -1,21 +1,12 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
-import { decodeCursor, encodeCursor } from "../cursors";
-import type { Category, Entity, Tag } from "../model";
-import { b, cleanFilter } from "./util";
+import type { Category, Entity, Tag } from "../../model";
+import { entityCursor } from "../cursors";
+import { b, cleanFilter, parseRaw } from "../util";
 
-function parseRaw<T>(raw: unknown): T | undefined {
-	if (!raw) return undefined;
-	try {
-		return JSON.parse(raw as string);
-	} catch {
-		return undefined;
-	}
-}
-
-export class AddressDB {
+export class EntitiesDB {
 	private db: Database;
 
-	constructor(path = "entity_index.sqlite") {
+	constructor(path = "entities.sqlite") {
 		this.db = new Database(path);
 		this.init();
 	}
@@ -435,7 +426,7 @@ export class AddressDB {
 		return entity;
 	}
 
-	private queryAddresses({
+	private findAddresses({
 		owner,
 		network,
 		category,
@@ -520,7 +511,7 @@ export class AddressDB {
 
 		if (cursor) {
 			clauses.push("e.address > ?");
-			params.push(decodeCursor(cursor));
+			params.push(entityCursor.decode(cursor));
 		}
 
 		const rows = this.db
@@ -541,7 +532,7 @@ export class AddressDB {
 		return rows;
 	}
 
-	queryEntities(opts: {
+	findEntities(opts: {
 		owner: Uint8Array;
 		network?: number;
 		category?: number;
@@ -553,7 +544,7 @@ export class AddressDB {
 	}): { rows: Array<Entity>; cursorNext?: string } {
 		const limit = opts.limit ?? 25;
 
-		const addresses = this.queryAddresses({
+		const addresses = this.findAddresses({
 			owner: opts.owner,
 			network: cleanFilter(opts.network),
 			category: cleanFilter(opts.category),
@@ -653,12 +644,12 @@ export class AddressDB {
 		const rows = [...map.values()];
 		const lastRow = rows.at(-1);
 		const cursorNext =
-			lastRow && hasNext ? encodeCursor(lastRow.address) : undefined;
+			lastRow && hasNext ? entityCursor.encode(lastRow.address) : undefined;
 
 		return { rows, cursorNext };
 	}
 
-	queryCategories({
+	findCategories({
 		owner,
 		address,
 		network,
@@ -717,7 +708,7 @@ export class AddressDB {
 		);
 	}
 
-	queryTags({
+	findTags({
 		owner,
 		address,
 		network,

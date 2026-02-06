@@ -10,7 +10,6 @@ export function Sidebar({ member }: Props) {
 
 	return (
 		<>
-			{/* Hamburger top bar (mobile only) */}
 			<div className="md:hidden flex items-center justify-between p-2 w-full fixed top-0.5">
 				<a href="/" className="flex items-center gap-2">
 					<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
@@ -26,18 +25,15 @@ export function Sidebar({ member }: Props) {
 				</button>
 			</div>
 
-			{/* Sidebar overlay (mobile) */}
 			<div
 				id="sidebar-overlay"
 				className="fixed inset-0 z-40 bg-black/50 hidden md:hidden"
 			/>
 
-			{/* Sidebar */}
 			<aside
 				id="sidebar"
 				className="fixed top-0 left-0 z-50 w-full max-w-xs h-full md:w-64 md:relative md:flex flex-col border-r border-zinc-800 bg-zinc-950 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out"
 			>
-				{/* Brand (desktop inside sidebar) */}
 				<div className="flex items-center gap-2 px-4 py-4 border-b border-zinc-800 h-18">
 					<a href="/" className="flex items-center gap-2">
 						<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
@@ -52,7 +48,6 @@ export function Sidebar({ member }: Props) {
 					</a>
 				</div>
 
-				{/* Navigation */}
 				<nav className="flex-1 overflow-auto px-3 py-4 space-y-6 text-sm">
 					<div>
 						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
@@ -62,15 +57,24 @@ export function Sidebar({ member }: Props) {
 						<ul className="space-y-1">
 							<li
 								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
-								data-href="/console/alerts"
-								hx-get="/console/alerts"
+								data-href="/console/public/alerts"
+								hx-get="/console/public/alerts"
 								hx-target="#main-content"
 								hx-push-url="true"
 							>
-								Alerts
+								Public Alerts
 							</li>
 							{authenticated && (
 								<>
+									<li
+										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+										data-href="/console/my/alerts"
+										hx-get="/console/my/alerts"
+										hx-target="#main-content"
+										hx-push-url="true"
+									>
+										My Alerts
+									</li>
 									<li
 										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 										data-href="/console/rules"

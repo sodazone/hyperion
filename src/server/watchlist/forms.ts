@@ -19,7 +19,7 @@ export async function WatchlistDeleteHandler(
 	const owner = hashOwner(user.email);
 
 	try {
-		db.deleteEntity({ owner, address });
+		db.entities.deleteEntity({ owner, address });
 		return new Response(null, {
 			headers: { "HX-Redirect": "/console/watchlist" },
 			status: 200,
@@ -79,10 +79,10 @@ export async function WatchlistPostHandler(
 	}));
 
 	try {
-		db.deleteAllTags({ owner, address: normalizedAddress });
-		db.deleteAllCategories({ owner, address: normalizedAddress });
+		db.entities.deleteAllTags({ owner, address: normalizedAddress });
+		db.entities.deleteAllCategories({ owner, address: normalizedAddress });
 
-		db.upsertEntities([
+		db.entities.upsertEntities([
 			{
 				owner,
 				address: normalizedAddress,

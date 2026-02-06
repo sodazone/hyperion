@@ -16,11 +16,13 @@ async function getCategory(
 
 		if (exists) {
 			return new Response(null, {
-				status: db.hasCategory({ ...params, owner: ownerHash }) ? 204 : 404,
+				status: db.entities.hasCategory({ ...params, owner: ownerHash })
+					? 204
+					: 404,
 			});
 		}
 
-		const entries = db.getCategories({
+		const entries = db.entities.findCategories({
 			...params,
 			owner: ownerHash,
 		});
@@ -47,7 +49,11 @@ async function postCategory(
 	const body = await req.json();
 	if (body instanceof Response) return body;
 
-	const result = db.putCategory({ ...params, raw: body, owner: ownerHash });
+	const result = db.entities.upsertCategory({
+		...params,
+		raw: body,
+		owner: ownerHash,
+	});
 
 	return Response.json(result);
 }
@@ -60,7 +66,7 @@ async function deleteCategory(
 	const params = coerceCatetoryWriteParams(req.params);
 	if (params instanceof Response) return params;
 
-	const result = db.deleteCategory({
+	const result = db.entities.deleteCategory({
 		...params,
 		owner: ownerHash,
 	});
