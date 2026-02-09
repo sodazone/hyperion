@@ -1,3 +1,4 @@
+import type z from "zod";
 import type { Alert, HyperionDB } from "@/db";
 
 export interface BaseEvent<T extends string = string, P = unknown> {
@@ -80,9 +81,11 @@ export type MatchResult<T> = {
 export type RuleMatcher<
 	Event extends BaseEvent = AnyEvent,
 	Result = unknown,
+	Config = unknown,
 > = (
 	event: Event,
 	ctx: RuleContext,
+	config: Config,
 ) => Promise<MatchResult<Result>> | MatchResult<Result>;
 
 export type RuleDependency =
@@ -106,17 +109,25 @@ export type RuleDependency =
 			filter: unknown;
 	  };
 
-export type Rule<Event extends BaseEvent = AnyEvent, Data = unknown> = {
+export type RuleDefinition<
+	Event extends BaseEvent = AnyEvent,
+	Data = unknown,
+	Config = unknown,
+> = {
 	id: string;
-	owner: Uint8Array;
 	bundle?: string;
 	priority?: number;
-	matcher: RuleMatcher<Event, Data>;
+	description?: string;
+	title?: string;
+	schema: z.ZodObject;
+	defaults: Config;
+	matcher: RuleMatcher<Event, Data, Config>;
 	dependencies?: RuleDependency[];
 	alertTemplate?: (
 		event: Event,
 		ctx: RuleContext,
 		matched: Data,
+		config: Config,
 	) => Promise<Alert> | Alert;
 	cooldownMs?: number;
 };
@@ -131,4 +142,14 @@ export const AlertLevelLabel: Record<AlertLevel, string> = {
 	[AlertLevel.Info]: "info",
 	[AlertLevel.Warning]: "warning",
 	[AlertLevel.Critical]: "critical",
+};
+
+export type RuleInstance = {
+	id: string;
+	owner: Uint8Array;
+	ruleKey: string;
+	enabled: boolean;
+	config: any;
+	cooldownMs?: number;
+	priority?: number;
 };

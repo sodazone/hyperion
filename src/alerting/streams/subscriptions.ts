@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { Rule } from "@/alerting";
+import type { RuleDefinition } from "@/alerting";
 import type { OcelloidsClient } from "./ocelloids";
 
 type ActiveSubscription = {
@@ -25,7 +25,7 @@ export class SubscriptionManager extends EventEmitter {
 		super();
 	}
 
-	addRule(rule: Rule) {
+	addRule(rule: RuleDefinition) {
 		if (!rule.dependencies) return;
 
 		for (const dep of rule.dependencies) {
@@ -38,7 +38,7 @@ export class SubscriptionManager extends EventEmitter {
 		}
 	}
 
-	removeRule(rule: Rule) {
+	removeRule(rule: RuleDefinition) {
 		if (!rule.dependencies) return;
 
 		for (const dep of rule.dependencies) {

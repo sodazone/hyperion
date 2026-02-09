@@ -1,0 +1,103 @@
+import { z } from "zod";
+import type { FieldMeta } from "@/alerting/rules/bundles/transfers/types";
+
+export function ConfigField({
+	name,
+	schema,
+	defaultValue,
+}: {
+	name: string;
+	schema: z.ZodTypeAny;
+	defaultValue?: any;
+}) {
+	const meta = schema.meta() as FieldMeta;
+	const label = meta?.label ?? name;
+	const placeholder = meta?.placeholder;
+	const help = meta?.help;
+	const unit = meta?.unit ?? meta?.suffix;
+
+	const baseClass = "ui-input w-full px-2 py-1 text-sm";
+
+	if (meta?.options) {
+		return (
+			<div className="flex flex-col gap-1 text-sm text-zinc-400" key={name}>
+				<label htmlFor={name} className="w-28">
+					{meta.label}
+				</label>
+				<select
+					name={name}
+					multiple={meta.multiple}
+					defaultValue={defaultValue ?? (meta.multiple ? [] : "*")}
+					className="px-2 py-1 ui-input"
+				>
+					{meta.options.map((opt) => (
+						<option key={opt.value} value={opt.value}>
+							{opt.label}
+						</option>
+					))}
+				</select>
+				{meta.help && <p className="text-xs text-zinc-500">{meta.help}</p>}
+			</div>
+		);
+	}
+
+	if (schema instanceof z.ZodBoolean) {
+		return (
+			<div className="flex items-center justify-between text-sm text-zinc-300">
+				<label htmlFor={name}>{label}</label>
+
+				<input
+					type="checkbox"
+					name={name}
+					defaultChecked={defaultValue ?? false}
+					className="h-4 w-4"
+				/>
+			</div>
+		);
+	}
+
+	if (schema instanceof z.ZodEnum) {
+		return (
+			<div className="flex flex-col gap-1 text-sm text-zinc-400">
+				<label htmlFor={name}>{label}</label>
+
+				<select name={name} defaultValue={defaultValue} className={baseClass}>
+					{schema.options.map((opt) => (
+						<option key={opt} value={opt}>
+							{opt}
+						</option>
+					))}
+				</select>
+
+				{help && <span className="text-xs text-zinc-500">{help}</span>}
+			</div>
+		);
+	}
+
+	const isNumber = schema instanceof z.ZodNumber;
+
+	return (
+		<div className="flex flex-col gap-1 text-sm text-zinc-400">
+			<label htmlFor={name}>{label}</label>
+
+			<div className="relative flex items-center">
+				<input
+					type={isNumber ? "number" : "text"}
+					name={name}
+					step={isNumber ? (meta?.step ?? 1) : undefined}
+					defaultValue={defaultValue ?? (isNumber ? 0 : "")}
+					placeholder={placeholder}
+					className={`${baseClass} ${unit ? "pr-10" : ""}`}
+				/>
+
+				{unit && (
+					<span className="absolute right-2 text-xs text-zinc-500 pointer-events-none">
+						{unit}
+					</span>
+				)}
+			</div>
+
+			{help && <span className="text-xs text-zinc-500">{help}</span>}
+		</div>
+	);
+}

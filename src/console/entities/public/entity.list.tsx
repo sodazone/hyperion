@@ -1,6 +1,6 @@
+import { EntitySearchFilters } from "@/console/components/entity.filters";
 import { EntityTable } from "@/console/components/entity.table";
 import { Paginated } from "@/console/components/paginated";
-import { SearchFilters } from "@/console/components/search.filters";
 import { TopBar } from "@/console/components/top.bar";
 import { withCursor } from "@/console/util";
 import type { EntityRow } from "../../types";
@@ -38,7 +38,7 @@ export function EntitiesList({ page, ctx: { url } }: Props) {
 			<TopBar
 				left={<h1 className="text-lg font-semibold">Public Entities</h1>}
 			/>
-			<SearchFilters path={path} filters={filters} />
+			<EntitySearchFilters path={path} filters={filters} />
 			<EntityTable
 				rowLink={(e: EntityRow) => `/console/entities/${e.address_formatted}`}
 				rows={rows}

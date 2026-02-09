@@ -1,5 +1,6 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
-import type { Alert, AlertPage, AlertPayload } from "@/db/model";
+import type { RuleInstance } from "@/alerting";
+import type { AlertPage, AlertPayload, OwnedAlert } from "@/db/model";
 import { safeStringify } from "@/utils/strings";
 import { alertCursor } from "../cursors";
 import { b, parseRaw } from "../util";
@@ -53,10 +54,34 @@ export class AlertsDB {
 
       CREATE INDEX IF NOT EXISTS idx_actor_address_alert
         ON alert_actor(address, alert_id);
+
+
+      CREATE TABLE IF NOT EXISTS rule_instance (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        owner BLOB NOT NULL,
+        rule_key TEXT NOT NULL,
+
+        enabled INTEGER NOT NULL DEFAULT 1,
+
+        priority INTEGER,
+        cooldown_ms INTEGER,
+
+        config TEXT,
+
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_rule_owner
+        ON rule_instance(owner);
+
+      CREATE INDEX IF NOT EXISTS idx_rule_owner_enabled
+        ON rule_instance(owner, enabled);
     `);
 	}
 
-	insertAlert(a: Alert) {
+	insertAlert(a: OwnedAlert) {
 		const ts = a.timestamp ?? Date.now();
 
 		const res = this.db.run(
@@ -98,7 +123,7 @@ export class AlertsDB {
 		return id;
 	}
 
-	insertMany(alerts: Alert[]) {
+	insertMany(alerts: OwnedAlert[]) {
 		this.db.run("BEGIN");
 		try {
 			for (const a of alerts) this.insertAlert(a);
@@ -114,7 +139,7 @@ export class AlertsDB {
 		ruleId?: string;
 		levelMin?: number;
 		levelMax?: number;
-		network?: string;
+		network?: number;
 		address?: Uint8Array | string;
 		since?: number;
 		until?: number;
@@ -127,7 +152,7 @@ export class AlertsDB {
 		let joinActor = false;
 
 		if (opts.ruleId) {
-			clauses.push("a.ruleId = ?");
+			clauses.push("a.rule_id = ?");
 			params.push(opts.ruleId);
 		}
 
@@ -179,7 +204,7 @@ export class AlertsDB {
       LIMIT ?
     `;
 
-		const rowsRaw = this.all<Alert>(sql, ...params, limit + 1);
+		const rowsRaw = this.all<OwnedAlert>(sql, ...params, limit + 1);
 
 		const hasNext = rowsRaw.length > limit;
 		if (hasNext) rowsRaw.pop();
@@ -209,7 +234,7 @@ export class AlertsDB {
 		return { rows, cursorNext };
 	}
 
-	deleteOlderThan(owner: Uint8Array | string, ts: number) {
+	deleteAlertsOlderThan(owner: Uint8Array | string, ts: number) {
 		return (
 			this.db.run(`DELETE FROM alert WHERE owner = ? AND timestamp < ?`, [
 				b(owner),
@@ -218,7 +243,7 @@ export class AlertsDB {
 		);
 	}
 
-	count(owner: Uint8Array | string) {
+	countAlerts(owner: Uint8Array | string) {
 		const r = this.db
 			.query<{ c: number }, [Uint8Array]>(
 				`SELECT COUNT(*) as c FROM alert WHERE owner = ?`,
@@ -226,6 +251,176 @@ export class AlertsDB {
 			.get(b(owner));
 
 		return r?.c ?? 0;
+	}
+
+	insertRuleInstance(instance: {
+		owner: Uint8Array;
+		ruleKey: string;
+		config?: unknown;
+		enabled?: boolean;
+		priority?: number;
+		cooldownMs?: number;
+	}) {
+		const now = Date.now();
+
+		const res = this.db.run(
+			`
+        INSERT INTO rule_instance
+        (owner, rule_key, enabled, priority, cooldown_ms, config, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+			[
+				instance.owner,
+				instance.ruleKey,
+				instance.enabled ?? 1,
+				instance.priority ?? null,
+				instance.cooldownMs ?? null,
+				instance.config ? safeStringify(instance.config) : null,
+				now,
+				now,
+			],
+		);
+
+		return res.lastInsertRowid as number;
+	}
+
+	updateRuleInstance(id: number, patch: Partial<RuleInstance>) {
+		const fields: string[] = [];
+		const params: SQLQueryBindings[] = [];
+
+		if (patch.enabled !== undefined) {
+			fields.push("enabled = ?");
+			params.push(patch.enabled ? 1 : 0);
+		}
+
+		if (patch.priority !== undefined) {
+			fields.push("priority = ?");
+			params.push(patch.priority);
+		}
+
+		if (patch.cooldownMs !== undefined) {
+			fields.push("cooldown_ms = ?");
+			params.push(patch.cooldownMs);
+		}
+
+		if (patch.config !== undefined) {
+			fields.push("config = ?");
+			params.push(safeStringify(patch.config));
+		}
+
+		if (!fields.length) return;
+
+		fields.push("updated_at = ?");
+		params.push(Date.now());
+
+		this.db.run(`UPDATE rule_instance SET ${fields.join(", ")} WHERE id = ?`, [
+			...params,
+			id,
+		]);
+	}
+
+	findRuleInstances(opts: {
+		owner: Uint8Array | string;
+		cursor?: string;
+		limit?: number;
+		q?: string;
+		enabled?: boolean;
+	}): {
+		rows: RuleInstance[];
+		cursorNext?: string;
+	} {
+		const clauses: string[] = ["owner = ?"];
+		const params: SQLQueryBindings[] = [b(opts.owner)];
+
+		if (opts.enabled !== undefined) {
+			clauses.push("enabled = ?");
+			params.push(opts.enabled ? 1 : 0);
+		}
+
+		if (opts.q) {
+			clauses.push("rule_key LIKE ?");
+			params.push(`%${opts.q}%`);
+		}
+
+		// cursor pagination (priority, id)
+		if (opts.cursor) {
+			const { p, id } = JSON.parse(
+				Buffer.from(opts.cursor, "base64").toString(),
+			);
+
+			clauses.push(`(priority > ? OR (priority = ? AND id > ?))`);
+
+			params.push(p ?? null, p ?? null, id);
+		}
+
+		const limit = opts.limit ?? 50;
+
+		const sql = `
+    SELECT id,
+      owner,
+      rule_key    AS ruleKey,
+      enabled,
+      priority,
+      cooldown_ms AS cooldownMs,
+      config,
+      created_at  AS createdAt,
+      updated_at  AS updatedAt
+    FROM rule_instance
+    ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
+    ORDER BY priority ASC, id ASC
+    LIMIT ?
+  `;
+
+		const rowsRaw = this.all<RuleInstance>(sql, ...params, limit + 1);
+
+		const hasNext = rowsRaw.length > limit;
+		if (hasNext) rowsRaw.pop();
+
+		const rows: RuleInstance[] = rowsRaw.map((r) => ({
+			...r,
+			config: parseRaw(r.config) ?? {},
+		}));
+
+		const last = rows.at(-1);
+
+		const cursorNext =
+			hasNext && last
+				? Buffer.from(
+						JSON.stringify({ p: last.priority ?? null, id: last.id }),
+					).toString("base64")
+				: undefined;
+
+		return { rows, cursorNext };
+	}
+
+	findAllRuleInstances(): RuleInstance[] {
+		return this.db
+			.query<RuleInstance, []>(
+				`
+        SELECT
+          id,
+          owner,
+          rule_key    AS ruleKey,
+          enabled,
+          priority,
+          cooldown_ms AS cooldownMs,
+          config,
+          created_at  AS createdAt,
+          updated_at  AS updatedAt
+        FROM rule_instance
+        ORDER BY owner, priority ASC, id ASC
+        `,
+			)
+			.all()
+			.map((r) => ({
+				...r,
+				enabled: !!r.enabled,
+				config: parseRaw(r.config) ?? {},
+			}));
+	}
+
+	deleteRuleInstance(id: number) {
+		this.db.run(`DELETE FROM rule_instance WHERE id = ?`, [id]);
 	}
 
 	close() {

@@ -1,3 +1,3 @@
-import { exchangeLargeTransferRule } from "./exchange/transfer.rule";
+import { TransfersRule } from "./transfers/transfer.rule";
 
-export const STATIC_RULES = [exchangeLargeTransferRule];
+export const STATIC_RULES = [TransfersRule];

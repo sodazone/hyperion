@@ -1,7 +1,7 @@
+import { EntitySearchFilters } from "@/console/components/entity.filters";
 import { EntityTable } from "@/console/components/entity.table";
 import { PlusIcon } from "@/console/components/icons";
 import { Paginated } from "@/console/components/paginated";
-import { SearchFilters } from "@/console/components/search.filters";
 import { TopBar } from "@/console/components/top.bar";
 import type { EntityRow } from "@/console/types";
 import { withCursor } from "@/console/util";
@@ -51,7 +51,7 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 				}
 			/>
 
-			<SearchFilters path={path} filters={filters} />
+			<EntitySearchFilters path={path} filters={filters} />
 
 			<EntityTable
 				rows={rows}

@@ -39,7 +39,6 @@ export interface AlertPayload {
 
 export interface Alert<T extends AlertPayload = AlertPayload> {
 	id?: number;
-	owner: Uint8Array;
 	timestamp: number;
 
 	rule_id: string;
@@ -53,6 +52,10 @@ export interface Alert<T extends AlertPayload = AlertPayload> {
 	message: string;
 	payload?: T;
 }
+
+export type OwnedAlert<T extends AlertPayload = AlertPayload> = Alert<T> & {
+	owner: Uint8Array;
+};
 
 export interface AlertPage {
 	rows: Alert[];

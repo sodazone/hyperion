@@ -1,15 +1,20 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
-import { AlertListPage } from "@/console/alerting/public/alert.pages";
+import {
+	MyAlertListPage,
+	RuleFormPage,
+	RuleListPage,
+} from "@/console/alerting/owned/pages";
+import { AlertListPage } from "@/console/alerting/public/pages";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
 	WatchlistPage,
 	WatchlistTagRowPage,
-} from "@/console/entities/owned/watchlist.pages";
+} from "@/console/entities/owned/pages";
 import {
 	EntityDetailPage,
 	EntityListPage,
-} from "@/console/entities/public/entity.pages";
+} from "@/console/entities/public/pages";
 import { getNetworkIconFile } from "@/console/extra.infos";
 import { LoginPage } from "@/console/login.page";
 import { initNetworkCache } from "@/console/network.cache";
@@ -20,6 +25,7 @@ import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
+import { RulePostHandler } from "./rules/forms";
 import {
 	WatchlistDeleteHandler,
 	WatchlistPostHandler,
@@ -87,6 +93,12 @@ export async function serve({
 			"/logout": authApi.logout,
 			"/authenticate": authApi.authenticate,
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
+			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
+			"/console/rules": {
+				GET: async (req) => RuleListPage(ctx, req),
+				POST: async (req) => RulePostHandler(ctx, req),
+			},
+			"/console/rules/form/:id": async (req) => RuleFormPage(ctx, req),
 			"/console/entities": async (req) => EntityListPage(ctx, req),
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/console/watchlist": {

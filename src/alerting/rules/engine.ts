@@ -1,70 +1,101 @@
 import { EventEmitter } from "node:events";
-import type { AnyEvent, Rule, RuleContext } from "./types";
+import type {
+	AnyEvent,
+	RuleContext,
+	RuleDefinition,
+	RuleInstance,
+} from "./types";
+
+type CompiledInstance = {
+	id: string;
+	owner: Uint8Array;
+	def: RuleDefinition<any, any, any>;
+	config: any;
+	enabled: boolean;
+	priority?: number;
+	cooldownMs?: number;
+	bundle?: string;
+};
 
 export class RuleEngine extends EventEmitter {
-	#rules: Rule<AnyEvent>[];
-	#lastAlertTimes: Record<string, number>;
+	#instances: CompiledInstance[] = [];
+	#registry = new Map<string, RuleDefinition<any, any, any>>();
+	#lastAlertTimes: Record<string, number> = {};
 
-	constructor(rules: Rule<AnyEvent>[]) {
+	constructor(definitions: RuleDefinition<AnyEvent>[]) {
 		super();
-		this.#rules = rules;
-		this.#lastAlertTimes = {};
+
+		for (const def of definitions) {
+			this.#registry.set(def.id, def);
+		}
 	}
 
-	addRule(rule: Rule<AnyEvent>): void {
-		this.#rules.push(rule);
-		this.#rules.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
-	}
+	addInstance(instance: RuleInstance): void {
+		const def = this.#registry.get(instance.ruleKey);
+		if (!def) {
+			console.warn(`Unknown rule: ${instance.ruleKey}`);
+			return;
+		}
 
-	addBundle(bundle: {
-		name: string;
-		rules: Omit<Rule<AnyEvent>, "bundle">[];
-	}): void {
-		bundle.rules.forEach((rule) => {
-			this.addRule({ ...rule, bundle: bundle.name });
+		const config = def.schema.parse({
+			...def.defaults,
+			...instance.config,
 		});
+
+		this.#instances.push({
+			id: instance.id,
+			owner: instance.owner,
+			def,
+			config,
+			enabled: instance.enabled ?? true,
+			priority: instance.priority,
+			cooldownMs: instance.cooldownMs,
+		});
+
+		this.#instances.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
 	}
 
 	async evaluate(event: AnyEvent, ctx: RuleContext): Promise<void> {
 		const now = ctx.now();
 
-		await Promise.all(
-			this.#rules.map(async (rule) => {
-				try {
-					if (rule.cooldownMs) {
-						const last = this.#lastAlertTimes[rule.id];
-						if (last && now - last < rule.cooldownMs) return;
-					}
+		for (const inst of this.#instances) {
+			if (!inst.enabled) continue;
 
-					const result = await rule.matcher(event, ctx);
-					if (!result.matched) return;
-
-					if (rule.cooldownMs) {
-						this.#lastAlertTimes[rule.id] = now;
-					}
-
-					const alert = rule.alertTemplate
-						? await rule.alertTemplate(event, ctx, result.data)
-						: {
-								rule_id: rule.id,
-								timestamp: now,
-								message: `Rule ${rule.id} triggered`,
-								level: 0,
-							};
-
-					this.emit("alert", alert);
-				} catch (error) {
-					console.error(`Error evaluating rule ${rule.id}:`, error);
+			try {
+				if (inst.cooldownMs) {
+					const last = this.#lastAlertTimes[inst.id];
+					if (last && now - last < inst.cooldownMs) continue;
 				}
-			}),
-		);
+
+				const result = await inst.def.matcher(event, ctx, inst.config);
+				if (!result.matched) continue;
+
+				if (inst.cooldownMs) {
+					this.#lastAlertTimes[inst.id] = now;
+				}
+
+				const alert = inst.def.alertTemplate
+					? await inst.def.alertTemplate(event, ctx, result.data, inst.config)
+					: {
+							rule_id: inst.def.id,
+							timestamp: now,
+							message: `Rule ${inst.def.id} triggered`,
+							level: 0,
+						};
+
+				this.emit(
+					"alert",
+					Object.freeze({
+						...alert,
+						owner: inst.owner,
+					}),
+				);
+			} catch (error) {
+				console.error(`Error evaluating rule ${inst.def.id}:`, error);
+			}
+		}
 	}
 
-	start(): void {
-		//
-	}
-
-	stop(): void {
-		//
-	}
+	start(): void {}
+	stop(): void {}
 }

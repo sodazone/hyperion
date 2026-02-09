@@ -23,10 +23,10 @@ type Props = {
 	};
 };
 
-export function PublicAlertsList({ page, ctx: { url } }: Props) {
+export function MyAlertList({ page, ctx: { url } }: Props) {
 	const { rows, cursorNext, cursorCurrent, filters } = page;
 	const nextUrl = withCursor(url, cursorNext);
-	const path = "/console/alerts";
+	const path = "/console/my/alerts";
 
 	return (
 		<Paginated
@@ -34,7 +34,7 @@ export function PublicAlertsList({ page, ctx: { url } }: Props) {
 			hasNext={!!cursorNext}
 			hasPrev={!!cursorCurrent}
 		>
-			<TopBar left={<h1 className="text-lg font-semibold">Alerts</h1>} />
+			<TopBar left={<h1 className="text-lg font-semibold">My Alerts</h1>} />
 			<AlertSearchFilters path={path} filters={filters} />
 			<AlertCards rows={rows} />
 		</Paginated>

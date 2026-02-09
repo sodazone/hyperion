@@ -23,16 +23,16 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	});
 
 	let message = `Transfer of $${usdStr}`;
-	if (fromEntity?.isExchange) {
+	if (fromEntity?.exchangeName) {
 		message += ` from ${fromEntity.exchangeName ?? "Exchange A"}`;
 	}
-	if (toEntity?.isExchange) {
+	if (toEntity?.exchangeName) {
 		message += ` to ${toEntity.exchangeName ?? "Exchange B"}`;
 	}
 
 	const makeLabels = (entity: typeof fromEntity | undefined) =>
 		[
-			entity?.isExchange ? "exchange" : undefined,
+			entity?.exchangeName ? "exchange" : undefined,
 			entity?.walletType,
 			entity?.exchangeName,
 		].filter(Boolean) as string[];

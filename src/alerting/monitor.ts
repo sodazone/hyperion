@@ -1,6 +1,11 @@
-import { type AnyEvent, type Rule, RuleEngine } from "@/alerting";
+import {
+	type AnyEvent,
+	type RuleDefinition,
+	RuleEngine,
+	type RuleInstance,
+} from "@/alerting";
 import { SubscriptionManager } from "@/alerting/streams";
-import type { Alert, HyperionDB } from "@/db";
+import type { HyperionDB, OwnedAlert } from "@/db";
 import { safeStringify } from "@/utils/strings";
 import { STATIC_RULES } from "./rules/bundles/static";
 import { InMemoryStateStore } from "./rules/state";
@@ -12,7 +17,7 @@ export interface Monitor {
 }
 
 interface MonitorOptions {
-	rules: Rule<any, any>[]; // any ok
+	rules: RuleDefinition<any, any, any>[]; // any ok
 	subManager: SubscriptionManager;
 	db: HyperionDB;
 }
@@ -25,6 +30,13 @@ export function createMonitor({
 	const state = new InMemoryStateStore();
 	const engine = new RuleEngine(rules);
 
+	// TODO: handle too many rules... :D
+	const instances: RuleInstance[] = db.alerts.findAllRuleInstances();
+
+	for (const inst of instances) {
+		engine.addInstance(inst);
+	}
+
 	subManager.on("data", async (data: AnyEvent) => {
 		engine.evaluate(data, {
 			state,
@@ -33,7 +45,7 @@ export function createMonitor({
 		});
 	});
 
-	engine.on("alert", async (alert: Alert) => {
+	engine.on("alert", async (alert: OwnedAlert) => {
 		db.alerts.insertAlert(alert);
 		console.log("Alert triggered:", safeStringify(alert, 2));
 	});

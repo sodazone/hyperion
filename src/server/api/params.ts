@@ -25,6 +25,11 @@ export function coerceNetworkId(network?: string | null): number | undefined {
 	return networkId;
 }
 
+export function coerce<T>(val: string | null): T | undefined {
+	if (!val || val === "*") return undefined;
+	return val as T;
+}
+
 export function coerceTagParams(
 	params: Record<string, string>,
 ): TagParams | Response {

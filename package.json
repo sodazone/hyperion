@@ -28,6 +28,7 @@
 		"react-dom": "^19.2.4",
 		"sax": "^1.4.4",
 		"stytch": "^13.1.0",
-		"tailwindcss": "^4.1.18"
+		"tailwindcss": "^4.1.18",
+		"zod": "^4.3.6"
 	}
 }
