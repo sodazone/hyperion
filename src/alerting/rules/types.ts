@@ -146,6 +146,7 @@ export const AlertLevelLabel: Record<AlertLevel, string> = {
 
 export type RuleInstance = {
 	id: string;
+	title: string;
 	owner: Uint8Array;
 	ruleKey: string;
 	enabled: boolean;

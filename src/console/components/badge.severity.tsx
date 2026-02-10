@@ -9,7 +9,7 @@ const LEVEL_META: Record<number, { label: string; className: string }> = {
 	},
 	3: {
 		label: "Critical",
-		className: "bg-red-900/80 text-red-200",
+		className: "bg-pink-900/70 text-red-300",
 	},
 };
 

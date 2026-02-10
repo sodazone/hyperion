@@ -13,6 +13,7 @@ type OwnedId = {
 function asRuleInstance(row: any): RuleInstance {
 	return {
 		id: row.id,
+		title: row.title,
 		owner: row.owner,
 		ruleKey: row.rule_key,
 		cooldownMs: row.cooldown_ms,
@@ -75,6 +76,7 @@ export class AlertsDB {
 
       CREATE TABLE IF NOT EXISTS rule_instance (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
 
         owner BLOB NOT NULL,
         rule_key TEXT NOT NULL,
@@ -271,24 +273,26 @@ export class AlertsDB {
 	}
 
 	insertRuleInstance(instance: {
-		owner: Uint8Array;
+		owner: Uint8Array | string;
 		ruleKey: string;
-		config?: unknown;
+		title: string;
 		enabled?: boolean;
 		priority?: number;
 		cooldownMs?: number;
+		config?: Record<string, any>;
 	}) {
 		const now = Date.now();
 
 		const res = this.db.run(
 			`
         INSERT INTO rule_instance
-        (owner, rule_key, enabled, priority, cooldown_ms, config, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (owner, rule_key, title, enabled, priority, cooldown_ms, config, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
 			[
 				instance.owner,
 				instance.ruleKey,
+				instance.title,
 				instance.enabled ?? 1,
 				instance.priority ?? null,
 				instance.cooldownMs ?? null,

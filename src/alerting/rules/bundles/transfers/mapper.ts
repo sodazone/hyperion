@@ -1,5 +1,6 @@
+import { formatNumberSI, toDecimal } from "@/utils/amounts";
 import type { TransferEvent } from "../../types";
-import type { LocalData } from "./types";
+import type { LocalData } from "./schema";
 
 export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const { from, to, fromFormatted, toFormatted, asset, amount, amountUsd } =
@@ -18,11 +19,16 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const fromEntity = local.entities[from];
 	const toEntity = local.entities[to];
 
-	const usdStr = totalUsd.toLocaleString(undefined, {
-		maximumFractionDigits: 0,
-	});
+	const usdStr = `$${formatNumberSI(totalUsd, 0)}`;
 
-	let message = `Transfer of $${usdStr}`;
+	const assetStr = assetsArray
+		.map((a) => {
+			return `${formatNumberSI(toDecimal(a))} ${a.symbol}`;
+		})
+		.join(", ");
+
+	let message = `Transfer of ${assetStr} (${usdStr})`;
+
 	if (fromEntity?.exchangeName) {
 		message += ` from ${fromEntity.exchangeName ?? "Exchange A"}`;
 	}

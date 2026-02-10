@@ -5,6 +5,10 @@ import { withAuth } from "@/console/authenticated";
 import { render } from "../render";
 import { InternalServerError, InvalidParameters, Ok } from "../response";
 
+function strOrNumber(v: any) {
+	return !Number.isNaN(Number(v)) && v !== "" ? Number(v) : v;
+}
+
 export const RuleDeleteHandler = withAuth<"/console/rules/:id">(
 	async ({ db, monitor, req, ownerHash }) => {
 		try {
@@ -34,17 +38,17 @@ export const RulePutHandler = withAuth<"/console/rules/:id">(
 	async ({ db, monitor, req, ownerHash }) => {
 		try {
 			const id = Number(req.params.id);
-			const url = new URL(req.url);
-			const enabled = url.searchParams.get("enabled");
+			const formData = await req.formData();
+			const enabled = formData.get("enabled")?.toString() === "on";
 
-			if (id === undefined || enabled === undefined || Number.isNaN(id))
-				throw InvalidParameters;
+			if (id == null || enabled == null || Number.isNaN(id))
+				return InvalidParameters;
 
 			const ownedId = { id, owner: ownerHash };
-			if (!db.alerts.isRuleOwned(ownedId)) throw InvalidParameters;
+			if (!db.alerts.isRuleOwned(ownedId)) return InvalidParameters;
 
 			db.alerts.updateRuleInstance(ownedId, {
-				enabled: enabled === "1",
+				enabled,
 			});
 
 			const updated = db.alerts.getRuleInstance(ownedId);
@@ -66,8 +70,10 @@ export const RulePutHandler = withAuth<"/console/rules/:id">(
 export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 	const formData = await req.formData();
 	const templateId = formData.get("ruleKey")?.toString();
+	const title = formData.get("title")?.toString();
 
-	if (!templateId) return InvalidParameters;
+	if (!templateId || !title || title.length > 200 || title.length < 2)
+		return InvalidParameters;
 
 	const template = STATIC_RULES.find((r) => r.id === templateId);
 	if (!template) return InvalidParameters;
@@ -76,20 +82,16 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 
 	for (const key of formData.keys()) {
 		const allValues = formData.getAll(key);
+		let dataKey = key;
+		if (key.endsWith("[]")) {
+			dataKey = key.substring(0, key.length - 2);
+		}
 
 		if (allValues.length === 1) {
 			const value = allValues[0];
-			if (value === "on") {
-				data[key] = true;
-			} else if (!Number.isNaN(Number(value)) && value !== "") {
-				data[key] = Number(value);
-			} else {
-				data[key] = value;
-			}
+			data[dataKey] = strOrNumber(value);
 		} else {
-			data[key] = allValues.map((v) =>
-				!Number.isNaN(Number(v)) && v !== "" ? Number(v) : v,
-			);
+			data[dataKey] = allValues.map(strOrNumber);
 		}
 	}
 
@@ -99,6 +101,7 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 		db.alerts.insertRuleInstance({
 			owner: ownerHash,
 			ruleKey: template.id,
+			title: title,
 			config: parsed,
 			enabled: true,
 		});

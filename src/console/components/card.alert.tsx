@@ -1,9 +1,11 @@
 import type { Alert, AlertActor } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
+import { dateFormatter } from "@/utils/dates";
 import { truncMid } from "../util";
 import { SeverityBadge } from "./badge.severity";
 import { CopyButton } from "./btn.copy";
 import { NetworkIcon } from "./network.icon";
+import { RuleIcons } from "./rule.icons";
 
 export function AlertCards({ rows }: { rows: Alert[] }) {
 	if (!rows.length) {
@@ -32,7 +34,7 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 					>
 						<div className="flex justify-between items-start">
 							<span className="text-xs text-zinc-500 tracking-wide font-mono">
-								{new Date(alert.timestamp).toLocaleString()}
+								{dateFormatter.format(new Date(alert.timestamp))}
 							</span>
 							<SeverityBadge level={alert.level} />
 						</div>
@@ -103,8 +105,13 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 							)}
 						</div>
 
-						<div className="mt-3 pt-3 border-t border-zinc-800 text-[11px] text-zinc-500">
-							{alert.rule_id}
+						<div className="flex mt-3 pt-3 border-t border-zinc-800">
+							<div className="ml-auto inline-flex items-center overflow-hidden text-xs leading-none gap-2">
+								<span className="w-4 h-4 text-zinc-700">
+									{RuleIcons[alert.rule_id]}
+								</span>
+								<span className="font-mono text-zinc-500">{alert.rule_id}</span>
+							</div>
 						</div>
 					</div>
 				);

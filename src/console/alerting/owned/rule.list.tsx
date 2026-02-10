@@ -1,5 +1,4 @@
 import type { RuleInstance } from "@/alerting";
-import { RuleSearchFilters } from "@/console/components/alert.rule.filters";
 import { PlusIcon } from "@/console/components/icons";
 import { Paginated } from "@/console/components/paginated";
 import { TopBar } from "@/console/components/top.bar";
@@ -53,34 +52,46 @@ function ToggleControl({
 	enabled: boolean;
 }) {
 	return (
-		<label className="inline-flex items-center cursor-pointer select-none">
+		<label className="inline-flex items-center cursor-pointer select-none relative">
 			<input
 				type="checkbox"
-				name="enabled"
-				value="true"
 				defaultChecked={enabled}
+				name="enabled"
 				className="sr-only peer"
-				hx-confirm="It will enable/disable the rule. Are you sure?"
-				hx-put={`/console/rules/${id}?enabled=${enabled ? "0" : "1"}`}
+				hx-put={`/console/rules/${id}`}
 				hx-trigger="change"
-				hx-target="closest div.card"
+				hx-include="this"
+				hx-target="closest .card"
 				hx-swap="outerHTML"
+				hx-on--before-request={`
+          if(!this.checked && !confirm('Disable this rule? This will stop current processing.')) {
+            event.preventDefault();
+            this.checked = true; /* revert UI */
+          }
+        `}
 			/>
 
 			<div
 				className="
-          w-10 h-5 rounded-full bg-zinc-700
-          peer-checked:bg-emerald-600
-          relative transition
-        "
-			>
-				<span
-					className="
-            absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition
-            peer-checked:translate-x-5
-          "
-				/>
-			</div>
+        w-9 h-5 rounded-full
+        bg-zinc-800
+        ring-1 ring-zinc-700/70
+        shadow-inner
+        peer-checked:bg-emerald-500
+        transition-colors
+      "
+			/>
+
+			<span
+				className="
+        absolute top-0.5 left-0.5
+        w-4 h-4 rounded-full
+        bg-white
+        shadow-sm
+        transition-all duration-150 ease-out
+        peer-checked:left-4.5
+      "
+			/>
 		</label>
 	);
 }
@@ -91,13 +102,15 @@ export function RuleCard({ rule }: { rule: RuleInstance }) {
 			<div className="flex items-center gap-4 text-sm">
 				<ToggleControl id={rule.id} enabled={rule.enabled} />
 
-				<span className="font-mono text-zinc-300 min-w-48">{rule.ruleKey}</span>
+				<div className="flex gap-2 flex-wrap">
+					<span className="text-zinc-300">{rule.title}</span>
+					<span className="font-mono text-zinc-500">{rule.ruleKey}</span>
+				</div>
 
 				<PrettyConfig config={rule.config} />
 
 				<div className="flex-1" />
 
-				{/* actions */}
 				<div className="flex gap-3 md:opacity-0 md:group-hover:opacity-100 md:transition text-xs">
 					<button
 						type="button"
@@ -134,7 +147,7 @@ export function RuleCards({ rows }: { rows: RuleInstance[] }) {
 }
 
 export function RulesList({ page, ctx: { url } }: Props) {
-	const { rows, cursorNext, cursorCurrent, filters } = page;
+	const { rows, cursorNext, cursorCurrent } = page;
 	const nextUrl = withCursor(url, cursorNext);
 
 	return (
@@ -158,8 +171,6 @@ export function RulesList({ page, ctx: { url } }: Props) {
 				}
 				left={<h1 className="text-lg font-semibold">Rules</h1>}
 			/>
-
-			<RuleSearchFilters path="/console/rules" filters={filters} />
 
 			<RuleCards rows={rows} />
 		</Paginated>

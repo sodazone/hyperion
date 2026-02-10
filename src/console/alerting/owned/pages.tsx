@@ -5,8 +5,9 @@ import { InvalidParameters } from "@/server/response";
 import { ConsoleApp } from "../../app";
 import { fetchAlertPage } from "../common/alert.fetch";
 import { MyAlertList } from "./alert.list";
-import { RuleForm, TemplateWizard } from "./rule.form";
+import { RuleForm } from "./rule.form";
 import { RulesList } from "./rule.list";
+import { TemplateWizard } from "./rule.template";
 
 export const RuleFormPage = withAuth<"/console/rules/form/:id">(
 	async ({ req, user }) => {
@@ -48,7 +49,7 @@ export const RuleListPage = withAuth(async ({ db, req, user, ownerHash }) => {
 	const { rows, cursorNext } = db.alerts.findRuleInstances({
 		owner: ownerHash,
 		cursor,
-		limit: 35,
+		limit: 15,
 	});
 
 	const page = {

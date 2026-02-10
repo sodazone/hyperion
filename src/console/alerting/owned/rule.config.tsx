@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { FieldMeta } from "@/alerting";
+import { Multiselect } from "@/console/components/multiselect";
 
 export function ConfigField({
 	name,
@@ -21,22 +22,12 @@ export function ConfigField({
 	if (meta?.options) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-400" key={name}>
-				<label htmlFor={name} className="w-28">
-					{meta.label}
-				</label>
-				<select
-					id={name}
+				<span className="w-28">{meta.label}</span>
+				<Multiselect
 					name={name}
-					multiple={meta.multiple}
-					defaultValue={defaultValue ?? (meta.multiple ? [] : "*")}
-					className="px-2 py-1 ui-input"
-				>
-					{meta.options.map((opt) => (
-						<option key={opt.value} value={opt.value}>
-							{opt.label}
-						</option>
-					))}
-				</select>
+					options={meta.options}
+					selected={defaultValue}
+				/>
 				{meta.help && <p className="text-xs text-zinc-500">{meta.help}</p>}
 			</div>
 		);

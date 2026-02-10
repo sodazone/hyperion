@@ -7,7 +7,7 @@ import {
 	type TransferPayload,
 } from "../../types";
 import { mapTransferAlert } from "./mapper";
-import { type Config, type LocalData, schema } from "./types";
+import { type Config, type LocalData, schema } from "./schema";
 
 const ruleId = "value-movement";
 
@@ -16,6 +16,7 @@ const defaults = {
 	warningUsd: 100_000,
 	criticalUsd: 1_000_000,
 	riskCategories: [CAT.SANCTIONS, CAT.COMPROMISED],
+	networks: [],
 };
 
 type Severity = {
