@@ -3,18 +3,7 @@ import { AlertCards } from "@/console/components/card.alert";
 import { Paginated } from "@/console/components/paginated";
 import { TopBar } from "@/console/components/top.bar";
 import { withCursor } from "@/console/util";
-import type { Alert } from "@/db/model";
-
-type AlertPage = {
-	rows: Alert[];
-	cursorNext?: string | null;
-	cursorCurrent?: string | null;
-	filters: {
-		networkId?: string;
-		severity?: string;
-		q?: string;
-	};
-};
+import type { AlertPage } from "../common/alert.types";
 
 type Props = {
 	page: AlertPage;

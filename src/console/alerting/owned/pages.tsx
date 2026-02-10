@@ -1,9 +1,9 @@
 import { STATIC_RULES } from "@/alerting/rules/bundles/static";
 import { withAuth } from "@/console/authenticated";
-import { coerce, coerceNetworkId } from "@/server/api/params";
 import { render } from "@/server/render";
 import { InvalidParameters, Unauthorized } from "@/server/response";
 import { ConsoleApp } from "../../app";
+import { fetchAlertPage } from "../common/alert.fetch";
 import { MyAlertList } from "./alert.list";
 import { RuleForm, TemplateWizard } from "./rule.form";
 import { RulesList } from "./rule.list";
@@ -77,32 +77,7 @@ export const RuleListPage = withAuth(async ({ db, req, user, ownerHash }) => {
 export const MyAlertListPage = withAuth(
 	async ({ db, req, user, ownerHash }) => {
 		const url = new URL(req.url);
-
-		const cursor = url.searchParams.get("cursor") ?? undefined;
-		const network = coerceNetworkId(url.searchParams.get("networkId"));
-		const severity = coerce<number>(url.searchParams.get("severity"));
-		const search = url.searchParams.get("q") ?? undefined;
-
-		const { rows, cursorNext } = db.alerts.findAlerts({
-			owner: ownerHash,
-			levelMin: severity,
-			levelMax: severity,
-			network,
-			address: search,
-			cursor,
-			limit: 35,
-		});
-
-		const page = {
-			rows: rows,
-			cursorNext,
-			cursorCurrent: cursor,
-			filters: {
-				networkId: network?.toString(),
-				severity: severity?.toString(),
-				q: search,
-			},
-		};
+		const page = fetchAlertPage(db, url, ownerHash);
 
 		if (req.headers.get("HX-Request")) {
 			return render(<MyAlertList ctx={{ url }} page={page} />);
