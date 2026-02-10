@@ -50,7 +50,11 @@ function FilterField({ def, value }: { def: FilterDef; value?: string }) {
 	if (def.type === "select") {
 		return (
 			<div className={`ui-select ${def.width ?? "w-40"}`}>
-				<select name={def.name} defaultValue={value ?? def.default ?? "*"}>
+				<select
+					name={def.name}
+					defaultValue={value ?? def.default ?? "*"}
+					className="scrollbar-ui"
+				>
 					{def.options.map((o) => (
 						<option key={o.value} value={o.value}>
 							{o.label}
