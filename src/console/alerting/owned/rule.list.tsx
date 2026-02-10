@@ -60,7 +60,8 @@ function ToggleControl({
 				value="true"
 				defaultChecked={enabled}
 				className="sr-only peer"
-				hx-post={`/console/rules/${id}/toggle`}
+				hx-confirm="It will enable/disable the rule. Are you sure?"
+				hx-put={`/console/rules/${id}?enabled=${enabled}`}
 				hx-trigger="change"
 				hx-target="closest div"
 				hx-swap="outerHTML"
