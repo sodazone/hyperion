@@ -72,18 +72,83 @@ export function MultiselectScript() {
 
       renderSelected();
 
+      let activeIndex = -1;
+
+      function close() {
+        results.classList.add("hidden");
+        activeIndex = -1;
+      }
+
+      function open(list = options) {
+        renderResults(list);
+      }
+
+      function highlight(index) {
+        const items = results.querySelectorAll("button");
+        items.forEach(el => el.classList.remove("bg-zinc-800"));
+
+        if (items[index]) {
+          items[index].classList.add("bg-zinc-800");
+          items[index].scrollIntoView({ block: "nearest" });
+        }
+      }
+
       input.addEventListener("input", () => {
         const q = input.value.toLowerCase();
         const filtered = options.filter(o =>
           o.label.toLowerCase().includes(q)
         );
-        renderResults(filtered);
+        activeIndex = -1;
+        open(filtered);
       });
 
-      input.addEventListener("focus", () => renderResults(options));
+      input.addEventListener("focus", () => open());
+
+      input.addEventListener("keydown", (e) => {
+        const items = results.querySelectorAll("button");
+
+        switch (e.key) {
+          case "Escape":
+            close();
+            input.blur();
+            break;
+
+          case "ArrowDown":
+            e.preventDefault();
+            if (!items.length) return;
+            activeIndex = (activeIndex + 1) % items.length;
+            highlight(activeIndex);
+            break;
+
+          case "ArrowUp":
+            e.preventDefault();
+            if (!items.length) return;
+            activeIndex = (activeIndex - 1 + items.length) % items.length;
+            highlight(activeIndex);
+            break;
+
+          case "Enter":
+            if (items[activeIndex]) {
+              e.preventDefault();
+              items[activeIndex].click();
+            }
+            break;
+
+          case "Tab":
+            close();
+            break;
+
+          case "Backspace":
+            if (!input.value && selected.size) {
+              const last = Array.from(selected.keys()).pop();
+              remove(last);
+            }
+            break;
+        }
+      });
 
       document.addEventListener("click", e => {
-        if (!root.contains(e.target)) results.classList.add("hidden");
+        if (!root.contains(e.target)) close();
       });
     }`}
 		</script>
