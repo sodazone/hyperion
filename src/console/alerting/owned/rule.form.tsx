@@ -48,7 +48,7 @@ export function RuleForm({
 				<div id="address-error" className="text-sm"></div>
 
 				<div className="flex flex-col gap-2 mb-6">
-					<label htmlFor="title" className="text-sm text-zinc-400">
+					<label htmlFor="title" className="text-sm text-zinc-300">
 						Alert Name
 					</label>
 					<input

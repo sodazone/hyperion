@@ -160,7 +160,7 @@ export type FieldMeta = {
 	help?: string;
 	suffix?: string;
 	placeholder?: string;
-	input?: "text" | "number" | "select" | "checkbox";
+	input?: "text" | "number" | "select" | "checkbox" | "select-networks";
 	options?: { label: string; value: string | number }[];
 	multiple?: boolean;
 };

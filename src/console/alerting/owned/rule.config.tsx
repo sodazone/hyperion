@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FieldMeta } from "@/alerting";
 import { Multiselect } from "@/console/components/multiselect";
+import { NetworkCache } from "@/console/network.cache";
 
 export function ConfigField({
 	name,
@@ -21,14 +22,31 @@ export function ConfigField({
 
 	if (meta?.options) {
 		return (
-			<div className="flex flex-col gap-2 text-sm text-zinc-400" key={name}>
+			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
 				<span className="w-28">{meta.label}</span>
 				<Multiselect
 					name={name}
 					options={meta.options}
 					selected={defaultValue}
 				/>
-				{meta.help && <p className="text-xs text-zinc-500">{meta.help}</p>}
+				{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
+			</div>
+		);
+	}
+
+	if (meta?.input === "select-networks") {
+		return (
+			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
+				<span className="w-28">{meta.label}</span>
+				<Multiselect
+					name={name}
+					options={NetworkCache.all().map((n) => ({
+						label: n.name,
+						value: n.urn,
+					}))}
+					selected={defaultValue}
+				/>
+				{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
 			</div>
 		);
 	}
@@ -51,7 +69,7 @@ export function ConfigField({
 
 	if (schema instanceof z.ZodEnum) {
 		return (
-			<div className="flex flex-col gap-2 text-sm text-zinc-400">
+			<div className="flex flex-col gap-2 text-sm text-zinc-300">
 				<label htmlFor={name}>{label}</label>
 
 				<select
@@ -67,14 +85,14 @@ export function ConfigField({
 					))}
 				</select>
 
-				{help && <span className="text-xs text-zinc-500">{help}</span>}
+				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>
 		);
 	}
 
 	if (schema instanceof z.ZodNumber) {
 		return (
-			<div className="flex flex-col gap-2 text-sm text-zinc-400">
+			<div className="flex flex-col gap-2 text-sm text-zinc-300">
 				<label htmlFor={name}>{label}</label>
 
 				<div className="relative flex items-center">
@@ -97,12 +115,12 @@ export function ConfigField({
 					)}
 				</div>
 
-				{help && <span className="text-xs text-zinc-500">{help}</span>}
+				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>
 		);
 	}
 	return (
-		<div className="flex flex-col gap-2 text-sm text-zinc-400">
+		<div className="flex flex-col gap-2 text-sm text-zinc-300">
 			<label htmlFor={name}>{label}</label>
 
 			<div className="relative flex items-center">
@@ -122,7 +140,7 @@ export function ConfigField({
 				)}
 			</div>
 
-			{help && <span className="text-xs text-zinc-500">{help}</span>}
+			{help && <span className="text-xs text-zinc-400">{help}</span>}
 		</div>
 	);
 }

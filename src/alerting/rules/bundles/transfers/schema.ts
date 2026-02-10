@@ -1,5 +1,5 @@
 import z from "zod";
-import { NetworkMap, topLevelCategories } from "@/intel/mapping";
+import { topLevelCategories } from "@/intel/mapping";
 
 export type LocalEntityData = {
 	address: string | Uint8Array;
@@ -15,20 +15,12 @@ export type LocalData = {
 
 export const schema = z
 	.object({
-		networks: z
-			.array(z.string())
-			.optional()
-			.meta({
-				label: "Networks",
-				options: [
-					...NetworkMap.entries().map(([key, value]) => ({
-						label: key,
-						value: value.toString(),
-					})),
-				],
-				multiple: true,
-				help: "By default applies to all networks. If specified, only transfers on the selected networks will be monitored.",
-			}),
+		networks: z.array(z.string()).optional().meta({
+			label: "Networks",
+			input: "select-networks",
+			multiple: true,
+			help: "By default applies to all networks. If specified, only transfers on the selected networks will be monitored.",
+		}),
 		infoUsd: z.number().min(0).meta({
 			label: "Informative",
 			suffix: "USD",
