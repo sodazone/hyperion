@@ -1,3 +1,4 @@
+import type { Monitor } from "@/alerting/monitor";
 import type { Entity, HyperionDB } from "@/db";
 import type { AuthApi } from "@/server/auth/stytch";
 
@@ -12,4 +13,5 @@ export type EntityRow = Entity & {
 export type PageContext = {
 	db: HyperionDB;
 	authApi: AuthApi;
+	monitor: Monitor;
 };

@@ -37,10 +37,18 @@ export function RuleForm({
 			<div className="flex gap-6 items-center">
 				<BackButton href="/console/rules/form/__new__" />
 
-				<h1 className="text-lg font-semibold text-zinc-300">
-					{template.title}
-				</h1>
+				<div className="flex flex-col space-y-1">
+					<h1 className="text-lg font-semibold text-zinc-300">
+						{template.title}
+					</h1>
+					{template.description && (
+						<div className="text-zinc-400 text-sm max-w-lg">
+							{template.description}
+						</div>
+					)}
+				</div>
 			</div>
+
 			<form
 				method="post"
 				action="/console/rules"
@@ -51,25 +59,14 @@ export function RuleForm({
 			>
 				<input type="hidden" name="ruleKey" value={template.id} />
 
-				{template.description && (
-					<div className="flex flex-col space-y-1">
-						<div className="text-xs uppercase text-zinc-600 font-semibold">
-							Description
-						</div>
-						<div className="text-zinc-300 text-sm max-w-md">
-							{template.description}
-						</div>
-					</div>
-				)}
-
 				{/* Error div */}
 				<div id="address-error" className="text-sm"></div>
 
 				<fieldset className="flex flex-col space-y-2">
 					<legend className="text-xs uppercase text-zinc-600 font-semibold">
-						Configuration
+						Alert Configuration
 					</legend>
-					<div className="flex flex-col gap-2">
+					<div className="flex flex-col gap-6">
 						{fields.map((f) => (
 							<ConfigField
 								key={f.key}

@@ -19,6 +19,7 @@ type CompiledInstance = {
 
 export class RuleEngine extends EventEmitter {
 	#instances: CompiledInstance[] = [];
+	#byId = new Map<string, CompiledInstance>();
 	#registry = new Map<string, RuleDefinition<any, any, any>>();
 	#lastAlertTimes: Record<string, number> = {};
 
@@ -42,7 +43,7 @@ export class RuleEngine extends EventEmitter {
 			...instance.config,
 		});
 
-		this.#instances.push({
+		const compiled: CompiledInstance = {
 			id: instance.id,
 			owner: instance.owner,
 			def,
@@ -50,7 +51,10 @@ export class RuleEngine extends EventEmitter {
 			enabled: instance.enabled ?? true,
 			priority: instance.priority,
 			cooldownMs: instance.cooldownMs,
-		});
+		};
+
+		this.#instances.push(compiled);
+		this.#byId.set(compiled.id, compiled);
 
 		this.#instances.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
 	}
@@ -94,6 +98,30 @@ export class RuleEngine extends EventEmitter {
 				console.error(`Error evaluating rule ${inst.def.id}:`, error);
 			}
 		}
+	}
+
+	setEnabled(id: string, enabled: boolean): boolean {
+		const inst = this.#byId.get(id);
+		if (!inst) return false;
+
+		inst.enabled = enabled;
+		return true;
+	}
+
+	remove(id: string): boolean {
+		const inst = this.#byId.get(id);
+		if (!inst) return false;
+
+		this.#byId.delete(id);
+
+		const idx = this.#instances.indexOf(inst);
+		if (idx !== -1) {
+			this.#instances.splice(idx, 1);
+		}
+
+		delete this.#lastAlertTimes[id];
+
+		return true;
 	}
 
 	start(): void {}

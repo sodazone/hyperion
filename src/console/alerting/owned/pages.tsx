@@ -1,7 +1,7 @@
 import { STATIC_RULES } from "@/alerting/rules/bundles/static";
 import { withAuth } from "@/console/authenticated";
 import { render } from "@/server/render";
-import { InvalidParameters, Unauthorized } from "@/server/response";
+import { InvalidParameters } from "@/server/response";
 import { ConsoleApp } from "../../app";
 import { fetchAlertPage } from "../common/alert.fetch";
 import { MyAlertList } from "./alert.list";
@@ -9,10 +9,7 @@ import { RuleForm, TemplateWizard } from "./rule.form";
 import { RulesList } from "./rule.list";
 
 export const RuleFormPage = withAuth<"/console/rules/form/:id">(
-	async ({ db, req, user, ownerHash }) => {
-		if (user === null) {
-			return Unauthorized;
-		}
+	async ({ req, user }) => {
 		if (req.params.id === "__new__") {
 			let component: React.ReactElement | undefined;
 			const q = new URL(req.url).searchParams;

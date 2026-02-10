@@ -25,7 +25,11 @@ import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
-import { RulePostHandler } from "./rules/forms";
+import {
+	RuleDeleteHandler,
+	RulePostHandler,
+	RulePutHandler,
+} from "./rules/forms";
 import {
 	WatchlistDeleteHandler,
 	WatchlistPostHandler,
@@ -54,10 +58,10 @@ export async function serve({
 
 	const authApi = createAuthApi();
 
-	//const monitor = await createMonitorFromDB(db);
-	//monitor.start();
+	const monitor = await createMonitorFromDB(db);
+	monitor.start();
 
-	const ctx = { db, authApi };
+	const ctx = Object.freeze({ db, authApi, monitor });
 
 	const listener = Bun.serve({
 		hostname,
@@ -97,6 +101,10 @@ export async function serve({
 			"/console/rules": {
 				GET: async (req) => RuleListPage(ctx, req),
 				POST: async (req) => RulePostHandler(ctx, req),
+			},
+			"/console/rules/:id": {
+				PUT: async (req) => RulePutHandler(ctx, req),
+				DELETE: async (req) => RuleDeleteHandler(ctx, req),
 			},
 			"/console/rules/form/:id": async (req) => RuleFormPage(ctx, req),
 			"/console/entities": async (req) => EntityListPage(ctx, req),
@@ -169,7 +177,7 @@ export async function serve({
 			listener.stop();
 			console.log("HTTP server stopped");
 
-			//monitor.stop();
+			monitor.stop();
 			console.log("Monitor stopped");
 
 			db.close();

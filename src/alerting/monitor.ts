@@ -12,6 +12,10 @@ import { InMemoryStateStore } from "./rules/state";
 import { createDummyOcelloidsClient } from "./streams/ocelloids";
 
 export interface Monitor {
+	rules: {
+		setEnabled: (ruleId: string, enabled: boolean) => void;
+		remove: (ruleId: string) => void;
+	};
 	start: () => void;
 	stop: () => void;
 }
@@ -60,6 +64,16 @@ export function createMonitor({
 			console.log("Monitor started");
 			subManager.start();
 			engine.start();
+		},
+		rules: {
+			setEnabled: (ruleId: string, enabled: boolean) => {
+				engine.setEnabled(ruleId, enabled);
+				// TODO: close unused subscriptions
+			},
+			remove: (ruleId: string) => {
+				engine.remove(ruleId);
+				// TODO
+			},
 		},
 		stop: () => {
 			subManager.stop();

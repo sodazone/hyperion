@@ -61,13 +61,12 @@ function ToggleControl({
 				defaultChecked={enabled}
 				className="sr-only peer"
 				hx-confirm="It will enable/disable the rule. Are you sure?"
-				hx-put={`/console/rules/${id}?enabled=${enabled}`}
+				hx-put={`/console/rules/${id}?enabled=${enabled ? "0" : "1"}`}
 				hx-trigger="change"
-				hx-target="closest div"
+				hx-target="closest div.card"
 				hx-swap="outerHTML"
 			/>
 
-			{/* switch UI */}
 			<div
 				className="
           w-10 h-5 rounded-full bg-zinc-700
@@ -86,6 +85,36 @@ function ToggleControl({
 	);
 }
 
+export function RuleCard({ rule }: { rule: RuleInstance }) {
+	return (
+		<div key={rule.id} className="p-3 group transition card">
+			<div className="flex items-center gap-4 text-sm">
+				<ToggleControl id={rule.id} enabled={rule.enabled} />
+
+				<span className="font-mono text-zinc-300 min-w-48">{rule.ruleKey}</span>
+
+				<PrettyConfig config={rule.config} />
+
+				<div className="flex-1" />
+
+				{/* actions */}
+				<div className="flex gap-3 md:opacity-0 md:group-hover:opacity-100 md:transition text-xs">
+					<button
+						type="button"
+						hx-delete={`/console/rules/${rule.id}`}
+						hx-target="closest div.card"
+						hx-swap="outerHTML"
+						hx-confirm="Delete this rule?"
+						className="text-red-400 hover:text-red-300"
+					>
+						Delete
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 export function RuleCards({ rows }: { rows: RuleInstance[] }) {
 	if (!rows.length) {
 		return (
@@ -98,33 +127,7 @@ export function RuleCards({ rows }: { rows: RuleInstance[] }) {
 	return (
 		<div className="divide-y divide-zinc-900">
 			{rows.map((r) => (
-				<div key={r.id} className="p-3 group transition">
-					<div className="flex items-center gap-4 text-sm">
-						<ToggleControl id={r.id} enabled={r.enabled} />
-
-						<span className="font-mono text-zinc-300 min-w-48">
-							{r.ruleKey}
-						</span>
-
-						<PrettyConfig config={r.config} />
-
-						<div className="flex-1" />
-
-						{/* actions */}
-						<div className="flex gap-3 md:opacity-0 md:group-hover:opacity-100 md:transition text-xs">
-							<button
-								type="button"
-								hx-delete={`/console/rules/${r.id}`}
-								hx-target="closest div"
-								hx-swap="outerHTML"
-								hx-confirm="Delete this rule?"
-								className="text-red-400 hover:text-red-300"
-							>
-								Delete
-							</button>
-						</div>
-					</div>
-				</div>
+				<RuleCard key={r.id} rule={r} />
 			))}
 		</div>
 	);
