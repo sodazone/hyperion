@@ -87,6 +87,7 @@ export function Sidebar({ member }: Props) {
 									>
 										Rules
 									</li>
+									{/*
 									<li
 										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
 										data-href="/console/destinations"
@@ -96,6 +97,7 @@ export function Sidebar({ member }: Props) {
 									>
 										Destinations
 									</li>
+									*/}
 								</>
 							)}
 						</ul>
@@ -169,7 +171,6 @@ export function Sidebar({ member }: Props) {
 					)}
 				</div>
 
-				{/* Sidebar JS */}
 				<script>
 					{`
             (() => {
