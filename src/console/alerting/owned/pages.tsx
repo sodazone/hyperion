@@ -1,4 +1,4 @@
-import { STATIC_RULES } from "@/alerting/rules/bundles/static";
+import { STATIC_RULES } from "@/alerting/rules/templates/static";
 import { withAuth } from "@/console/authenticated";
 import { render } from "@/server/render";
 import { InvalidParameters } from "@/server/response";

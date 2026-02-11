@@ -7,8 +7,8 @@ import {
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
 import { safeStringify } from "@/utils/strings";
-import { STATIC_RULES } from "./rules/bundles/static";
 import { InMemoryStateStore } from "./rules/state";
+import { STATIC_RULES } from "./rules/templates/static";
 import { createDummyOcelloidsClient } from "./streams/ocelloids";
 
 export interface Monitor {

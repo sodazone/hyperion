@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import { STATIC_RULES } from "@/alerting/rules/bundles/static";
+import { STATIC_RULES } from "@/alerting/rules/templates/static";
 import { RuleCard } from "@/console/alerting/owned/rule.list";
 import { withAuth } from "@/console/authenticated";
 import { render } from "../render";
