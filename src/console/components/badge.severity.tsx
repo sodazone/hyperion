@@ -1,4 +1,9 @@
-const LEVEL_META: Record<number, { label: string; className: string }> = {
+import { ExclamationIcon } from "./icons";
+
+const LEVEL_META: Record<
+	number,
+	{ label: string; className: string; icon?: React.ReactNode }
+> = {
 	1: {
 		label: "Info",
 		className: "bg-zinc-800 text-zinc-300",
@@ -10,6 +15,7 @@ const LEVEL_META: Record<number, { label: string; className: string }> = {
 	3: {
 		label: "Critical",
 		className: "bg-pink-900/70 text-red-300",
+		icon: <ExclamationIcon size={16} />,
 	},
 };
 
@@ -18,8 +24,9 @@ export function SeverityBadge({ level }: { level: number }) {
 
 	return (
 		<span
-			className={`text-xs font-semibold px-2 py-1 rounded-full ${meta?.className}`}
+			className={`inline-flex gap-1 items-center text-xs font-semibold px-2 py-1 rounded-full ${meta?.className}`}
 		>
+			{meta?.icon}
 			{meta?.label ?? level}
 		</span>
 	);
