@@ -183,7 +183,7 @@ export function createRulesDB(db: Database) {
       SELECT *
       FROM rule_instance
       ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
-      ORDER BY priority ASC, id ASC
+      ORDER BY priority DESC, id DESC
       LIMIT ?
     `;
 
@@ -212,7 +212,7 @@ export function createRulesDB(db: Database) {
 					`
           SELECT *
           FROM rule_instance
-          ORDER BY owner, priority ASC, id ASC
+          ORDER BY owner, priority DESC, id DESC
           `,
 				)
 				.all()
