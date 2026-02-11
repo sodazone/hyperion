@@ -24,7 +24,7 @@ export function SeverityBadge({ level }: { level: number }) {
 
 	return (
 		<span
-			className={`inline-flex gap-1 items-center text-xs font-semibold px-2 py-1 rounded-full ${meta?.className}`}
+			className={`inline-flex gap-1 items-center text-xs font-semibold px-1 py-0.5 rounded-md ${meta?.className}`}
 		>
 			{meta?.icon}
 			{meta?.label ?? level}

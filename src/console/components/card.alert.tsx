@@ -41,7 +41,7 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 						</div>
 
 						<details>
-							<summary className="text-zinc-300 text-base font-semibold leading-snug truncate">
+							<summary className="text-zinc-300 text-sm md:text-base font-semibold leading-snug truncate">
 								{alert.message}
 							</summary>
 
@@ -111,14 +111,11 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 								)}
 							</div>
 						</details>
-
-						<div className="flex mt-3 pt-3 border-t border-zinc-800">
-							<div className="ml-auto inline-flex items-center overflow-hidden text-xs leading-none gap-2">
-								<span className="w-4 h-4 text-zinc-700">
-									{RuleIcons[alert.rule_id]}
-								</span>
-								<span className="font-mono text-zinc-500">{alert.rule_id}</span>
-							</div>
+						<div className="ml-auto inline-flex items-center overflow-hidden text-xs leading-none gap-2">
+							<span className="w-4 h-4 text-zinc-700">
+								{RuleIcons[alert.rule_id]}
+							</span>
+							<span className="font-mono text-zinc-500">{alert.rule_id}</span>
 						</div>
 					</div>
 				);
