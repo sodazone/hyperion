@@ -43,3 +43,12 @@ export function truncMid(str: string, startLength = 6, endLength = 6) {
 	if (str.length <= slen + endLength) return str;
 	return `${str.slice(0, slen)}…${str.slice(-endLength)}`;
 }
+
+export function trunc(str: string, len = 12) {
+	if (!str) return str;
+
+	const slen = str.startsWith("0x") ? len + 2 : len;
+
+	if (str.length <= slen) return str;
+	return `${str.slice(0, len)}…`;
+}

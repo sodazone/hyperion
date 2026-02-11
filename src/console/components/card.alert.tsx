@@ -1,7 +1,7 @@
 import type { Alert, AlertActor } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { dateFormatter } from "@/utils/dates";
-import { truncMid } from "../util";
+import { trunc, truncMid } from "../util";
 import { SeverityBadge } from "./badge.severity";
 import { CopyButton } from "./btn.copy";
 import { NetworkIcon } from "./network.icon";
@@ -45,9 +45,9 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 								{alert.message}
 							</summary>
 
-							{actors.length > 0 && (
-								<div className="gap-1.5 text-sm mt-2 text-zinc-400">
-									{actors.map((a: AlertActor) => (
+							<div className="flex flex-col gap-2 text-sm mt-2 text-zinc-400">
+								{actors.length > 0 &&
+									actors.map((a: AlertActor) => (
 										<div key={a.role} className="flex items-center gap-2">
 											<span className="text-zinc-500 w-16 capitalize">
 												{a.role}
@@ -68,35 +68,17 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 											)}
 										</div>
 									))}
-									{alert.remark && (
-										<div className="flex gap-2">
-											<span className="text-zinc-500 w-16 capitalize">
-												Remark
-											</span>
-											<span>{alert.remark}</span>
-										</div>
-									)}
-								</div>
-							)}
-
-							<div className="flex flex-col gap-1.5 mt-3 text-sm text-zinc-400">
-								{alert.network && (
-									<div className="flex gap-2">
-										<span className="text-zinc-500 w-16 capitalize">
-											Network
-										</span>
-										<NetworkIcon
-											urn={NetworkMap.toURN(alert.network) ?? "unknown"}
-											size={18}
-											showName
-										/>
-									</div>
-								)}
 								{alert.block_hash && (
-									<div className="flex flex-wrap gap-2">
+									<div className="flex flex-wrap items-center gap-2">
 										<span className="text-zinc-500 w-16 capitalize">Block</span>
-										<span className="font-mono truncate">
-											{alert.block_hash}
+										<span className="flex gap-1 items-center font-mono">
+											<span className="truncate">
+												{trunc(alert.block_hash)}
+											</span>
+											<CopyButton
+												title="Copy Block Hash"
+												text={alert.block_hash}
+											/>
 										</span>
 										<span className="text-xs text-zinc-500 font-mono">
 											(#{alert.block_number})
@@ -106,16 +88,38 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 								{alert.tx_hash && (
 									<div className="flex flex-wrap gap-2">
 										<span className="text-zinc-500 w-16 capitalize">Tx</span>
-										<span className="font-mono truncate">{alert.tx_hash}</span>
+										<span className="font-mono truncate">
+											<span className="flex gap-1 items-center font-mono">
+												<span className="truncate">{trunc(alert.tx_hash)}</span>
+												<CopyButton title="Copy Tx Hash" text={alert.tx_hash} />
+											</span>
+										</span>
+									</div>
+								)}
+								{alert.remark && (
+									<div className="flex gap-2">
+										<span className="text-zinc-500 w-16 capitalize">
+											Remark
+										</span>
+										<span>{alert.remark}</span>
 									</div>
 								)}
 							</div>
 						</details>
-						<div className="ml-auto inline-flex items-center overflow-hidden text-xs leading-none gap-2">
-							<span className="w-4 h-4 text-zinc-700">
-								{RuleIcons[alert.rule_id]}
-							</span>
-							<span className="font-mono text-zinc-500">{alert.rule_id}</span>
+						<div className="flex justify-between items-center text-xs">
+							{alert.network && (
+								<NetworkIcon
+									urn={NetworkMap.toURN(alert.network) ?? "unknown"}
+									size={16}
+									showName
+								/>
+							)}
+							<div className="inline-flex items-center overflow-hidden text-xs leading-none gap-2">
+								<span className="w-4 h-4 text-zinc-700">
+									{RuleIcons[alert.rule_id]}
+								</span>
+								<span className="font-mono text-zinc-500">{alert.rule_id}</span>
+							</div>
 						</div>
 					</div>
 				);

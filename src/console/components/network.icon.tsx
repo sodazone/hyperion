@@ -38,7 +38,7 @@ export function NetworkIcon({
 				</span>
 			)}
 
-			{showName && <span className="text-zinc-300">{label}</span>}
+			{showName && <span className="text-zinc-300 truncate">{label}</span>}
 		</span>
 	);
 }
