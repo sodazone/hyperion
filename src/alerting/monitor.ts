@@ -8,7 +8,7 @@ import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
 import { safeStringify } from "@/utils/strings";
 import { InMemoryStateStore } from "./rules/state";
-import { STATIC_RULES } from "./rules/templates/static";
+import { RulesRegistry } from "./rules/templates/registry";
 import { createDummyOcelloidsClient } from "./streams/ocelloids";
 
 export interface Monitor {
@@ -84,7 +84,7 @@ export function createMonitor({
 
 export async function createMonitorFromDB(db: HyperionDB): Promise<Monitor> {
 	const client = await createDummyOcelloidsClient();
-	const rules = STATIC_RULES;
+	const rules = RulesRegistry;
 
 	return createMonitor(
 		Object.freeze({

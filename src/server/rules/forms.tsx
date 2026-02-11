@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import { STATIC_RULES } from "@/alerting/rules/templates/static";
+import { RulesRegistry } from "@/alerting/rules/templates/registry";
 import { RuleCard } from "@/console/alerting/owned/rule.list";
 import { withAuth } from "@/console/authenticated";
 import { render } from "../render";
@@ -75,7 +75,7 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 	if (!templateId || !title || title.length > 200 || title.length < 2)
 		return InvalidParameters;
 
-	const template = STATIC_RULES.find((r) => r.id === templateId);
+	const template = RulesRegistry.find((r) => r.id === templateId);
 	if (!template) return InvalidParameters;
 
 	const data: Record<string, any> = {};

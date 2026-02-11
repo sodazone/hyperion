@@ -1,4 +1,4 @@
-import { STATIC_RULES } from "@/alerting/rules/templates/static";
+import { RulesRegistry } from "@/alerting/rules/templates/registry";
 import { withAuth } from "@/console/authenticated";
 import { render } from "@/server/render";
 import { InvalidParameters } from "@/server/response";
@@ -17,14 +17,14 @@ export const RuleFormPage = withAuth<"/console/rules/form/:id">(
 			if (q.has("template")) {
 				const templateId = q.get("template");
 				if (templateId) {
-					const template = STATIC_RULES.find((rule) => rule.id === templateId);
+					const template = RulesRegistry.find((rule) => rule.id === templateId);
 					if (!template) return InvalidParameters;
 					component = <RuleForm template={template} />;
 				}
 			}
 
 			if (component === undefined) {
-				component = <TemplateWizard templates={STATIC_RULES} />;
+				component = <TemplateWizard templates={RulesRegistry} />;
 			}
 
 			if (req.headers.get("HX-Request")) {
