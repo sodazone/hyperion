@@ -49,6 +49,7 @@ export function TemplateWizard({
 								className="w-full ui-btn"
 								hx-get={`/console/rules/form/__new__?template=${t.id}`}
 								hx-target="#main-content"
+								hx-swap="innerHTML swap:80ms"
 							>
 								<span className="w-full text-center">Create Alert</span>
 							</button>

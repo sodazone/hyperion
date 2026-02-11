@@ -163,6 +163,7 @@ export function RulesList({ page, ctx: { url } }: Props) {
 						hx-get="/console/rules/form/__new__"
 						hx-target="#main-content"
 						hx-push-url="true"
+						hx-swap="innerHTML swap:80ms"
 						className="ui-btn"
 					>
 						<PlusIcon size={18} />

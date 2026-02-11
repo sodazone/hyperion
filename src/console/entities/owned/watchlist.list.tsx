@@ -44,6 +44,7 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 						hx-target="#main-content"
 						hx-push-url="true"
 						className="ui-btn"
+						hx-swap="innerHTML swap:80ms"
 					>
 						<PlusIcon size={18} />
 						<span>Add Entity</span>

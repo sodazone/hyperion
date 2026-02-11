@@ -61,6 +61,7 @@ export function Sidebar({ member }: Props) {
 								hx-get="/console/public/alerts"
 								hx-target="#main-content"
 								hx-push-url="true"
+								hx-swap="innerHTML swap:80ms"
 							>
 								Public Alerts
 							</li>
@@ -72,6 +73,7 @@ export function Sidebar({ member }: Props) {
 										hx-get="/console/my/alerts"
 										hx-target="#main-content"
 										hx-push-url="true"
+										hx-swap="innerHTML swap:80ms"
 									>
 										My Alerts
 									</li>
@@ -81,6 +83,7 @@ export function Sidebar({ member }: Props) {
 										hx-get="/console/rules"
 										hx-target="#main-content"
 										hx-push-url="true"
+										hx-swap="innerHTML swap:80ms"
 									>
 										Rules
 									</li>
@@ -110,6 +113,7 @@ export function Sidebar({ member }: Props) {
 								hx-get="/console/entities"
 								hx-target="#main-content"
 								hx-push-url="true"
+								hx-swap="innerHTML swap:80ms"
 							>
 								Public Registry
 							</li>
@@ -120,6 +124,7 @@ export function Sidebar({ member }: Props) {
 									hx-get="/console/watchlist"
 									hx-target="#main-content"
 									hx-push-url="true"
+									hx-swap="innerHTML swap:80ms"
 								>
 									My Watchlist
 								</li>
