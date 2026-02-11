@@ -95,7 +95,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	defaults,
 
 	matcher: async (event, { config, global: { db }, owner }) => {
-		if (accept(event, config)) return { matched: false };
+		if (!accept(event, config)) return { matched: false };
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
 
