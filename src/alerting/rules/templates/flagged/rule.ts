@@ -57,8 +57,7 @@ interface EntityAlertPayload extends AlertPayload {
 export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 	id: ruleId,
 	title: "Flagged Entities",
-	description:
-		"Flags entities that match configured risk categories, subcategories, or tags, highlighting potential risk signals for review.",
+	description: "Flags entities that match configured risk categories and tags.",
 	schema,
 	defaults,
 
@@ -94,7 +93,6 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			const tags = entity.tags?.map((t) => t.tag) ?? [];
 
 			let role: "seen" | "flagged" = "seen";
-			console.log(categories, config.riskCategories);
 			if (categories.some((c) => config.riskCategories.includes(c))) {
 				role = "flagged";
 				matched = true;

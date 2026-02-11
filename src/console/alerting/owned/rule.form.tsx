@@ -34,6 +34,8 @@ export function RuleForm({
 				</div>
 			</div>
 
+			<MultiselectScript />
+
 			<form
 				method="post"
 				action="/console/rules"
@@ -93,7 +95,7 @@ export function RuleForm({
 					</button>
 				</div>
 			</form>
-			<MultiselectScript />
+			<script>{`document.querySelectorAll(".multiselect").forEach(initMultiselect);`}</script>
 		</section>
 	);
 }

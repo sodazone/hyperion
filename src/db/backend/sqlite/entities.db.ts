@@ -350,6 +350,42 @@ export class EntitiesDB {
 		return !!this.db.query(sql).get(...params);
 	}
 
+	findAllTags({
+		owner,
+		network,
+		prefix,
+	}: {
+		owner: Uint8Array;
+		network?: number;
+		prefix?: string;
+	}): string[] {
+		const clauses = ["owner = ?"];
+		const params: SQLQueryBindings[] = [owner];
+
+		if (network !== undefined) {
+			clauses.push("network = ?");
+			params.push(network);
+		}
+
+		if (prefix) {
+			clauses.push("tag LIKE ?");
+			params.push(`${prefix}%`);
+		}
+
+		const rows = this.db
+			.query(
+				`
+        SELECT DISTINCT tag
+        FROM entity_tag
+        WHERE ${clauses.join(" AND ")}
+        ORDER BY tag
+        `,
+			)
+			.all(...params) as { tag: string }[];
+
+		return rows.map((r) => r.tag);
+	}
+
 	findEntity({
 		owner,
 		address,

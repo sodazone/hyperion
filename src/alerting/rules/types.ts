@@ -164,7 +164,13 @@ export type FieldMeta = {
 	help?: string;
 	suffix?: string;
 	placeholder?: string;
-	input?: "text" | "number" | "select" | "checkbox" | "select-networks";
+	input?:
+		| "text"
+		| "number"
+		| "select"
+		| "checkbox"
+		| "select-networks"
+		| "select-tags";
 	options?: { label: string; value: string | number }[];
 	multiple?: boolean;
 };

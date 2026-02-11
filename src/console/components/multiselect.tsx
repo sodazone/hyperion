@@ -2,9 +2,7 @@ export function MultiselectScript() {
 	return (
 		<script>
 			{`
-    document.querySelectorAll(".multiselect").forEach(init);
-
-    function init(root) {
+    function initMultiselect(root) {
       const input = root.querySelector("input");
       const results = root.querySelector(".results");
       const selectedWrap = root.querySelector(".selected");
@@ -182,7 +180,7 @@ export function Multiselect({
 				className="px-2 py-1 ui-input"
 			/>
 
-			<div className="results absolute top-full mt-1 w-full max-h-48 overflow-auto rounded-md bg-zinc-900 border border-zinc-700 shadow-lg hidden z-10" />
+			<div className="results absolute top-full mt-1 w-full max-h-48 overflow-auto bg-zinc-900 border border-zinc-700 shadow-lg hidden z-10" />
 		</div>
 	);
 }

@@ -1,4 +1,5 @@
 import z from "zod";
+import { topLevelCategories } from "@/intel/mapping";
 
 export const level = z
 	.number()
@@ -20,4 +21,23 @@ export const networks = z.array(z.string()).optional().meta({
 	input: "select-networks",
 	multiple: true,
 	help: "By default applies to all networks. If specified, only transfers on the selected networks will be monitored.",
+});
+
+export const riskCategories = z.array(z.number()).meta({
+	label: "Categories",
+	options: [
+		...topLevelCategories.map((c) => ({
+			label: c.label,
+			value: c.category.toString(),
+		})),
+	],
+	multiple: true,
+	help: "If a activity matches any of the selected categories.",
+});
+
+export const riskTags = z.array(z.string()).optional().meta({
+	label: "Tags",
+	input: "select-tags",
+	multiple: true,
+	help: "If a activity matches any of the selected tags.",
 });

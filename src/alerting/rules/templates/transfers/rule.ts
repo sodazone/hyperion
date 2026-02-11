@@ -60,6 +60,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 
 		if (!amountUsd || amountUsd < config.minUsd) return { matched: false };
 
+		// just to enrich entity information
 		const local: LocalData = { addresses: new Set(), entities: {} };
 		const owners = equals(owner, PUBLIC_OWNER)
 			? [PUBLIC_OWNER]

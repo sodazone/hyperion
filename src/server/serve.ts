@@ -30,6 +30,7 @@ import {
 	RulePostHandler,
 	RulePutHandler,
 } from "./rules/forms";
+import { TagsFragment } from "./rules/fragments";
 import {
 	WatchlistDeleteHandler,
 	WatchlistPostHandler,
@@ -107,6 +108,7 @@ export async function serve({
 				DELETE: async (req) => RuleDeleteHandler(ctx, req),
 			},
 			"/console/rules/form/:id": async (req) => RuleFormPage(ctx, req),
+			"/console/rules/fragments/tags": async (req) => TagsFragment(ctx, req),
 			"/console/entities": async (req) => EntityListPage(ctx, req),
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/console/watchlist": {

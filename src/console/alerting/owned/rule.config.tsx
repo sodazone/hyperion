@@ -69,12 +69,32 @@ export function ConfigField({
 				<span className="w-28">{meta.label}</span>
 				<Multiselect
 					name={name}
+					placeholder="Search networks…"
 					options={NetworkCache.all().map((n) => ({
 						label: n.name,
 						value: n.urn,
 					}))}
 					selected={defaultValue}
 				/>
+				{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
+			</div>
+		);
+	}
+
+	if (meta?.input === "select-tags") {
+		return (
+			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
+				<span className="w-28">{meta.label}</span>
+
+				<div
+					id={`tags-${name}`}
+					hx-get="/console/rules/fragments/tags"
+					hx-trigger="load"
+					hx-swap="outerHTML"
+					hx-target={`#tags-${name}`}
+					className="px-2 py-1 w-full min-h-8 animate-pulse bg-zinc-900/60 ui-input"
+				></div>
+
 				{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
 			</div>
 		);
