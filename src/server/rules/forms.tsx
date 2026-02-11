@@ -82,16 +82,15 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 
 	for (const key of formData.keys()) {
 		const allValues = formData.getAll(key);
-		let dataKey = key;
-		if (key.endsWith("[]")) {
-			dataKey = key.substring(0, key.length - 2);
-		}
 
-		if (allValues.length === 1) {
-			const value = allValues[0];
-			data[dataKey] = strOrNumber(value);
-		} else {
+		if (key.endsWith("[]")) {
+			const dataKey = key.substring(0, key.length - 2);
 			data[dataKey] = allValues.map(strOrNumber);
+		} else if (allValues.length === 1) {
+			const value = allValues[0];
+			data[key] = strOrNumber(value);
+		} else {
+			data[key] = allValues.map(strOrNumber);
 		}
 	}
 
