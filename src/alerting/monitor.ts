@@ -35,7 +35,7 @@ export function createMonitor({
 	const engine = new RuleEngine(rules);
 
 	// TODO: handle too many rules... :D
-	const instances: RuleInstance[] = db.alerts.findAllRuleInstances();
+	const instances: RuleInstance[] = db.alerting.rules.findAllRuleInstances();
 
 	for (const inst of instances) {
 		engine.addInstance(inst);
@@ -50,7 +50,7 @@ export function createMonitor({
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
-		db.alerts.insertAlert(alert);
+		db.alerting.alerts.insertAlert(alert);
 		console.log("Alert triggered:", safeStringify(alert, 2));
 	});
 

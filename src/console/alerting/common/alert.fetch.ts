@@ -11,7 +11,7 @@ export function fetchAlertPage(
 	const severity = coerce<number>(url.searchParams.get("severity"));
 	const search = url.searchParams.get("q") ?? undefined;
 
-	const { rows, cursorNext } = db.alerts.findAlerts({
+	const { rows, cursorNext } = db.alerting.alerts.findAlerts({
 		owner: ownerHash,
 		levelMin: severity,
 		levelMax: severity,

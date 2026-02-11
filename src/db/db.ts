@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { hashAuth } from "@/auth";
 import { CategoriesMap, NetworkMap } from "@/intel/mapping";
-import { AlertsDB } from "./backend/sqlite/alerts.db";
+import { AlertingDB } from "./backend/sqlite/alerting.db";
 import { EntitiesDB } from "./backend/sqlite/entities.db";
 
 export const METADATA_VERSION = 0;
@@ -22,26 +22,26 @@ export async function createEntitiesDB(path: string) {
 	return new EntitiesDB(`${path}/entities.sqlite`);
 }
 
-export async function createAlertsDB(path: string) {
-	if (path === ":memory:") return new AlertsDB(":memory:");
+export async function createAlertingDB(path: string) {
+	if (path === ":memory:") return new AlertingDB(":memory:");
 
 	await mkdir(path, { recursive: true });
-	return new AlertsDB(`${path}/alerts.sqlite`);
+	return new AlertingDB(`${path}/alerts.sqlite`);
 }
 
 export async function createHyperionDB(path: string) {
 	const entities = await createEntitiesDB(path);
-	const alerts = await createAlertsDB(path);
+	const alerting = await createAlertingDB(path);
 
 	return {
 		entities,
-		alerts,
+		alerting,
 		meta: {
 			getNetworksMeta: () => NetworkMap.entries(),
 			getCategoriesMeta: () => CategoriesMap.entries(),
 		},
 		close: async () => {
-			await Promise.all([entities.close(), alerts.close()]);
+			await Promise.all([entities.close(), alerting.close()]);
 		},
 	};
 }

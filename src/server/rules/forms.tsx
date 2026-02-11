@@ -17,9 +17,9 @@ export const RuleDeleteHandler = withAuth<"/console/rules/:id">(
 			if (id === undefined || Number.isNaN(id)) throw InvalidParameters;
 
 			const ownedId = { id, owner: ownerHash };
-			if (!db.alerts.isRuleOwned(ownedId)) throw InvalidParameters;
+			if (!db.alerting.rules.isRuleOwned(ownedId)) throw InvalidParameters;
 
-			db.alerts.deleteRuleInstance(ownedId);
+			db.alerting.rules.deleteRuleInstance(ownedId);
 
 			monitor.rules.remove(id.toString());
 
@@ -45,13 +45,13 @@ export const RulePutHandler = withAuth<"/console/rules/:id">(
 				return InvalidParameters;
 
 			const ownedId = { id, owner: ownerHash };
-			if (!db.alerts.isRuleOwned(ownedId)) return InvalidParameters;
+			if (!db.alerting.rules.isRuleOwned(ownedId)) return InvalidParameters;
 
-			db.alerts.updateRuleInstance(ownedId, {
+			db.alerting.rules.updateRuleInstance(ownedId, {
 				enabled,
 			});
 
-			const updated = db.alerts.getRuleInstance(ownedId);
+			const updated = db.alerting.rules.getRuleInstance(ownedId);
 			if (!updated) throw InternalServerError;
 
 			monitor.rules.setEnabled(updated.id, updated.enabled);
@@ -98,7 +98,7 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 	try {
 		const parsed = template.schema?.parse(data) ?? {};
 
-		db.alerts.insertRuleInstance({
+		db.alerting.rules.insertRuleInstance({
 			owner: ownerHash,
 			ruleKey: template.id,
 			title: title,

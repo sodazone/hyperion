@@ -46,7 +46,7 @@ export const RuleListPage = withAuth(async ({ db, req, user, ownerHash }) => {
 	const cursor = url.searchParams.get("cursor") ?? undefined;
 	const search = url.searchParams.get("q") ?? undefined;
 
-	const { rows, cursorNext } = db.alerts.findRuleInstances({
+	const { rows, cursorNext } = db.alerting.rules.findRuleInstances({
 		owner: ownerHash,
 		cursor,
 		limit: 15,
