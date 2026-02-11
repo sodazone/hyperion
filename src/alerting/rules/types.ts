@@ -65,10 +65,16 @@ export interface StateStore {
 	delete(scope: string, key: string): void;
 }
 
-export interface RuleContext {
+export interface GlobalRuleContext {
 	state: StateStore;
 	db: HyperionDB;
 	now: () => number;
+}
+
+export interface RuleContext<Config> {
+	global: GlobalRuleContext;
+	config: Config;
+	owner: Uint8Array;
 }
 
 export type AnyEvent = EventMap[keyof EventMap];
@@ -84,8 +90,7 @@ export type RuleMatcher<
 	Config = unknown,
 > = (
 	event: Event,
-	ctx: RuleContext,
-	config: Config,
+	ctx: RuleContext<Config>,
 ) => Promise<MatchResult<Result>> | MatchResult<Result>;
 
 export type RuleDependency =
@@ -125,9 +130,8 @@ export type RuleDefinition<
 	dependencies?: RuleDependency[];
 	alertTemplate?: (
 		event: Event,
-		ctx: RuleContext,
+		ctx: RuleContext<Config>,
 		matched: Data,
-		config: Config,
 	) => Promise<Alert> | Alert;
 	cooldownMs?: number;
 };

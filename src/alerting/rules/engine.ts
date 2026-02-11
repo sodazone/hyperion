@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import type {
 	AnyEvent,
-	RuleContext,
+	GlobalRuleContext,
 	RuleDefinition,
 	RuleInstance,
 } from "./types";
@@ -59,8 +59,8 @@ export class RuleEngine extends EventEmitter {
 		this.#instances.sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
 	}
 
-	async evaluate(event: AnyEvent, ctx: RuleContext): Promise<void> {
-		const now = ctx.now();
+	async evaluate(event: AnyEvent, global: GlobalRuleContext): Promise<void> {
+		const now = global.now();
 
 		for (const inst of this.#instances) {
 			if (!inst.enabled) continue;
@@ -71,7 +71,11 @@ export class RuleEngine extends EventEmitter {
 					if (last && now - last < inst.cooldownMs) continue;
 				}
 
-				const result = await inst.def.matcher(event, ctx, inst.config);
+				const result = await inst.def.matcher(event, {
+					global,
+					config: inst.config,
+					owner: inst.owner,
+				});
 				if (!result.matched) continue;
 
 				if (inst.cooldownMs) {
@@ -79,7 +83,11 @@ export class RuleEngine extends EventEmitter {
 				}
 
 				const alert = inst.def.alertTemplate
-					? await inst.def.alertTemplate(event, ctx, result.data, inst.config)
+					? await inst.def.alertTemplate(
+							event,
+							{ global, config: inst.config, owner: inst.owner },
+							result.data,
+						)
 					: {
 							rule_id: inst.def.id,
 							timestamp: now,

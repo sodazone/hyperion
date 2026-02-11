@@ -355,43 +355,50 @@ export class EntitiesDB {
 		address,
 		network,
 	}: {
-		owner: Uint8Array;
+		owner: Uint8Array | Uint8Array[];
 		address: Uint8Array | string;
 		network?: number;
 	}): Entity | undefined {
 		const addr = b(address);
+		const owners = Array.isArray(owner) ? owner : [owner];
+
+		const ownerPlaceholders = owners.map(() => "?").join(",");
 
 		const base = this.db
 			.query(
 				`
-        SELECT address, address_formatted
+        SELECT owner, address, address_formatted
         FROM entity
-        WHERE owner=? AND address=? LIMIT 1
+        WHERE owner IN (${ownerPlaceholders}) AND address=?
+        LIMIT 1
       `,
 			)
-			.get(owner, addr) as
-			| { address: Uint8Array; address_formatted: string }
+			.get(...owners, addr) as
+			| { owner: Uint8Array; address: Uint8Array; address_formatted: string }
 			| undefined;
 
 		if (!base) return;
 
 		const entity: Required<Entity> = {
-			owner,
+			owner: base.owner, // ← actual matched owner
 			address: base.address,
 			address_formatted: base.address_formatted,
 			tags: [],
 			categories: [],
 		};
 
+		const ownerArgs = [...owners, addr];
+
 		// tags
 		const tagRows = this.all<Tag>(
 			`
         SELECT network, tag, timestamp, version, source, raw
         FROM entity_tag
-        WHERE owner=? AND address=? ${network !== undefined ? "AND network=?" : ""}
+        WHERE owner IN (${ownerPlaceholders}) AND address=?
+        ${network !== undefined ? "AND network=?" : ""}
         ORDER BY timestamp DESC
       `,
-			...(network !== undefined ? [owner, addr, network] : [owner, addr]),
+			...(network !== undefined ? [...ownerArgs, network] : ownerArgs),
 		);
 
 		for (const r of tagRows) {
@@ -408,10 +415,11 @@ export class EntitiesDB {
 			`
         SELECT network, category, subcategory, timestamp, version, source, raw
         FROM entity_category
-        WHERE owner=? AND address=? ${network !== undefined ? "AND network=?" : ""}
+        WHERE owner IN (${ownerPlaceholders}) AND address=?
+        ${network !== undefined ? "AND network=?" : ""}
         ORDER BY timestamp DESC
       `,
-			...(network !== undefined ? [owner, addr, network] : [owner, addr]),
+			...(network !== undefined ? [...ownerArgs, network] : ownerArgs),
 		);
 
 		for (const r of catRows) {

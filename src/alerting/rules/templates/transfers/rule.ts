@@ -1,5 +1,6 @@
 import { type Alert, type AlertPayload, PUBLIC_OWNER } from "@/db";
 import { CAT, NetworkMap } from "@/intel/mapping";
+import { equals } from "@/utils/bytes";
 import {
 	AlertLevel,
 	type RuleDefinition,
@@ -93,7 +94,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	schema,
 	defaults,
 
-	matcher: async (event, ctx, config) => {
+	matcher: async (event, { config, global: { db }, owner }) => {
 		if (accept(event, config)) return { matched: false };
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
@@ -101,12 +102,15 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 		if (!amountUsd || amountUsd < config.infoUsd) return { matched: false };
 
 		const local: LocalData = { addresses: new Set(), entities: {} };
+		const owners = equals(owner, PUBLIC_OWNER)
+			? [PUBLIC_OWNER]
+			: [PUBLIC_OWNER, owner];
 
 		for (const addr of [from, to]) {
 			local.addresses.add(addr);
 
-			const entity = ctx.db.entities.findEntity({
-				owner: PUBLIC_OWNER,
+			const entity = db.entities.findEntity({
+				owner: owners,
 				address: addr,
 			});
 
@@ -125,7 +129,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 		return { matched: true, data: local };
 	},
 
-	alertTemplate: (event, _ctx, local, config): Alert<ExchangeAlertPayload> => {
+	alertTemplate: (event, { config }, local): Alert<ExchangeAlertPayload> => {
 		const { message, actors, assets, totalUsd } = mapTransferAlert(
 			event,
 			local,
