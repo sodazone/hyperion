@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { FieldMeta } from "@/alerting";
+import { ChevronUpDownIcon } from "@/console/components/icons";
 import { Multiselect } from "@/console/components/multiselect";
 import { NetworkCache } from "@/console/network.cache";
 
@@ -21,14 +22,42 @@ export function ConfigField({
 	const baseClass = "ui-input w-full px-2 py-1 text-sm";
 
 	if (meta?.options) {
+		if (meta.multiple) {
+			return (
+				<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
+					<span className="w-28">{meta.label}</span>
+					<Multiselect
+						name={name}
+						options={meta.options}
+						selected={defaultValue}
+					/>
+					{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
+				</div>
+			);
+		}
+
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
-				<span className="w-28">{meta.label}</span>
-				<Multiselect
-					name={name}
-					options={meta.options}
-					selected={defaultValue}
-				/>
+				<label htmlFor={name} className="w-28">
+					{meta.label}
+				</label>
+				<div className="ui-select w-fit">
+					<select
+						id={name}
+						name={name}
+						className="scrollbar-ui"
+						defaultValue={defaultValue}
+					>
+						{meta.options.map((option) => (
+							<option key={option.value} value={option.value}>
+								{option.label}
+							</option>
+						))}
+					</select>
+					<div className="ui-select-btn">
+						<ChevronUpDownIcon />
+					</div>
+				</div>
 				{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
 			</div>
 		);

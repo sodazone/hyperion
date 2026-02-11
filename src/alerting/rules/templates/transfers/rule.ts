@@ -1,11 +1,10 @@
 import { type Alert, type AlertPayload, PUBLIC_OWNER } from "@/db";
-import { CAT, NetworkMap } from "@/intel/mapping";
+import { NetworkMap } from "@/intel/mapping";
 import { equals } from "@/utils/bytes";
-import {
-	AlertLevel,
-	type RuleDefinition,
-	type TransferEvent,
-	type TransferPayload,
+import type {
+	RuleDefinition,
+	TransferEvent,
+	TransferPayload,
 } from "../../types";
 import { mapTransferAlert } from "./mapper";
 import { type Config, type LocalData, schema } from "./schema";
@@ -26,50 +25,10 @@ function accept(event: TransferEvent, config: Config): boolean {
 }
 
 const defaults = {
-	infoUsd: 10_000,
-	warningUsd: 100_000,
-	criticalUsd: 1_000_000,
-	riskCategories: [CAT.SANCTIONS, CAT.COMPROMISED],
+	minUsd: 10_000,
+	level: 1,
 	networks: [],
 };
-
-type Severity = {
-	level: AlertLevel;
-	remark: string;
-};
-
-const riskCategories: number[] = [CAT.SANCTIONS, CAT.COMPROMISED];
-
-function resolveSeverity(
-	totalUsd: number,
-	local: LocalData,
-	config: Config,
-): Severity {
-	for (const e of Object.values(local.entities)) {
-		if (e.categories?.some((c: number) => riskCategories.includes(c))) {
-			return {
-				level: AlertLevel.Critical,
-				remark: "Risk category detected",
-			};
-		}
-	}
-
-	if (totalUsd >= config.criticalUsd)
-		return {
-			level: AlertLevel.Critical,
-			remark: "Critical threshold exceeded",
-		};
-	if (totalUsd >= config.warningUsd)
-		return {
-			level: AlertLevel.Warning,
-			remark: `Warning threshold >= ${config.warningUsd}`,
-		};
-
-	return {
-		level: AlertLevel.Info,
-		remark: "Minimum threshold exceeded",
-	};
-}
 
 interface ExchangeAlertPayload extends AlertPayload {
 	kind: "transfer";
@@ -99,7 +58,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
 
-		if (!amountUsd || amountUsd < config.infoUsd) return { matched: false };
+		if (!amountUsd || amountUsd < config.minUsd) return { matched: false };
 
 		const local: LocalData = { addresses: new Set(), entities: {} };
 		const owners = equals(owner, PUBLIC_OWNER)
@@ -134,12 +93,11 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 			event,
 			local,
 		);
-		const severity = resolveSeverity(totalUsd, local, config);
 		return {
 			timestamp: Date.now(),
 			rule_id: ruleId,
-			level: severity.level,
-			remark: severity.remark,
+			level: config.level,
+			remark: `≥${config.minUsd} USD`,
 			network: NetworkMap.fromURN(event.chain),
 			tx_hash: event.txHash,
 			block_number: event.blockHeight,

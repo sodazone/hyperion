@@ -41,6 +41,7 @@ export async function createDummyOcelloidsClient(): Promise<OcelloidsClient> {
 							txHash: tx.txPrimary,
 							blockHash: tx.blockHash,
 							timestamp: tx.sentAt ?? Date.now(),
+							addresses: [tx.from, tx.to],
 							payload: {
 								from: tx.from,
 								to: tx.to,

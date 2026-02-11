@@ -354,10 +354,16 @@ export class EntitiesDB {
 		owner,
 		address,
 		network,
+		categories,
+		subcategories,
+		tags,
 	}: {
 		owner: Uint8Array | Uint8Array[];
 		address: Uint8Array | string;
 		network?: number;
+		categories?: number[];
+		subcategories?: number[];
+		tags?: string[];
 	}): Entity | undefined {
 		const addr = b(address);
 		const owners = Array.isArray(owner) ? owner : [owner];
@@ -380,7 +386,7 @@ export class EntitiesDB {
 		if (!base) return;
 
 		const entity: Required<Entity> = {
-			owner: base.owner, // ← actual matched owner
+			owner: base.owner,
 			address: base.address,
 			address_formatted: base.address_formatted,
 			tags: [],
@@ -389,7 +395,6 @@ export class EntitiesDB {
 
 		const ownerArgs = [...owners, addr];
 
-		// tags
 		const tagRows = this.all<Tag>(
 			`
         SELECT network, tag, timestamp, version, source, raw
@@ -401,7 +406,13 @@ export class EntitiesDB {
 			...(network !== undefined ? [...ownerArgs, network] : ownerArgs),
 		);
 
+		let tagMatch = !(tags?.length ?? false);
+
 		for (const r of tagRows) {
+			if (!tagMatch && tags?.includes(r.tag)) {
+				tagMatch = true;
+			}
+
 			entity.tags.push({
 				...r,
 				source: r.source ?? undefined,
@@ -410,7 +421,8 @@ export class EntitiesDB {
 			});
 		}
 
-		// categories
+		if (!tagMatch) return;
+
 		const catRows = this.all<Category>(
 			`
         SELECT network, category, subcategory, timestamp, version, source, raw
@@ -422,7 +434,15 @@ export class EntitiesDB {
 			...(network !== undefined ? [...ownerArgs, network] : ownerArgs),
 		);
 
+		let categoryMatch =
+			!(categories?.length ?? false) && !(subcategories?.length ?? false);
+
 		for (const r of catRows) {
+			if (!categoryMatch) {
+				if (categories?.includes(r.category)) categoryMatch = true;
+				else if (subcategories?.includes(r.subcategory)) categoryMatch = true;
+			}
+
 			entity.categories.push({
 				...r,
 				source: r.source ?? undefined,
@@ -430,6 +450,8 @@ export class EntitiesDB {
 				network: r.network ?? 0,
 			});
 		}
+
+		if (!categoryMatch) return;
 
 		return entity;
 	}

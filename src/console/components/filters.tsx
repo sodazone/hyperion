@@ -80,7 +80,6 @@ type Props = {
 export function SearchFilters({ path, values, defs }: Props) {
 	return (
 		<div>
-			{/* Mobile */}
 			<button
 				type="button"
 				className="md:hidden flex w-full items-center justify-between px-3 py-3 text-sm text-zinc-300 hover:bg-zinc-900"
@@ -119,7 +118,6 @@ export function SearchFilters({ path, values, defs }: Props) {
 					<FilterField key={def.name} def={def} value={values[def.name]} />
 				))}
 
-				{/* Reset */}
 				<button
 					type="reset"
 					className="text-sm text-zinc-400 hover:text-zinc-200 ml-2"

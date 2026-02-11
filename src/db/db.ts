@@ -26,7 +26,7 @@ export async function createAlertingDB(path: string) {
 	if (path === ":memory:") return new AlertingDB(":memory:");
 
 	await mkdir(path, { recursive: true });
-	return new AlertingDB(`${path}/alerts.sqlite`);
+	return new AlertingDB(`${path}/alerting.sqlite`);
 }
 
 export async function createHyperionDB(path: string) {
