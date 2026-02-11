@@ -11,6 +11,19 @@ import { type Config, type LocalData, schema } from "./schema";
 
 const ruleId = "value-movement";
 
+function accept(event: TransferEvent, config: Config): boolean {
+	if (event.type !== "transfer") return false;
+
+	if (
+		config.networks !== undefined &&
+		config.networks.length > 0 &&
+		!config.networks.includes(event.chain)
+	)
+		return false;
+
+	return true;
+}
+
 const defaults = {
 	infoUsd: 10_000,
 	warningUsd: 100_000,
@@ -81,7 +94,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	defaults,
 
 	matcher: async (event, ctx, config) => {
-		if (event.type !== "transfer") return { matched: false };
+		if (accept(event, config)) return { matched: false };
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
 
