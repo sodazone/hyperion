@@ -39,6 +39,40 @@
 		opacity: 0;
 		transition: 0.08s;
 	}
+
+	summary {
+		list-style: none;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary::before {
+		content: "";
+		width: 6px;
+		height: 6px;
+
+		border-right: 2px solid color-mix(in srgb, currentColor 40%, transparent);
+		border-bottom: 2px solid color-mix(in srgb, currentColor 40%, transparent);
+
+		transform: rotate(-45deg);
+		transition: transform 0.08s ease;
+
+		margin-right: 4px;
+	}
+
+	details[open] summary::before {
+		transform: rotate(45deg);
+	}
+
+	summary:active::before {
+		opacity: 0.8;
+	}
 }
 
 @layer components {

@@ -27,7 +27,8 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
               max-w-full
               md:rounded-lg
               bg-zinc-900/90
-              p-5
+              px-3
+              py-2
               shadow-md
               transition-colors
             "
@@ -39,71 +40,77 @@ export function AlertCards({ rows }: { rows: Alert[] }) {
 							<SeverityBadge level={alert.level} />
 						</div>
 
-						<div className="text-zinc-100 text-base font-semibold leading-snug truncate">
-							{alert.message}
-						</div>
+						<details>
+							<summary className="text-zinc-300 text-base font-semibold leading-snug truncate">
+								{alert.message}
+							</summary>
 
-						{actors.length > 0 && (
-							<div className="gap-1.5 text-sm mt-2 text-zinc-400">
-								{actors.map((a: AlertActor) => (
-									<div key={a.role} className="flex items-center gap-2">
-										<span className="text-zinc-500 w-16 capitalize">
-											{a.role}
-										</span>
-										<span className="flex gap-1 items-center font-mono">
-											<span className="truncate">
-												{truncMid(a.address_formatted)}
+							{actors.length > 0 && (
+								<div className="gap-1.5 text-sm mt-2 text-zinc-400">
+									{actors.map((a: AlertActor) => (
+										<div key={a.role} className="flex items-center gap-2">
+											<span className="text-zinc-500 w-16 capitalize">
+												{a.role}
 											</span>
-											<CopyButton
-												title="Copy Address"
-												text={a.address_formatted}
-											/>
-										</span>
-										{a.labels && a.labels.length > 0 && (
-											<span className="text-zinc-500 text-xs truncate">
-												{a.labels.join(", ")}
+											<span className="flex gap-1 items-center font-mono">
+												<span className="truncate">
+													{truncMid(a.address_formatted)}
+												</span>
+												<CopyButton
+													title="Copy Address"
+													text={a.address_formatted}
+												/>
 											</span>
-										)}
-									</div>
-								))}
-								{alert.remark && (
+											{a.labels && a.labels.length > 0 && (
+												<span className="text-zinc-500 text-xs truncate">
+													{a.labels.join(", ")}
+												</span>
+											)}
+										</div>
+									))}
+									{alert.remark && (
+										<div className="flex gap-2">
+											<span className="text-zinc-500 w-16 capitalize">
+												Remark
+											</span>
+											<span>{alert.remark}</span>
+										</div>
+									)}
+								</div>
+							)}
+
+							<div className="flex flex-col gap-1.5 mt-3 text-sm text-zinc-400">
+								{alert.network && (
 									<div className="flex gap-2">
 										<span className="text-zinc-500 w-16 capitalize">
-											Remark
+											Network
 										</span>
-										<span>{alert.remark}</span>
+										<NetworkIcon
+											urn={NetworkMap.toURN(alert.network) ?? "unknown"}
+											size={18}
+											showName
+										/>
+									</div>
+								)}
+								{alert.block_hash && (
+									<div className="flex flex-wrap gap-2">
+										<span className="text-zinc-500 w-16 capitalize">Block</span>
+										<span className="font-mono truncate">
+											{alert.block_hash}
+										</span>
+										<span className="text-xs text-zinc-500 font-mono">
+											(#{alert.block_number})
+										</span>
+									</div>
+								)}
+								{alert.tx_hash && (
+									<div className="flex flex-wrap gap-2">
+										<span className="text-zinc-500 w-16 capitalize">Tx</span>
+										<span className="font-mono truncate">{alert.tx_hash}</span>
 									</div>
 								)}
 							</div>
-						)}
-
-						<div className="flex flex-col gap-1.5 mt-3 text-sm text-zinc-400">
-							{alert.network && (
-								<div className="flex gap-2">
-									<span className="text-zinc-500 w-16 capitalize">Network</span>
-									<NetworkIcon
-										urn={NetworkMap.toURN(alert.network) ?? "unknown"}
-										size={18}
-										showName
-									/>
-								</div>
-							)}
-							{alert.block_hash && (
-								<div className="flex flex-wrap gap-2">
-									<span className="text-zinc-500 w-16 capitalize">Block</span>
-									<span className="font-mono truncate">{alert.block_hash}</span>
-									<span className="text-xs text-zinc-500 font-mono">
-										(#{alert.block_number})
-									</span>
-								</div>
-							)}
-							{alert.tx_hash && (
-								<div className="flex flex-wrap gap-2">
-									<span className="text-zinc-500 w-16 capitalize">Tx</span>
-									<span className="font-mono truncate">{alert.tx_hash}</span>
-								</div>
-							)}
-						</div>
+						</details>
 
 						<div className="flex mt-3 pt-3 border-t border-zinc-800">
 							<div className="ml-auto inline-flex items-center overflow-hidden text-xs leading-none gap-2">
