@@ -9,5 +9,5 @@ export function toOwners(
 		? equals(owner, PUBLIC_OWNER)
 			? [PUBLIC_OWNER]
 			: [PUBLIC_OWNER, owner]
-		: [PUBLIC_OWNER];
+		: [owner];
 }
