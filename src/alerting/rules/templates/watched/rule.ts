@@ -1,6 +1,6 @@
 import { truncMid } from "@/console/util";
 import type { Alert, AlertActor, AlertPayload } from "@/db";
-import { CAT, CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { CategoriesMap, NetworkMap } from "@/intel/mapping";
 import type { BaseEvent, RuleDefinition } from "../../types";
 import { toOwners } from "../common/owner";
 import {
@@ -40,7 +40,7 @@ function makeLabels(entity: LocalEntityData) {
 
 const defaults = {
 	level: 1,
-	categories: [CAT.SANCTIONS, CAT.COMPROMISED],
+	categories: [],
 	tags: [],
 	networks: [],
 	includePublicEntities: false,
