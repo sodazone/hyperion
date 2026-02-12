@@ -11,6 +11,10 @@ function unwrap(schema: z.ZodTypeAny): z.ZodTypeAny {
 	return schema;
 }
 
+function isOptional(schema: z.ZodTypeAny) {
+	return schema.safeParse(undefined).success;
+}
+
 export function ConfigField({
 	name,
 	schema,
@@ -27,12 +31,15 @@ export function ConfigField({
 	const suffix = meta?.suffix;
 
 	const baseClass = "ui-input w-full px-2 py-1 text-sm";
+	const required = !isOptional(schema);
 
 	if (meta?.options) {
 		if (meta.multiple) {
 			return (
 				<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
-					<span className="w-28">{meta.label}</span>
+					<span className="w-28">
+						{meta.label} {required && <span className="text-pink-500">*</span>}
+					</span>
 					<Multiselect
 						name={name}
 						options={meta.options}
@@ -46,13 +53,14 @@ export function ConfigField({
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
 				<label htmlFor={name} className="w-28">
-					{meta.label}
+					{meta.label} {required && <span className="text-pink-500">*</span>}
 				</label>
 				<div className="ui-select w-fit">
 					<select
 						id={name}
 						name={name}
 						className="scrollbar-ui"
+						required={required}
 						defaultValue={defaultValue}
 					>
 						{meta.options.map((option) => (
@@ -73,7 +81,9 @@ export function ConfigField({
 	if (meta?.input === "select-networks") {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
-				<span className="w-28">{meta.label}</span>
+				<span className="w-28">
+					{meta.label} {required && <span className="text-pink-500">*</span>}
+				</span>
 				<Multiselect
 					name={name}
 					placeholder="Search networks…"
@@ -91,7 +101,9 @@ export function ConfigField({
 	if (meta?.input === "select-tags") {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300" key={name}>
-				<span className="w-28">{meta.label}</span>
+				<span className="w-28">
+					{meta.label} {required && <span className="text-pink-500">*</span>}
+				</span>
 
 				<div
 					id={`tags-${name}`}
@@ -131,11 +143,14 @@ export function ConfigField({
 	if (unwrapped instanceof z.ZodEnum) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
-				<label htmlFor={name}>{label}</label>
+				<label htmlFor={name}>
+					{label} {required && <span className="text-pink-500">*</span>}
+				</label>
 
 				<select
 					id={name}
 					name={name}
+					required={required}
 					defaultValue={defaultValue}
 					className={baseClass}
 				>
@@ -154,7 +169,9 @@ export function ConfigField({
 	if (unwrapped instanceof z.ZodNumber) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
-				<label htmlFor={name}>{label}</label>
+				<label htmlFor={name}>
+					{label} {required && <span className="text-pink-500">*</span>}
+				</label>
 
 				<div className="relative flex items-center">
 					<input
@@ -163,6 +180,7 @@ export function ConfigField({
 						name={name}
 						inputMode="numeric"
 						pattern="[0-9]*"
+						required={required}
 						hx-on:input="this.value=this.value.replace(/[^\d]/g,'')"
 						defaultValue={defaultValue ?? ""}
 						placeholder={placeholder}
@@ -182,13 +200,16 @@ export function ConfigField({
 	}
 	return (
 		<div className="flex flex-col gap-2 text-sm text-zinc-300">
-			<label htmlFor={name}>{label}</label>
+			<label htmlFor={name}>
+				{label} {required && <span className="text-pink-500">*</span>}
+			</label>
 
 			<div className="relative flex items-center">
 				<input
 					type="text"
 					id={name}
 					name={name}
+					required={required}
 					defaultValue={defaultValue ?? ""}
 					placeholder={placeholder}
 					className={`${baseClass} ${suffix ? "pr-10" : ""}`}

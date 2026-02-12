@@ -51,7 +51,7 @@ export function RuleForm({
 
 				<div className="flex flex-col gap-2 mb-6">
 					<label htmlFor="title" className="text-sm text-zinc-300">
-						Alert Name
+						Alert Name <span className="text-pink-500">*</span>
 					</label>
 					<input
 						id="title"
