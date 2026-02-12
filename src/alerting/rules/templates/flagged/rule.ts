@@ -53,7 +53,7 @@ interface EntityAlertPayload extends AlertPayload {
 export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 	id: ruleId,
 	title: "Flagged Entities",
-	description: "Flags entities that match configured risk categories and tags.",
+	description: "Flags entities that match configured categories and tags.",
 	schema,
 	defaults,
 
