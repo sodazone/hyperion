@@ -1,13 +1,8 @@
 import { truncMid } from "@/console/util";
-import {
-	type Alert,
-	type AlertActor,
-	type AlertPayload,
-	PUBLIC_OWNER,
-} from "@/db";
+import type { Alert, AlertActor, AlertPayload } from "@/db";
 import { CAT, CategoriesMap, NetworkMap } from "@/intel/mapping";
-import { equals } from "@/utils/bytes";
 import type { BaseEvent, RuleDefinition } from "../../types";
+import { toOwners } from "../common/owner";
 import {
 	type Config,
 	type LocalData,
@@ -48,6 +43,7 @@ const defaults = {
 	riskCategories: [CAT.SANCTIONS, CAT.COMPROMISED],
 	riskTags: [],
 	networks: [],
+	includePublicEntities: false,
 };
 
 interface EntityAlertPayload extends AlertPayload {
@@ -70,9 +66,7 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			return { matched: false };
 		}
 
-		const owners = equals(owner, PUBLIC_OWNER)
-			? [PUBLIC_OWNER]
-			: [PUBLIC_OWNER, owner];
+		const owners = toOwners(owner, config.includePublicEntities);
 
 		const local: LocalData = { entities: [] };
 		let matched = false;

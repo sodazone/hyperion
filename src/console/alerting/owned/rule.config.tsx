@@ -4,6 +4,13 @@ import { ChevronUpDownIcon } from "@/console/components/icons";
 import { Multiselect } from "@/console/components/multiselect";
 import { NetworkCache } from "@/console/network.cache";
 
+function unwrap(schema: z.ZodTypeAny): z.ZodTypeAny {
+	while ("unwrap" in schema && typeof schema.unwrap === "function") {
+		schema = schema.unwrap();
+	}
+	return schema;
+}
+
 export function ConfigField({
 	name,
 	schema,
@@ -100,23 +107,28 @@ export function ConfigField({
 		);
 	}
 
-	if (schema instanceof z.ZodBoolean) {
-		return (
-			<div className="flex items-center justify-between text-sm text-zinc-300">
-				<label htmlFor={name}>{label}</label>
+	const unwrapped = unwrap(schema);
 
-				<input
-					type="checkbox"
-					id={name}
-					name={name}
-					defaultChecked={defaultValue ?? false}
-					className="h-4 w-4"
-				/>
+	if (unwrapped instanceof z.ZodBoolean) {
+		return (
+			<div className="flex flex-col gap-2 text-sm text-zinc-300">
+				<div className="flex gap-1 items-center">
+					<input
+						type="checkbox"
+						id={name}
+						name={name}
+						defaultChecked={defaultValue ?? false}
+						className="h-4 w-4"
+					/>
+					<label htmlFor={name}>{label}</label>
+				</div>
+
+				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>
 		);
 	}
 
-	if (schema instanceof z.ZodEnum) {
+	if (unwrapped instanceof z.ZodEnum) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
 				<label htmlFor={name}>{label}</label>
@@ -127,7 +139,7 @@ export function ConfigField({
 					defaultValue={defaultValue}
 					className={baseClass}
 				>
-					{schema.options.map((opt) => (
+					{unwrapped.options.map((opt) => (
 						<option key={opt} value={opt}>
 							{opt}
 						</option>
@@ -139,7 +151,7 @@ export function ConfigField({
 		);
 	}
 
-	if (schema instanceof z.ZodNumber) {
+	if (unwrapped instanceof z.ZodNumber) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
 				<label htmlFor={name}>{label}</label>

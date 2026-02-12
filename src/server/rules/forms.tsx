@@ -6,7 +6,11 @@ import { render } from "../render";
 import { InternalServerError, InvalidParameters, Ok } from "../response";
 
 function strOrNumber(v: any) {
-	return !Number.isNaN(Number(v)) && v !== "" ? Number(v) : v;
+	return !Number.isNaN(Number(v)) && v !== ""
+		? Number(v)
+		: v === "on"
+			? true
+			: v;
 }
 
 export const RuleDeleteHandler = withAuth<"/console/rules/:id">(
@@ -93,6 +97,8 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 			data[key] = allValues.map(strOrNumber);
 		}
 	}
+
+	console.log(formData, data);
 
 	try {
 		const parsed = template.schema?.parse(data) ?? {};

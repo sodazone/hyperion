@@ -17,6 +17,10 @@ export type LocalData = {
 export const schema = z.object({
 	level,
 	riskCategories,
+	includePublicEntities: z.boolean().default(false).meta({
+		label: "Include Public Registry",
+		help: "If public entities are included in the classification.",
+	}),
 	riskTags,
 	networks,
 });

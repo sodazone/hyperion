@@ -1,11 +1,11 @@
-import { type Alert, type AlertPayload, PUBLIC_OWNER } from "@/db";
+import type { Alert, AlertPayload } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
-import { equals } from "@/utils/bytes";
 import type {
 	RuleDefinition,
 	TransferEvent,
 	TransferPayload,
 } from "../../types";
+import { toOwners } from "../common/owner";
 import { mapTransferAlert } from "./mapper";
 import { type Config, type LocalData, schema } from "./schema";
 
@@ -62,9 +62,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 
 		// just to enrich entity information
 		const local: LocalData = { addresses: new Set(), entities: {} };
-		const owners = equals(owner, PUBLIC_OWNER)
-			? [PUBLIC_OWNER]
-			: [PUBLIC_OWNER, owner];
+		const owners = toOwners(owner);
 
 		for (const addr of [from, to]) {
 			local.addresses.add(addr);
