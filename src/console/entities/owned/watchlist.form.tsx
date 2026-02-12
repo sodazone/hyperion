@@ -12,7 +12,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 				<BackButton href="/console/watchlist" />
 
 				<h1 className="text-lg font-semibold text-zinc-300">
-					{isEdit ? "Edit Watchlist" : "Add to Watchlist"}
+					{isEdit ? "Edit Entity" : "Add Entity"}
 				</h1>
 				{isEdit && (
 					<button

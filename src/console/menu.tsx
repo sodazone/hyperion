@@ -128,7 +128,7 @@ export function Sidebar({ member }: Props) {
 									hx-push-url="true"
 									hx-swap="innerHTML swap:80ms"
 								>
-									My Watchlist
+									My Registry
 								</li>
 							)}
 						</ul>

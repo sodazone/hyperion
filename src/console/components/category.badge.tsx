@@ -36,6 +36,16 @@ const CATEGORY_STYLE: Record<
 		className: "bg-emerald-950 text-emerald-300",
 		priority: 60,
 	},
+
+	[CAT.AUTOMATED]: {
+		className: "bg-purple-950 text-purple-400",
+		priority: 50,
+	},
+
+	[CAT.EXCHANGE]: {
+		className: "bg-teal-950 text-teal-400",
+		priority: 50,
+	},
 };
 
 const BASE_CLASS =

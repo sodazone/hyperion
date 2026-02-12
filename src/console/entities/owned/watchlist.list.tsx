@@ -36,7 +36,7 @@ export function WatchlistList({ page, ctx: { url } }: Props) {
 			hasPrev={!!cursorCurrent}
 		>
 			<TopBar
-				left={<h1 className="text-lg font-semibold">Watchlist</h1>}
+				left={<h1 className="text-lg font-semibold">My Registry</h1>}
 				right={
 					<button
 						type="button"
