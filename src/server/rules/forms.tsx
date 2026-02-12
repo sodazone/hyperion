@@ -98,8 +98,6 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 		}
 	}
 
-	console.log(formData, data);
-
 	try {
 		const parsed = template.schema?.parse(data) ?? {};
 
