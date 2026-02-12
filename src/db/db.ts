@@ -43,6 +43,7 @@ export async function createHyperionDB(path: string) {
 		close: async () => {
 			await Promise.all([entities.close(), alerting.close()]);
 		},
+		path,
 	};
 }
 

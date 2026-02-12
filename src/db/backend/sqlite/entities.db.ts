@@ -14,12 +14,6 @@ export class EntitiesDB {
 
 	private init() {
 		this.db.run(`
-      PRAGMA journal_mode = WAL;
-      PRAGMA synchronous = NORMAL;
-      PRAGMA busy_timeout = 5000;
-
-      PRAGMA foreign_keys = ON;
-
       CREATE TABLE IF NOT EXISTS entity (
         owner   BLOB NOT NULL,
         address BLOB NOT NULL,
