@@ -1,4 +1,5 @@
 import { Database, type SQLQueryBindings } from "bun:sqlite";
+import { safeStringify } from "@/utils/strings";
 import type { Category, Entity, Tag } from "../../model";
 import { entityCursor } from "../cursors";
 import { b, cleanFilter, parseRaw } from "../util";
@@ -137,7 +138,7 @@ export class EntitiesDB {
 				timestamp,
 				version,
 				source ?? null,
-				raw ? JSON.stringify(raw) : null,
+				raw ? safeStringify(raw) : null,
 			],
 		);
 	}
@@ -315,7 +316,7 @@ export class EntitiesDB {
 				timestamp,
 				version,
 				source ?? null,
-				raw ? JSON.stringify(raw) : null,
+				raw ? safeStringify(raw) : null,
 			],
 		);
 	}

@@ -1,13 +1,6 @@
 import { hashOwner } from "@/auth";
-import {
-	encodeCategorizedKey,
-	encodeTaggedKey,
-	encodeValue,
-	PUBLIC_OWNER,
-} from "@/db";
+import { PUBLIC_OWNER } from "@/db";
 import { normalizeAddress } from "@/intel/mapping";
-import { createTag } from "@/intel/mapping/tags";
-import { KeyFamily } from "@/intel/types";
 import type { Serve } from "@/server/serve";
 
 type TestCategorizedRecord = {
@@ -16,7 +9,7 @@ type TestCategorizedRecord = {
 	address: string;
 	categoryCode: number;
 	subcategoryCode: number;
-	meta?: Record<string, unknown>;
+	raw?: Record<string, unknown>;
 	source?: string;
 	version?: number;
 };
@@ -34,7 +27,7 @@ type TestTaggedRecord = {
 
 type TestRecord = TestCategorizedRecord | TestTaggedRecord;
 
-async function putTaggedTestRecord(srv: Serve, record: TestTaggedRecord) {
+function putTaggedTestRecord(srv: Serve, record: TestTaggedRecord) {
 	const {
 		owner,
 		networkId,
@@ -45,25 +38,22 @@ async function putTaggedTestRecord(srv: Serve, record: TestTaggedRecord) {
 		version = 0,
 	} = record;
 
-	const { tagCode, tagValue } = createTag(tagType, tagName);
-
-	await srv.db.put({
-		key: encodeTaggedKey({
-			family: KeyFamily.Tagged,
-			owner,
-			networkId,
+	srv.db.entities.upsertEntities([
+		{
 			address: normalizeAddress(address),
-			tagCode,
-		}),
-		value: encodeValue(
-			{
-				source,
-				timestamp: Date.now(),
-				version,
-			},
-			tagValue,
-		),
-	});
+			address_formatted: address,
+			owner,
+			tags: [
+				{
+					network: networkId,
+					timestamp: Date.now(),
+					version,
+					source,
+					tag: `${tagType}:${tagName}`,
+				},
+			],
+		},
+	]);
 }
 
 function createCategorizedRecord(record: TestCategorizedRecord) {
@@ -73,39 +63,34 @@ function createCategorizedRecord(record: TestCategorizedRecord) {
 		address,
 		categoryCode,
 		subcategoryCode,
-		meta = {},
+		raw = {},
 		source = "test",
 		version = 0,
 	} = record;
 
 	return {
-		key: encodeCategorizedKey({
-			family: KeyFamily.Categorized,
-			owner: owner ?? PUBLIC_OWNER,
-			networkId,
-			address: normalizeAddress(address),
-			categoryCode,
-			subcategoryCode,
-		}),
-		value: encodeValue(
+		address: normalizeAddress(address),
+		address_formatted: address,
+		owner: owner ?? PUBLIC_OWNER,
+		categories: [
 			{
-				source,
 				timestamp: Date.now(),
 				version,
+				source,
+				network: networkId,
+				category: categoryCode,
+				subcategory: subcategoryCode,
+				raw,
 			},
-			meta,
-		),
+		],
 	};
 }
 
-async function putCategorizedTestRecord(
-	srv: Serve,
-	record: TestCategorizedRecord,
-) {
-	await srv.db.put(createCategorizedRecord(record));
+function putCategorizedTestRecord(srv: Serve, record: TestCategorizedRecord) {
+	srv.db.entities.upsertEntities([createCategorizedRecord(record)]);
 }
 
-export async function withTestData(srv: Serve) {
+export function withTestData(srv: Serve) {
 	const records: TestRecord[] = [
 		{
 			owner: PUBLIC_OWNER,
@@ -142,9 +127,9 @@ export async function withTestData(srv: Serve) {
 
 	for (const record of records) {
 		if ("categoryCode" in record) {
-			await putCategorizedTestRecord(srv, record);
+			putCategorizedTestRecord(srv, record);
 		} else {
-			await putTaggedTestRecord(srv, record);
+			putTaggedTestRecord(srv, record);
 		}
 	}
 }

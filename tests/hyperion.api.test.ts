@@ -23,10 +23,10 @@ describe("Hyperion API v1", () => {
 	 * System
 	 */
 
-	it("GET / returns version string", async () => {
-		const { status, json } = await get("/");
+	it("GET /v1 returns version string", async () => {
+		const { status, json } = await get<{ ok: boolean; version: string }>("/v1");
 		expect(status).toBe(200);
-		expect(json).toContain("Hyperion API v");
+		expect(json?.version).toContain("Hyperion API v");
 	});
 
 	it("GET /uptime returns uptime info", async () => {
@@ -177,14 +177,14 @@ describe("Hyperion API v1", () => {
 	 */
 
 	it("GET /v1/public/category returns 404 when no categories", async () => {
-		const { status } = await get("/v1/public/category/abcd/0/0/0");
+		const { status } = await get("/v1/public/category/abcd/0/0/*");
 
 		expect(status).toBe(404);
 	});
 
 	it("GET /v1/public/category with exists=true returns 204", async () => {
 		const { status } = await get(
-			"/v1/public/category/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/0/0/0?exists=true",
+			"/v1/public/category/14FscqFT8S8W8emC5294cEpDctgAucJW7C99mpxS4cucpHoA/1/2/*?exists=true",
 		);
 
 		expect(status).toBe(204);

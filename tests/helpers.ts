@@ -36,5 +36,6 @@ export async function runTestServer() {
 		port: 8800,
 		hostname: "localhost",
 		jwks: TEST_JWKS,
+		dbPath: ":memory:",
 	});
 }

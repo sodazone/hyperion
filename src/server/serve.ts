@@ -21,6 +21,7 @@ import { initNetworkCache } from "@/console/network.cache";
 import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
+import { VERSION } from "@/version";
 import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
@@ -132,6 +133,8 @@ export async function serve({
 					headers: { "Cache-Control": "public, max-age=3600" },
 				}),
 			// "/db/stats": () => Response.json(kvs.getStats()),
+			"/v1": () =>
+				Response.json({ ok: true, version: `Hyperion API v${VERSION}` }),
 			"/v1/meta/networks": () => Response.json(db.meta.getNetworksMeta()),
 			"/v1/meta/categories": () => Response.json(db.meta.getCategoriesMeta()),
 			"/v1/public/address/:address/:network": (req) =>

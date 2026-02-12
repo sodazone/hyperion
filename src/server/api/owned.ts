@@ -1,5 +1,5 @@
 import type { HyperionDB } from "@/db";
-import { InternalServerError, NotFound } from "../response";
+import { InternalServerError, NotFound, Ok } from "../response";
 import { coerceCategoryParams, coerceCatetoryWriteParams } from "./params";
 
 async function getCategory(
@@ -49,13 +49,18 @@ async function postCategory(
 	const body = await req.json();
 	if (body instanceof Response) return body;
 
-	const result = db.entities.upsertCategory({
-		...params,
-		raw: body,
-		owner: ownerHash,
-	});
+	try {
+		db.entities.upsertCategory({
+			...params,
+			raw: body,
+			owner: ownerHash,
+		});
 
-	return Response.json(result);
+		return Ok;
+	} catch (err) {
+		console.error("Route error:", err);
+		return InternalServerError;
+	}
 }
 
 async function deleteCategory(
