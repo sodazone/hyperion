@@ -9,7 +9,7 @@ import { toOwners } from "../common/owner";
 import { mapTransferAlert } from "./mapper";
 import { type Config, type LocalData, schema } from "./schema";
 
-const ruleId = "value-movement";
+const ruleId = "transfer";
 
 function accept(event: TransferEvent, config: Config): boolean {
 	if (event.type !== "transfer") return false;
@@ -30,7 +30,7 @@ const defaults = {
 	networks: [],
 };
 
-interface ExchangeAlertPayload extends AlertPayload {
+interface TransferAlertPayload extends AlertPayload {
 	kind: "transfer";
 	assets: {
 		id: string;
@@ -47,9 +47,8 @@ interface ExchangeAlertPayload extends AlertPayload {
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleId,
 	dependencies: [{ kind: "transfer" }],
-	title: "Value Movement",
-	description:
-		"Detects significant asset movement and prioritizes alerts using thresholds and entity risk signals.",
+	title: "USD Movement",
+	description: "Detects asset movements in USD using thresholds.",
 	schema,
 	defaults,
 
@@ -87,7 +86,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 		return { matched: true, data: local };
 	},
 
-	alertTemplate: (event, { config }, local): Alert<ExchangeAlertPayload> => {
+	alertTemplate: (event, { config }, local): Alert<TransferAlertPayload> => {
 		const { message, actors, assets, totalUsd } = mapTransferAlert(
 			event,
 			local,

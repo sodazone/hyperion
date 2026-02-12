@@ -6,15 +6,15 @@ const LEVEL_META: Record<
 > = {
 	1: {
 		label: "Info",
-		className: "bg-zinc-800 text-zinc-300",
+		className: "bg-zinc-900 text-zinc-300",
 	},
 	2: {
 		label: "Warning",
-		className: "bg-amber-900/70 text-amber-300",
+		className: "bg-amber-950 text-amber-400",
 	},
 	3: {
 		label: "Critical",
-		className: "bg-pink-900/70 text-red-300",
+		className: "bg-rose-950 text-rose-300",
 		icon: <ExclamationIcon size={16} />,
 	},
 };

@@ -1,5 +1,5 @@
 export const RuleIcons: Record<string, React.ReactNode> = {
-	"value-movement": (
+	transfer: (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			fill="currentColor"
