@@ -1,10 +1,10 @@
 import z from "zod";
-import { level, networks, riskCategories, riskTags } from "../common/schema";
+import { categories, level, networks, tags } from "../common/schema";
 
 export type LocalEntityData = {
 	address: string;
 	addressFormatted: string;
-	role: "seen" | "flagged";
+	role: "seen" | "watched";
 	categories?: number[];
 	subcategories?: number[];
 	tags?: string[];
@@ -16,12 +16,12 @@ export type LocalData = {
 
 export const schema = z.object({
 	level,
-	riskCategories,
+	categories,
 	includePublicEntities: z.boolean().default(false).meta({
 		label: "Include Public Registry",
 		help: "If public entities are included in the classification.",
 	}),
-	riskTags,
+	tags,
 	networks,
 });
 

@@ -11,7 +11,7 @@ export const TagsFragment = withAuth<"/console/rules/fragments/tags">(
 		return render(
 			<div id="tags-multiselect">
 				<Multiselect
-					name="riskTags"
+					name="tags"
 					placeholder="Search tags…"
 					options={tags.map((t) => ({
 						label: t,

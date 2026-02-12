@@ -10,7 +10,7 @@ import {
 	schema,
 } from "./schema";
 
-const ruleId = "flagged";
+const ruleId = "watched";
 
 function makeLabels(entity: LocalEntityData) {
 	const labels: string[] = [];
@@ -40,20 +40,20 @@ function makeLabels(entity: LocalEntityData) {
 
 const defaults = {
 	level: 1,
-	riskCategories: [CAT.SANCTIONS, CAT.COMPROMISED],
-	riskTags: [],
+	categories: [CAT.SANCTIONS, CAT.COMPROMISED],
+	tags: [],
 	networks: [],
 	includePublicEntities: false,
 };
 
-interface EntityAlertPayload extends AlertPayload {
-	kind: "flagged";
+interface WatchedAlertPayload extends AlertPayload {
+	kind: "watched";
 }
 
-export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
+export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 	id: ruleId,
-	title: "Flagged Entities",
-	description: "Flags entities that match configured categories and tags.",
+	title: "Watched Entities",
+	description: "Watches entities that match configured categories and tags.",
 	schema,
 	defaults,
 
@@ -75,8 +75,8 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			const entity = db.entities.findEntity({
 				owner: owners,
 				address: addr,
-				categories: config.riskCategories,
-				tags: config.riskTags,
+				categories: config.categories,
+				tags: config.tags,
 			});
 
 			if (!entity) continue;
@@ -86,9 +86,9 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 				entity.categories?.map((c) => c.subcategory).filter(Boolean) ?? [];
 			const tags = entity.tags?.map((t) => t.tag) ?? [];
 
-			let role: "seen" | "flagged" = "seen";
-			if (categories.some((c) => config.riskCategories.includes(c))) {
-				role = "flagged";
+			let role: "seen" | "watched" = "seen";
+			if (categories.some((c) => config.categories.includes(c))) {
+				role = "watched";
 				matched = true;
 			}
 
@@ -106,7 +106,7 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 		return { matched: false };
 	},
 
-	alertTemplate: (event, { config }, local): Alert<EntityAlertPayload> => {
+	alertTemplate: (event, { config }, local): Alert<WatchedAlertPayload> => {
 		const actors: AlertActor[] = local.entities.map((entity) => ({
 			role: entity.role,
 			address: entity.address,
@@ -115,11 +115,11 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 		}));
 		const flaggedAddrs =
 			actors
-				.filter((a) => a.role === "flagged")
+				.filter((a) => a.role === "watched")
 				.map((a) => truncMid(a.address_formatted))
 				.join(", ") || "???";
 
-		const alert: Alert<EntityAlertPayload> = {
+		const alert: Alert<WatchedAlertPayload> = {
 			timestamp: Date.now(),
 			rule_id: ruleId,
 			level: config.level,
@@ -127,9 +127,9 @@ export const FlaggedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			tx_hash: event.txHash,
 			block_number: event.blockHeight,
 			block_hash: event.blockHash,
-			message: `Entity ${flaggedAddrs} flagged for risk`,
+			message: `Entity ${flaggedAddrs} watched`,
 			payload: {
-				kind: "flagged",
+				kind: "watched",
 				actors,
 			},
 		};

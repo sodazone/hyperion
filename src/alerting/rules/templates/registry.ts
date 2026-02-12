@@ -1,4 +1,4 @@
-import { FlaggedRule } from "./flagged/rule";
 import { TransfersRule } from "./transfers/rule";
+import { WatchedRule } from "./watched/rule";
 
-export const RulesRegistry = [TransfersRule, FlaggedRule];
+export const RulesRegistry = [TransfersRule, WatchedRule];

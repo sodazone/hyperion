@@ -1,5 +1,6 @@
 import type { Member } from "@/auth/types";
 import { BellIcon, MenuCloserIcon, TagIcon } from "./components/icons";
+import { trunc } from "./util";
 
 type Props = {
 	member?: Member | null;
@@ -143,7 +144,7 @@ export function Sidebar({ member }: Props) {
 						</a>
 					) : (
 						<div>
-							<div className="flex items-center gap-3">
+							<div className="flex items-center gap-3 overflow-hidden">
 								<div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold">
 									{member.name?.[0] ?? member.email?.[0] ?? "?"}
 								</div>
@@ -153,7 +154,7 @@ export function Sidebar({ member }: Props) {
 									</span>
 									{member.name && (
 										<span className="text-xs text-zinc-500 truncate">
-											{member.email}
+											{trunc(member.organization ?? "member", 25)}
 										</span>
 									)}
 								</div>
