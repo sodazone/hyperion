@@ -47,7 +47,7 @@ interface TransferAlertPayload extends AlertPayload {
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleId,
 	dependencies: [{ kind: "transfer" }],
-	title: "USD Movement",
+	title: "Asset Movement",
 	description: "Detects asset movements in USD using thresholds.",
 	schema,
 	defaults,
