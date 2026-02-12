@@ -88,7 +88,9 @@ export function EntityTable({
 										<TagBadge tag={e.sets.tags[0] ?? ""} />
 
 										{e.sets.tags.length > 1 && (
-											<span>+{e.sets.tags.length - 1}</span>
+											<span className="text-xs text-zinc-500">
+												+{e.sets.tags.length - 1}
+											</span>
 										)}
 									</div>
 								) : (
