@@ -49,7 +49,7 @@ export class SubscriptionManager extends EventEmitter {
 	}
 
 	// TODO: generalize subscriptions :)
-	private addTransferSubscription() {
+	private async addTransferSubscription() {
 		const subKey = "transfers";
 		const existing = this.#active.get(subKey);
 		if (existing) {
@@ -57,7 +57,7 @@ export class SubscriptionManager extends EventEmitter {
 			return;
 		}
 
-		const unsubscribe = this.ocelloids.subscribeTransfers((msg) => {
+		const unsubscribe = await this.ocelloids.subscribeTransfers((msg) => {
 			this.emit("data", msg);
 		});
 
@@ -68,7 +68,7 @@ export class SubscriptionManager extends EventEmitter {
 		});
 	}
 
-	private addStorageSubscription(dep: { chain: string; key: string }) {
+	private async addStorageSubscription(dep: { chain: string; key: string }) {
 		const subKey = serializeStorageSubKey(dep);
 
 		const existing = this.#active.get(subKey);
@@ -77,7 +77,7 @@ export class SubscriptionManager extends EventEmitter {
 			return;
 		}
 
-		const unsubscribe = this.ocelloids.subscribeStorage(
+		const unsubscribe = await this.ocelloids.subscribeStorage(
 			{
 				chain: dep.chain,
 				key: dep.key,
@@ -111,16 +111,6 @@ export class SubscriptionManager extends EventEmitter {
 	async start() {
 		if (this.#started) return;
 		this.#started = true;
-
-		/*
-    await this.ocelloids.connect();
-
-    this.ocelloids.on("connected", () => this.emit("connected", undefined));
-    this.ocelloids.on("disconnected", () =>
-      this.emit("disconnected", undefined),
-    );
-    this.ocelloids.on("error", (e) => this.emit("error", e));
-    */
 	}
 
 	async stop() {
@@ -132,6 +122,6 @@ export class SubscriptionManager extends EventEmitter {
 		}
 		this.#active.clear();
 
-		//await this.ocelloids.disconnect();
+		await this.ocelloids.close();
 	}
 }

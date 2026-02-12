@@ -9,7 +9,7 @@ import type { HyperionDB, OwnedAlert } from "@/db";
 import { safeStringify } from "@/utils/strings";
 import { InMemoryStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
-import { createDummyOcelloidsClient } from "./streams/ocelloids";
+import { createOcelloidsClient } from "./streams/ocelloids";
 
 export interface Monitor {
 	rules: {
@@ -83,7 +83,7 @@ export function createMonitor({
 }
 
 export async function createMonitorFromDB(db: HyperionDB): Promise<Monitor> {
-	const client = await createDummyOcelloidsClient();
+	const client = await createOcelloidsClient({ storagePath: db.path });
 	const rules = RulesRegistry;
 
 	return createMonitor(

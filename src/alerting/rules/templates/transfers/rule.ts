@@ -57,6 +57,8 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
 
+		console.log(from, amountUsd);
+
 		if (!amountUsd || amountUsd < config.minUsd) return { matched: false };
 
 		// just to enrich entity information
