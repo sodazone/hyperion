@@ -5,7 +5,7 @@ import { withAuth } from "@/console/authenticated";
 import { render } from "../render";
 import { InternalServerError, InvalidParameters, Ok } from "../response";
 
-function strOrNumber(v: any) {
+function strNumOrBool(v: any) {
 	return !Number.isNaN(Number(v)) && v !== ""
 		? Number(v)
 		: v === "on"
@@ -89,12 +89,12 @@ export const RulePostHandler = withAuth(async ({ db, req, ownerHash }) => {
 
 		if (key.endsWith("[]")) {
 			const dataKey = key.substring(0, key.length - 2);
-			data[dataKey] = allValues.map(strOrNumber);
+			data[dataKey] = allValues.map(strNumOrBool);
 		} else if (allValues.length === 1) {
 			const value = allValues[0];
-			data[key] = strOrNumber(value);
+			data[key] = strNumOrBool(value);
 		} else {
-			data[key] = allValues.map(strOrNumber);
+			data[key] = allValues.map(strNumOrBool);
 		}
 	}
 
