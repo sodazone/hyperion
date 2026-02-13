@@ -81,7 +81,7 @@
 	}
 
 	.ui-btn {
-		@apply flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 disabled:opacity-40 disabled:cursor-default focus:outline-none;
+		@apply flex items-center gap-2 rounded-md border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 enabled:hover:text-zinc-200 enabled:hover:bg-zinc-900 disabled:opacity-40 disabled:cursor-default focus:outline-none;
 	}
 
 	.ui-select {
