@@ -4,7 +4,7 @@ import { render } from "@/server/render";
 import { InvalidParameters } from "@/server/response";
 import { ConsoleApp } from "../../app";
 import { fetchAlertPage } from "../common/alert.fetch";
-import { handleAlertUpdate } from "../common/alert.update";
+import { handleAlertPoll } from "../common/alert.poller";
 import { MyAlertList } from "./alert.list";
 import { RuleForm } from "./rule.form";
 import { RulesList } from "./rule.list";
@@ -90,8 +90,8 @@ export const MyAlertListPage = withAuth(
 	},
 );
 
-export const MyAlertListUpdates = withAuth(async ({ db, req, ownerHash }) => {
-	return handleAlertUpdate({
+export const MyAlertListPoller = withAuth(async ({ db, req, ownerHash }) => {
+	return handleAlertPoll({
 		path: "/console/my/alerts",
 		db,
 		req,

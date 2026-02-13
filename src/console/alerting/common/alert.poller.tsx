@@ -4,7 +4,7 @@ import { render } from "@/server/render";
 import { Ok } from "@/server/response";
 import { parseAlertsUrlParams } from "./alert.fetch";
 
-export function AlertUpdater({
+export function AlertPoller({
 	row,
 	filters,
 	path,
@@ -38,7 +38,7 @@ export function AlertUpdater({
 	);
 }
 
-export function handleAlertUpdate({
+export function handleAlertPoll({
 	path,
 	db,
 	req,

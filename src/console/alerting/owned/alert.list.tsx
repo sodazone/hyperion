@@ -3,8 +3,8 @@ import { AlertCards } from "@/console/components/card.alert";
 import { Paginated } from "@/console/components/paginated";
 import { TopBar } from "@/console/components/top.bar";
 import { withCursor } from "@/console/util";
+import { AlertPoller } from "../common/alert.poller";
 import type { AlertPage } from "../common/alert.types";
-import { AlertUpdater } from "../common/alert.update";
 
 type Props = {
 	page: AlertPage;
@@ -28,7 +28,7 @@ export function MyAlertList({ page, ctx: { url } }: Props) {
 			<TopBar left={<h1 className="text-lg font-semibold">My Alerts</h1>} />
 			<AlertSearchFilters path={path} filters={filters} />
 			{needAlertUpdater && (
-				<AlertUpdater path={path} filters={filters} row={rows[0]} />
+				<AlertPoller path={path} filters={filters} row={rows[0]} />
 			)}
 			<AlertCards rows={rows} />
 		</Paginated>

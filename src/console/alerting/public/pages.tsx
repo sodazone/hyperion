@@ -3,7 +3,7 @@ import { render } from "@/server/render";
 import { ConsoleApp } from "../../app";
 import type { PageContext } from "../../types";
 import { fetchAlertPage } from "../common/alert.fetch";
-import { handleAlertUpdate } from "../common/alert.update";
+import { handleAlertPoll } from "../common/alert.poller";
 import { PublicAlertsList } from "./alert.list";
 
 export async function AlertListPage(
@@ -26,11 +26,11 @@ export async function AlertListPage(
 	);
 }
 
-export async function AlertListUpdates(
+export async function AlertListPoller(
 	{ db }: PageContext,
 	req: Bun.BunRequest,
 ) {
-	return handleAlertUpdate({
+	return handleAlertPoll({
 		path: "/console/public/alerts",
 		db,
 		req,

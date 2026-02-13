@@ -1,13 +1,13 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
 import {
 	MyAlertListPage,
-	MyAlertListUpdates,
+	MyAlertListPoller,
 	RuleFormPage,
 	RuleListPage,
 } from "@/console/alerting/owned/pages";
 import {
 	AlertListPage,
-	AlertListUpdates,
+	AlertListPoller,
 } from "@/console/alerting/public/pages";
 import {
 	WatchlistCategoryRowPage,
@@ -103,9 +103,9 @@ export async function serve({
 			"/logout": authApi.logout,
 			"/authenticate": authApi.authenticate,
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
-			"/console/public/alerts/$": async (req) => AlertListUpdates(ctx, req),
+			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
-			"/console/my/alerts/$": async (req) => MyAlertListUpdates(ctx, req),
+			"/console/my/alerts/$": async (req) => MyAlertListPoller(ctx, req),
 			"/console/rules": {
 				GET: async (req) => RuleListPage(ctx, req),
 				POST: async (req) => RulePostHandler(ctx, req),
