@@ -3,6 +3,16 @@ import type { Member } from "@/auth/types";
 import { MagicLinkSent } from "@/console/email-sent.page";
 import { InvalidParameters } from "../response";
 
+const DEFAULT_SESSION_DURATION_MINUTES = 24 * 60;
+const DEFAULT_SESSION_REFRESH_INTERVAL_MILLIS = 10 * 60 * 1000;
+
+const StytchSessionToken = "stytch_session_token";
+
+const sessionCache = new Map<
+	string,
+	{ member: Member; expiresAt: number; stytchToken: string }
+>();
+
 export function createAuthApi() {
 	const project_id = process.env.STYTCH_PROJECT_ID;
 	const secret = process.env.STYTCH_SECRET;
@@ -16,8 +26,6 @@ export function createAuthApi() {
 		secret,
 	});
 
-	const StytchSessionToken = "stytch_session_token";
-
 	async function getAuthenticatedUser<T extends string = string>(
 		req: Bun.BunRequest<T>,
 	): Promise<Member | null> {
@@ -27,25 +35,68 @@ export function createAuthApi() {
 				return null;
 			}
 
+			const now = Date.now();
+			const cached = sessionCache.get(sessionToken);
+
+			if (cached) {
+				if (cached.expiresAt > now) {
+					return cached.member;
+				} else {
+					refreshSessionInBackground(sessionToken, req);
+					return cached.member;
+				}
+			}
+
+			const member = await fetchAndCacheSession(sessionToken, req);
+			return member;
+		} catch (error) {
+			console.error("Error authenticating user:", error);
+			return null;
+		}
+	}
+
+	function refreshSessionInBackground(
+		sessionToken: string,
+		req: Bun.BunRequest<any>,
+	) {
+		fetchAndCacheSession(sessionToken, req).catch((err) => {
+			console.error("Background session refresh failed:", err);
+		});
+	}
+
+	async function fetchAndCacheSession(
+		sessionToken: string,
+		req: Bun.BunRequest<any>,
+	): Promise<Member | null> {
+		try {
 			const resp = await stytchClient.sessions.authenticate({
 				session_token: sessionToken,
-				session_duration_minutes: 24 * 60,
+				session_duration_minutes: DEFAULT_SESSION_DURATION_MINUTES,
 			});
+
 			if (resp.status_code !== 200) {
-				console.log("Session invalid or expired");
 				req.cookies.delete(StytchSessionToken);
+				sessionCache.delete(sessionToken);
 				return null;
 			}
 
-			req.cookies.set(StytchSessionToken, resp.session_token);
-			const member = resp.member;
-			return {
-				email: member.email_address,
-				id: member.member_id,
-				organization: member.organization_id,
-				roles: member.roles.map((role) => role.role_id),
-				name: member.name,
+			const member: Member = {
+				email: resp.member.email_address,
+				id: resp.member.member_id,
+				organization: resp.member.organization_id,
+				roles: resp.member.roles.map((r) => r.role_id),
+				name: resp.member.name,
 			};
+
+			sessionCache.set(sessionToken, {
+				member,
+				stytchToken: resp.session_token,
+				expiresAt: Date.now() + DEFAULT_SESSION_REFRESH_INTERVAL_MILLIS,
+			});
+
+			req.cookies.set(StytchSessionToken, resp.session_token);
+
+			return member;
 		} catch (error) {
 			console.error("Error authenticating user:", error);
 			return null;
