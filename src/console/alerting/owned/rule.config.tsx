@@ -124,16 +124,30 @@ export function ConfigField({
 	if (unwrapped instanceof z.ZodBoolean) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
-				<div className="flex gap-1 items-center">
+				<label htmlFor={name} className="ui-checkbox">
 					<input
-						type="checkbox"
 						id={name}
 						name={name}
 						defaultChecked={defaultValue ?? false}
-						className="h-4 w-4"
+						className="peer"
+						type="checkbox"
 					/>
-					<label htmlFor={name}>{label}</label>
-				</div>
+					<svg
+						className="pointer-events-none absolute ml-0.5 hidden h-3 w-3 text-zinc-900 peer-checked:block"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+						role="img"
+						aria-label="true"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.42 0l-3.2-3.2a1 1 0 111.42-1.42l2.49 2.49 6.49-6.49a1 1 0 011.42 0z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+
+					<span>{label}</span>
+				</label>
 
 				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>
