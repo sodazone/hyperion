@@ -106,6 +106,8 @@ export const CAT = {
 	COMPROMISED: 0x000b,
 } as const;
 
-export const topLevelCategories = CategoriesMap.entries().filter(
-	(e) => e.subcategory === 0x0000,
-);
+export const topLevelCategories = CategoriesMap.entries()
+	.filter((e) => e.subcategory === 0x0000)
+	.sort((a, b) =>
+		a.label.localeCompare(b.label, undefined, { sensitivity: "base" }),
+	);

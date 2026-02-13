@@ -36,6 +36,10 @@ export async function initNetworkCache() {
 		byURN.set(urn, entry);
 	}
 
+	list.sort((a, b) =>
+		a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+	);
+
 	cache = {
 		all: () => list,
 		fromId: (id) => byId.get(id),
