@@ -1,5 +1,11 @@
 import z from "zod";
-import { categories, level, networks, tags } from "../common/schema";
+import {
+	categoriesMeta,
+	includePublicEntitiesMeta,
+	level,
+	networks,
+	tagsMeta,
+} from "../common/schema";
 
 export type LocalEntityData = {
 	address: string;
@@ -16,12 +22,12 @@ export type LocalData = {
 
 export const schema = z.object({
 	level,
-	categories,
-	includePublicEntities: z.boolean().default(false).meta({
-		label: "Include Public Registry",
-		help: "If public entities are included in the classification.",
-	}),
-	tags,
+	categories: z.array(z.number()).meta(categoriesMeta),
+	includePublicEntities: z
+		.boolean()
+		.default(false)
+		.meta(includePublicEntitiesMeta),
+	tags: z.array(z.string()).optional().meta(tagsMeta),
 	networks,
 });
 

@@ -1,10 +1,15 @@
 import z from "zod";
-import { level, networks } from "../common/schema";
+import {
+	categoriesMeta,
+	includePublicEntitiesMeta,
+	level,
+	networks,
+	tagsMeta,
+} from "../common/schema";
 
 export type LocalEntityData = {
 	address: string | Uint8Array;
-	exchangeName?: string;
-	walletType?: string;
+	tags?: string[];
 	categories?: number[];
 };
 
@@ -21,6 +26,12 @@ export const schema = z.object({
 		placeholder: "10000",
 		help: "Transfers ≥ this amount will trigger the alert.",
 	}),
+	categories: z.array(z.number()).optional().meta(categoriesMeta),
+	includePublicEntities: z
+		.boolean()
+		.default(true)
+		.meta(includePublicEntitiesMeta),
+	tags: z.array(z.string()).optional().meta(tagsMeta),
 	networks,
 });
 

@@ -1,5 +1,5 @@
 import type { Alert, AlertPayload } from "@/db";
-import { NetworkMap } from "@/intel/mapping";
+import { CategoriesMap, NetworkMap } from "@/intel/mapping";
 import type {
 	RuleDefinition,
 	TransferEvent,
@@ -11,22 +11,12 @@ import { type Config, type LocalData, schema } from "./schema";
 
 const ruleId = "transfer";
 
-function accept(event: TransferEvent, config: Config): boolean {
-	if (event.type !== "transfer") return false;
-
-	if (
-		config.networks !== undefined &&
-		config.networks.length > 0 &&
-		!config.networks.includes(event.chain)
-	)
-		return false;
-
-	return true;
-}
-
 const defaults = {
 	minUsd: 10_000,
 	level: 1,
+	categories: [],
+	includePublicEntities: true,
+	tags: [],
 	networks: [],
 };
 
@@ -44,6 +34,15 @@ interface TransferAlertPayload extends AlertPayload {
 	};
 }
 
+function accept(event: TransferEvent, config: Config): boolean {
+	return (
+		event.type === "transfer" &&
+		(!config.networks ||
+			config.networks.length === 0 ||
+			config.networks.includes(event.chain))
+	);
+}
+
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleId,
 	dependencies: [{ kind: "transfer" }],
@@ -56,33 +55,37 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 		if (!accept(event, config)) return { matched: false };
 
 		const { from, to, amountUsd } = event.payload as TransferPayload;
-
-		console.log(from, amountUsd);
-
 		if (!amountUsd || amountUsd < config.minUsd) return { matched: false };
 
-		// just to enrich entity information
 		const local: LocalData = { addresses: new Set(), entities: {} };
-		const owners = toOwners(owner);
+		const owners = toOwners(owner, config.includePublicEntities);
 
+		let found = false;
 		for (const addr of [from, to]) {
 			local.addresses.add(addr);
 
 			const entity = db.entities.findEntity({
 				owner: owners,
 				address: addr,
+				categories: config.categories,
+				tags: config.tags,
 			});
+
+			if (entity) {
+				found = true;
+			}
 
 			local.entities[addr] = {
 				address: addr,
-				exchangeName: entity?.tags
-					?.find((t) => t.tag.startsWith("exchange_name"))
-					?.tag.substring(14),
-				walletType: entity?.tags
-					?.find((t) => t.tag.startsWith("address_type"))
-					?.tag.substring(13),
+				tags: entity?.tags?.map((tag) => tag.tag) ?? [],
 				categories: entity?.categories?.map((c) => c.category) ?? [],
 			};
+		}
+
+		const filterRequired =
+			(config.categories?.length || 0) + (config.tags?.length || 0) > 0;
+		if (filterRequired && !found) {
+			return { matched: false };
 		}
 
 		return { matched: true, data: local };
@@ -93,11 +96,20 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 			event,
 			local,
 		);
+
+		let remark = `≥${config.minUsd} USD`;
+		if (config.categories && config.categories.length > 0) {
+			remark += ` in ${config.categories.map(CategoriesMap.getLabel).join(", ")}`;
+		}
+		if (config.tags && config.tags.length > 0) {
+			remark += ` with ${config.tags.join(", ")}`;
+		}
+
 		return {
 			timestamp: Date.now(),
 			rule_id: ruleId,
 			level: config.level,
-			remark: `≥${config.minUsd} USD`,
+			remark,
 			network: NetworkMap.fromURN(event.chain),
 			tx_hash: event.txHash,
 			block_number: event.blockHeight,

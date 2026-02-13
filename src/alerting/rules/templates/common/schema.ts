@@ -23,7 +23,7 @@ export const networks = z.array(z.string()).optional().meta({
 	help: "By default applies to all networks. If specified, only transfers on the selected networks will be monitored.",
 });
 
-export const categories = z.array(z.number()).meta({
+export const categoriesMeta = {
 	label: "Categories",
 	options: [
 		...topLevelCategories.map((c) => ({
@@ -33,11 +33,16 @@ export const categories = z.array(z.number()).meta({
 	],
 	multiple: true,
 	help: "If a activity matches any of the selected categories.",
-});
+};
 
-export const tags = z.array(z.string()).optional().meta({
+export const tagsMeta = {
 	label: "Tags",
 	input: "select-tags",
 	multiple: true,
 	help: "If a activity matches any of the selected tags.",
-});
+};
+
+export const includePublicEntitiesMeta = {
+	label: "Include Public Registry",
+	help: "If public entities are included in the classification.",
+};
