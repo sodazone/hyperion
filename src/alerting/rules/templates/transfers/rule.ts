@@ -47,7 +47,8 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleId,
 	dependencies: [{ kind: "transfer" }],
 	title: "Asset Movement",
-	description: "Detects asset movements in USD using thresholds.",
+	description:
+		"Detects asset movements in USD using thresholds, tags and categories.",
 	schema,
 	defaults,
 
