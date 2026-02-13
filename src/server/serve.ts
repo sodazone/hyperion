@@ -5,7 +5,10 @@ import {
 	RuleFormPage,
 	RuleListPage,
 } from "@/console/alerting/owned/pages";
-import { AlertListPage } from "@/console/alerting/public/pages";
+import {
+	AlertListPage,
+	AlertListUpdates,
+} from "@/console/alerting/public/pages";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
@@ -100,6 +103,7 @@ export async function serve({
 			"/logout": authApi.logout,
 			"/authenticate": authApi.authenticate,
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
+			"/console/public/alerts/$": async (req) => AlertListUpdates(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
 			"/console/my/alerts/$": async (req) => MyAlertListUpdates(ctx, req),
 			"/console/rules": {
