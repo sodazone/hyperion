@@ -1,6 +1,7 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
 import {
 	MyAlertListPage,
+	MyAlertListUpdates,
 	RuleFormPage,
 	RuleListPage,
 } from "@/console/alerting/owned/pages";
@@ -100,6 +101,7 @@ export async function serve({
 			"/authenticate": authApi.authenticate,
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
+			"/console/my/alerts/$": async (req) => MyAlertListUpdates(ctx, req),
 			"/console/rules": {
 				GET: async (req) => RuleListPage(ctx, req),
 				POST: async (req) => RulePostHandler(ctx, req),

@@ -4,6 +4,78 @@ import { safeStringify } from "@/utils/strings";
 import { alertCursor } from "../cursors";
 import { b, parseRaw } from "../util";
 
+type AlertQuery = {
+	owner: Uint8Array | string;
+	ruleId?: string;
+	levelMin?: number;
+	levelMax?: number;
+	network?: number;
+	address?: Uint8Array | string;
+	since?: number;
+	until?: number;
+	after?: string;
+	cursor?: string;
+	limit?: number;
+};
+
+function buildAlertQuery(opts: AlertQuery) {
+	const clauses: string[] = ["a.owner = ?"];
+	const params: SQLQueryBindings[] = [b(opts.owner)];
+	let joinActor = false;
+
+	if (opts.ruleId) {
+		clauses.push("a.rule_id = ?");
+		params.push(opts.ruleId);
+	}
+
+	if (opts.levelMin !== undefined) {
+		clauses.push("a.level >= ?");
+		params.push(opts.levelMin);
+	}
+
+	if (opts.levelMax !== undefined) {
+		clauses.push("a.level <= ?");
+		params.push(opts.levelMax);
+	}
+
+	if (opts.network) {
+		clauses.push("a.network = ?");
+		params.push(opts.network);
+	}
+
+	if (opts.address) {
+		joinActor = true;
+		clauses.push("aa.address = ?");
+		params.push(b(opts.address));
+	}
+
+	if (opts.since !== undefined) {
+		clauses.push("a.timestamp >= ?");
+		params.push(opts.since);
+	}
+
+	if (opts.until !== undefined) {
+		clauses.push("a.timestamp <= ?");
+		params.push(opts.until);
+	}
+
+	if (opts.cursor) {
+		const { ts, id } = alertCursor.decode(opts.cursor);
+		clauses.push(`(a.timestamp < ? OR (a.timestamp = ? AND a.id < ?))`);
+		params.push(ts, ts, id);
+	} else if (opts.after) {
+		const { ts, id } = alertCursor.decode(opts.after);
+		clauses.push(`(a.timestamp > ? OR (a.timestamp = ? AND a.id > ?))`);
+		params.push(ts, ts, id);
+	}
+
+	return {
+		where: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "",
+		params,
+		joinActor,
+	};
+}
+
 export function createAlertsDB(db: Database) {
 	function all<T>(sql: string, ...params: SQLQueryBindings[]): T[] {
 		return db.query(sql).all(...params) as T[];
@@ -102,64 +174,8 @@ export function createAlertsDB(db: Database) {
 			}
 		},
 
-		findAlerts(opts: {
-			owner: Uint8Array | string;
-			ruleId?: string;
-			levelMin?: number;
-			levelMax?: number;
-			network?: number;
-			address?: Uint8Array | string;
-			since?: number;
-			until?: number;
-			cursor?: string;
-			limit?: number;
-		}): AlertPage {
-			const clauses: string[] = ["a.owner = ?"];
-			const params: SQLQueryBindings[] = [b(opts.owner)];
-
-			let joinActor = false;
-
-			if (opts.ruleId) {
-				clauses.push("a.rule_id = ?");
-				params.push(opts.ruleId);
-			}
-
-			if (opts.levelMin !== undefined) {
-				clauses.push("a.level >= ?");
-				params.push(opts.levelMin);
-			}
-
-			if (opts.levelMax !== undefined) {
-				clauses.push("a.level <= ?");
-				params.push(opts.levelMax);
-			}
-
-			if (opts.network) {
-				clauses.push("a.network = ?");
-				params.push(opts.network);
-			}
-
-			if (opts.address) {
-				joinActor = true;
-				clauses.push("aa.address = ?");
-				params.push(b(opts.address));
-			}
-
-			if (opts.since !== undefined) {
-				clauses.push("a.timestamp >= ?");
-				params.push(opts.since);
-			}
-
-			if (opts.until !== undefined) {
-				clauses.push("a.timestamp <= ?");
-				params.push(opts.until);
-			}
-
-			if (opts.cursor) {
-				const { ts, id } = alertCursor.decode(opts.cursor);
-				clauses.push(`(a.timestamp < ? OR (a.timestamp = ? AND a.id < ?))`);
-				params.push(ts, ts, id);
-			}
+		findAlerts(opts: AlertQuery): AlertPage {
+			const { where, params, joinActor } = buildAlertQuery(opts);
 
 			const limit = opts.limit ?? 100;
 
@@ -167,7 +183,7 @@ export function createAlertsDB(db: Database) {
         SELECT DISTINCT a.*
         FROM alert a
         ${joinActor ? "JOIN alert_actor aa ON aa.alert_id = a.id" : ""}
-        ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
+        ${where}
         ORDER BY a.timestamp DESC, a.id DESC
         LIMIT ?
       `;
@@ -202,6 +218,20 @@ export function createAlertsDB(db: Database) {
 			return { rows, cursorNext };
 		},
 
+		countAlerts(opts: AlertQuery): number {
+			const { where, params, joinActor } = buildAlertQuery(opts);
+
+			const sql = `
+        SELECT COUNT(DISTINCT a.id) as count
+        FROM alert a
+        ${joinActor ? "JOIN alert_actor aa ON aa.alert_id = a.id" : ""}
+        ${where}
+      `;
+
+			const row = db.query(sql).get(...params) as { count: number };
+			return row?.count ?? 0;
+		},
+
 		deleteAlertsOlderThan(owner: Uint8Array | string, ts: number) {
 			return (
 				db.run(`DELETE FROM alert WHERE owner = ? AND timestamp < ?`, [
@@ -209,16 +239,6 @@ export function createAlertsDB(db: Database) {
 					ts,
 				]).changes ?? 0
 			);
-		},
-
-		countAlerts(owner: Uint8Array | string) {
-			const r = db
-				.query<{ c: number }, [Uint8Array]>(
-					`SELECT COUNT(*) as c FROM alert WHERE owner = ?`,
-				)
-				.get(b(owner));
-
-			return r?.c ?? 0;
 		},
 	};
 }

@@ -6,7 +6,6 @@ import {
 } from "@/alerting";
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
-import { safeStringify } from "@/utils/strings";
 import { InMemoryStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
 import { createOcelloidsClient } from "./streams/ocelloids";
@@ -51,7 +50,7 @@ export function createMonitor({
 
 	engine.on("alert", async (alert: OwnedAlert) => {
 		db.alerting.alerts.insertAlert(alert);
-		console.log("Alert triggered:", safeStringify(alert, 2));
+		// console.log("Alert triggered:", safeStringify(alert, 2));
 	});
 
 	for (const rule of rules) {
