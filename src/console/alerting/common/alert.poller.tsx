@@ -25,7 +25,7 @@ export function AlertPoller({
 		}
 	});
 
-	const hxGetUrl = `${path}$?${params.toString()}`;
+	const hxGetUrl = `${path}/$?${params.toString()}`;
 
 	return (
 		<div
