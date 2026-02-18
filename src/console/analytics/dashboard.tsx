@@ -101,7 +101,7 @@ export function Dashboard({
 
           if (!chartCanvas || !networkInput || !topExchangesEl) return;
 
-          let currentBucket = "${bucket}";
+          let currentBucket = "${bucket ?? "hour"}";
           let chartInstance = null;
 
           function setActiveBucket(bucket) {
@@ -134,11 +134,73 @@ export function Dashboard({
             return value.toString();
           }
 
+          function fillMissingPoints(flows, bucket) {
+            if (!flows) return [];
+
+            const filled = [];
+            const now = new Date();
+            const step = bucket === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // ms
+            const lookback = bucket === 'hour' ? 24 : 30;
+
+            const flowMap = new Map();
+            flows.forEach(f => {
+              const ts = new Date(f.timestamp);
+              let truncated;
+              if (bucket === 'hour') {
+                truncated = new Date(ts.getFullYear(), ts.getMonth(), ts.getDate(), ts.getHours()).getTime();
+              } else {
+                truncated = new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()).getTime();
+              }
+              flowMap.set(truncated, f);
+            });
+
+            let lastCumulative = {
+              cumulative_inflow_usd: 0,
+              cumulative_outflow_usd: 0,
+              cumulative_netflow_usd: 0,
+            };
+
+            for (let i = lookback - 1; i >= 0; i--) {
+              let current;
+              if (bucket === 'hour') {
+                current = new Date(now.getTime() - i * step);
+                current.setMinutes(0, 0, 0);
+              } else {
+                current = new Date(now.getTime() - i * step);
+                current.setHours(0, 0, 0, 0);
+              }
+
+              const key = current.getTime();
+
+              if (flowMap.has(key)) {
+                const f = flowMap.get(key);
+                lastCumulative = {
+                  cumulative_inflow_usd: f.cumulative_inflow_usd ?? lastCumulative.cumulative_inflow_usd,
+                  cumulative_outflow_usd: f.cumulative_outflow_usd ?? lastCumulative.cumulative_outflow_usd,
+                  cumulative_netflow_usd: f.cumulative_netflow_usd ?? lastCumulative.cumulative_netflow_usd,
+                };
+                filled.push(f);
+              } else {
+                filled.push({
+                  timestamp: current,
+                  inflow_usd: 0,
+                  outflow_usd: 0,
+                  netflow_usd: 0,
+                  ...lastCumulative,
+                });
+              }
+            }
+
+            return filled;
+          }
+
           async function loadChart(bucket, network) {
             const params = new URLSearchParams({ bucket, network });
             const res = await fetch('/v1/analytics/cex_flows?' + params);
-            const flows = await res.json();
+            let flows = await res.json();
             if (!Array.isArray(flows)) return;
+
+            flows = fillMissingPoints(flows, bucket);
 
             const labels = flows.map(f => formatDate(f.timestamp, bucket));
             const inflows = flows.map(f => f.inflow_usd || 0);
@@ -208,14 +270,14 @@ export function Dashboard({
               currentBucket = btn.dataset.bucket;
               setActiveBucket(currentBucket);
               loadChart(currentBucket, networkInput.value);
-              htmx.trigger(topExchangesEl, 'refresh'); // HTMX reload
+              htmx.trigger(topExchangesEl, 'refresh');
             });
           });
 
           // Network change
           networkInput.addEventListener('change', () => {
             loadChart(currentBucket, networkInput.value);
-            htmx.trigger(topExchangesEl, 'refresh'); // HTMX reload
+            htmx.trigger(topExchangesEl, 'refresh');
           });
 
           // Init from URL
@@ -225,7 +287,7 @@ export function Dashboard({
 
           setActiveBucket(currentBucket);
           loadChart(currentBucket, networkInput.value);
-          htmx.trigger(topExchangesEl, 'refresh'); // initial HTMX load
+          htmx.trigger(topExchangesEl, 'refresh');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
