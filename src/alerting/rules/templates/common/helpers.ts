@@ -1,10 +1,10 @@
 const NAME_TAGS = ["exchange_name", "name", "alias"] as const;
 
-type LocalEntityData = {
+type Tagged = {
 	tags?: string[];
 };
 
-export const getName = (entity?: LocalEntityData): string | undefined => {
+export const getName = (entity?: Tagged): string | undefined => {
 	if (!entity?.tags) return undefined;
 
 	for (const tag of NAME_TAGS) {
@@ -15,7 +15,7 @@ export const getName = (entity?: LocalEntityData): string | undefined => {
 	return undefined;
 };
 
-export const makeLabels = (entity?: LocalEntityData): string[] => {
+export const makeLabels = (entity?: Tagged): string[] => {
 	if (!entity?.tags) return [];
 
 	return entity.tags

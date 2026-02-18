@@ -1,6 +1,8 @@
 import { mkdir } from "node:fs/promises";
 import { hashAuth } from "@/auth";
 import { CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { AnalyticsDB } from "./backend/duckdb/db";
+import { createAnalyticsIngestionPipeline } from "./backend/duckdb/ingest";
 import { AlertingDB } from "./backend/sqlite/alerting.db";
 import { EntitiesDB } from "./backend/sqlite/entities.db";
 
@@ -29,19 +31,38 @@ export async function createAlertingDB(path: string) {
 	return new AlertingDB(`${path}/alerting.sqlite`);
 }
 
+export async function createAnalyticsDB(path: string) {
+	if (path === ":memory:") return new AnalyticsDB(":memory:");
+
+	await mkdir(path, { recursive: true });
+	const db = new AnalyticsDB(`${path}/analytics.duckdb`);
+	await db.init();
+	return db;
+}
+
 export async function createHyperionDB(path: string) {
 	const entities = await createEntitiesDB(path);
 	const alerting = await createAlertingDB(path);
+	const analytics = await createAnalyticsDB(path);
+	const ingest = {
+		analytics: createAnalyticsIngestionPipeline({ analytics, entities }),
+	};
 
 	return {
 		entities,
 		alerting,
+		analytics,
+		ingest,
 		meta: {
 			getNetworksMeta: () => NetworkMap.entries(),
 			getCategoriesMeta: () => CategoriesMap.entries(),
 		},
 		close: async () => {
-			await Promise.all([entities.close(), alerting.close()]);
+			await Promise.all([
+				entities.close(),
+				alerting.close(),
+				analytics.close(),
+			]);
 		},
 		path,
 	};

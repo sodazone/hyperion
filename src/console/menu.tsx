@@ -1,5 +1,10 @@
 import type { Member } from "@/auth/types";
-import { BellIcon, MenuCloserIcon, TagIcon } from "./components/icons";
+import {
+	BellIcon,
+	DashboardIcon,
+	MenuCloserIcon,
+	TagIcon,
+} from "./components/icons";
 import { trunc } from "./util";
 
 type Props = {
@@ -50,6 +55,24 @@ export function Sidebar({ member }: Props) {
 				</div>
 
 				<nav className="flex-1 overflow-auto px-3 py-4 space-y-6 text-sm">
+					<div>
+						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
+							<DashboardIcon />
+							<span>Dashboard</span>
+						</h3>
+						<ul className="space-y-1">
+							<li
+								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+								data-href="/console/dashboard"
+								hx-get="/console/dashboard"
+								hx-target="#main-content"
+								hx-push-url="true"
+								hx-swap="innerHTML swap:80ms"
+							>
+								Overview
+							</li>
+						</ul>
+					</div>
 					<div>
 						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
 							<BellIcon />

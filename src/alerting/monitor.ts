@@ -41,6 +41,8 @@ export function createMonitor({
 	}
 
 	subManager.on("data", async (data: AnyEvent) => {
+		db.ingest.analytics.onEvent(data);
+
 		engine.evaluate(data, {
 			state,
 			db,

@@ -5,7 +5,7 @@ import { Spinner } from "./components/spinner";
 export function LoginPage() {
 	return render(
 		<ConsoleApp path="/login">
-			<main className="min-h-screen bg-zinc-950 flex items-center justify-center">
+			<section className="min-h-screen bg-zinc-950 flex items-center justify-center">
 				<div
 					id="login-container"
 					className="w-full max-w-sm px-6 -translate-y-20"
@@ -72,7 +72,7 @@ export function LoginPage() {
 						</button>
 					</form>
 				</div>
-			</main>
+			</section>
 		</ConsoleApp>,
 	);
 }

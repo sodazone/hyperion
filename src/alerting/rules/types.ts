@@ -16,10 +16,16 @@ export interface BaseEvent<T extends string = string, P = unknown> {
 }
 
 export type TransferPayload = {
+	correlationId: string;
 	from: string;
 	to: string;
 	fromFormatted: string;
 	toFormatted: string;
+	protocol?: string;
+	fromCategories?: number[];
+	toCategories?: number[];
+	fromTags?: string[];
+	toTags?: string[];
 	amount: bigint;
 	amountUsd: number;
 	asset: {
@@ -124,7 +130,7 @@ export type RuleDefinition<
 	priority?: number;
 	description?: string;
 	title?: string;
-	schema: z.ZodObject;
+	schema: z.ZodType<Config>;
 	defaults: Config;
 	matcher: RuleMatcher<Event, Data, Config>;
 	dependencies?: RuleDependency[];

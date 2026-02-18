@@ -9,6 +9,7 @@ import {
 	AlertListPage,
 	AlertListPoller,
 } from "@/console/alerting/public/pages";
+import { DashboardPage, TopExchangesFragment } from "@/console/analytics/pages";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
@@ -26,6 +27,7 @@ import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
 import { VERSION } from "@/version";
+import { CexSeriesHandler } from "./analytics/cex";
 import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
@@ -75,7 +77,7 @@ export async function serve({
 		reusePort,
 
 		routes: {
-			"/": async (req) => AlertListPage(ctx, req),
+			"/": async (req) => DashboardPage(ctx, req),
 			"/img/:name": ({ params }) => {
 				const file = images[params.name];
 				return file
@@ -102,6 +104,10 @@ export async function serve({
 			},
 			"/logout": authApi.logout,
 			"/authenticate": authApi.authenticate,
+			"/console": async (req) => DashboardPage(ctx, req),
+			"/console/dashboard": async (req) => DashboardPage(ctx, req),
+			"/console/dashboard/fragments/top-exchanges": async (req) =>
+				TopExchangesFragment(ctx, req),
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
@@ -143,6 +149,7 @@ export async function serve({
 				Response.json({ ok: true, version: `Hyperion API v${VERSION}` }),
 			"/v1/meta/networks": () => Response.json(db.meta.getNetworksMeta()),
 			"/v1/meta/categories": () => Response.json(db.meta.getCategoriesMeta()),
+			"/v1/analytics/cex_flows": (req) => CexSeriesHandler(ctx, req),
 			"/v1/public/address/:address/:network": (req) =>
 				intel.getAddressByNetwork(db, req),
 			"/v1/public/address/:address": (req) =>

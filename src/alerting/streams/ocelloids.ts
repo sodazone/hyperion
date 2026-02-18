@@ -28,7 +28,10 @@ function mapTransfer(tx: any): TransferEvent {
 		blockHash: tx.blockHash,
 		timestamp: tx.sentAt ?? Date.now(),
 		addresses: [tx.from, tx.to],
+		assets: [tx.asset],
 		payload: {
+			correlationId: tx.transferHash,
+			protocol: tx.eventModule,
 			from: tx.from,
 			to: tx.to,
 			fromFormatted: tx.fromFormatted,
