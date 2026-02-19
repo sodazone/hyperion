@@ -3,6 +3,7 @@ import {
 	BellIcon,
 	DashboardIcon,
 	MenuCloserIcon,
+	SidebarIcon,
 	TagIcon,
 } from "./components/icons";
 import { trunc } from "./util";
@@ -38,23 +39,41 @@ export function Sidebar({ member }: Props) {
 
 			<aside
 				id="sidebar"
-				className="fixed top-0 left-0 z-50 w-full max-w-xs h-full md:w-64 md:relative md:flex flex-col border-r border-zinc-800 bg-zinc-950 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-in-out"
+				className="fixed top-0 left-0 z-50 w-full max-w-xs h-full md:w-64 md:relative md:flex flex-col border-r border-zinc-800 bg-zinc-950 transform -translate-x-full md:translate-x-0 transition-all duration-200 ease-in-out"
 			>
-				<div className="flex items-center gap-2 px-4 py-4 border-b border-zinc-800 h-18">
-					<a href="/" className="flex items-center gap-2">
-						<img src="/img/logo.svg" alt="Hyperion Logo" className="h-8 w-8" />
-						<div className="flex flex-col">
-							<span className="text-sm font-semibold tracking-wide">
-								Hyperion
+				<div className="flex items-center justify-between gap-2 px-4 py-4 border-b border-zinc-800 h-18">
+					<div className="collapsible flex items-center gap-2 min-w-0">
+						<a href="/">
+							<img
+								src="/img/logo.svg"
+								alt="Hyperion Logo"
+								className="h-8 w-8"
+							/>
+						</a>
+						<div className="flex flex-col min-w-0">
+							<span className="text-sm font-semibold tracking-wide truncate">
+								<a href="/" className="block truncate">
+									Hyperion
+								</a>
 							</span>
-							<span className="text-xs text-zinc-500">
-								Intelligence Console
+							<span className="text-xs text-zinc-500 truncate">
+								<a href="/" className="block truncate">
+									Intelligence Console
+								</a>
 							</span>
 						</div>
-					</a>
+					</div>
+					<button
+						type="button"
+						id="sidebar-desktop-toggle"
+						className="hidden md:flex py-2 text-zinc-600 hover:text-zinc-300"
+						aria-label="Toggle sidebar"
+					>
+						<SidebarIcon size={18} />
+					</button>
 				</div>
 
-				<nav className="flex-1 overflow-auto px-3 py-4 space-y-6 text-sm">
+				<nav className="collapsible flex-1 px-3 py-4 space-y-6 text-sm overflow-hidden">
 					<div>
 						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
 							<DashboardIcon />
@@ -160,7 +179,7 @@ export function Sidebar({ member }: Props) {
 				</nav>
 
 				{/* Account */}
-				<div className="border-t border-zinc-800 p-4">
+				<div className="collapsible border-t border-zinc-800 p-4">
 					{!authenticated ? (
 						<a href="/login" className="w-full ui-btn">
 							<span className="w-full text-center text-sm">Sign in</span>
@@ -200,29 +219,68 @@ export function Sidebar({ member }: Props) {
             (() => {
               const sidebar = document.getElementById('sidebar');
               const overlay = document.getElementById('sidebar-overlay');
-              const toggle = document.getElementById('sidebar-toggle');
+              const mobileToggle = document.getElementById('sidebar-toggle');
+              const desktopToggle = document.getElementById('sidebar-desktop-toggle');
+
+              const STORAGE_KEY = 'sidebar-collapsed';
 
               const isMobile = () => window.innerWidth < 768;
+
+              /* ------------------ MOBILE ------------------ */
 
               const openSidebar = () => {
                 if (!isMobile()) return;
                 sidebar.classList.remove('-translate-x-full');
                 overlay.classList.remove('hidden');
               };
+
               const closeSidebar = () => {
                 if (!isMobile()) return;
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
               };
 
-              toggle.addEventListener('click', openSidebar);
-              overlay.addEventListener('click', closeSidebar);
+              mobileToggle?.addEventListener('click', openSidebar);
+              overlay?.addEventListener('click', closeSidebar);
 
-              // auto-close on link click (mobile only)
               sidebar.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', closeSidebar);
               });
 
+              /* ------------------ DESKTOP ------------------ */
+
+              const collapseDesktop = () => {
+                sidebar.classList.add('md:w-14');
+                sidebar.classList.remove('md:w-64');
+                sidebar.classList.add('sidebar-collapsed');
+                localStorage.setItem(STORAGE_KEY, 'true');
+              };
+
+              const expandDesktop = () => {
+                sidebar.classList.remove('md:w-14');
+                sidebar.classList.add('md:w-64');
+                sidebar.classList.remove('sidebar-collapsed');
+                localStorage.setItem(STORAGE_KEY, 'false');
+              };
+
+              const toggleDesktop = () => {
+                if (isMobile()) return;
+
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+                  expandDesktop();
+                } else {
+                  collapseDesktop();
+                }
+              };
+
+              desktopToggle?.addEventListener('click', toggleDesktop);
+
+              /* Restore persisted state */
+              if (!isMobile() && localStorage.getItem(STORAGE_KEY) === 'true') {
+                collapseDesktop();
+              }
+
+              /* Handle resize */
               window.addEventListener('resize', () => {
                 if (!isMobile()) {
                   sidebar.classList.remove('-translate-x-full');
@@ -232,10 +290,12 @@ export function Sidebar({ member }: Props) {
                 }
               });
 
+              /* ------------------ ACTIVE LINK ------------------ */
+
               function updateSidebarActive() {
                 const path = window.location.pathname;
                 document.querySelectorAll("#sidebar .nav-link").forEach(el => {
-                if(path === el.dataset.href || path.startsWith(el.dataset.href + "/")) {
+                  if (path === el.dataset.href || path.startsWith(el.dataset.href + "/")) {
                     el.classList.add("bg-zinc-900", "text-zinc-100");
                     el.classList.remove("text-zinc-400", "hover:text-zinc-200");
                   } else {
@@ -244,6 +304,7 @@ export function Sidebar({ member }: Props) {
                   }
                 });
               }
+
               document.addEventListener("DOMContentLoaded", updateSidebarActive);
               document.body.addEventListener("htmx:afterSwap", updateSidebarActive);
             })();
