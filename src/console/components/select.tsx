@@ -30,7 +30,7 @@ export function RichSelect({
 				type="button"
 				className="flex items-center justify-between w-full px-3 py-2 text-zinc-500 border border-zinc-800 rounded-md hover:bg-zinc-900 transition-colors"
 			>
-				<span className="flex items-center gap-2 text-zinc-300">
+				<span className="flex items-center gap-2 text-zinc-200">
 					{current.icon && (
 						<img
 							alt=""
@@ -38,12 +38,12 @@ export function RichSelect({
 							className="bg-zinc-900 w-6 h-6 rounded-full"
 						/>
 					)}
-					{current.label}
+					<span className="font-semibold">{current.label}</span>
 				</span>
 				<ChevronUpDownIcon />
 			</button>
 
-			<div className="options absolute left-0 top-full mt-1 w-full bg-zinc-950 border border-zinc-800 shadow-lg hidden z-20">
+			<div className="options absolute left-0 top-full mt-1 w-full bg-zinc-950 border border-zinc-800 shadow-lg hidden z-20 text-zinc-200">
 				{options.map((opt) => (
 					<button
 						key={opt.value}
