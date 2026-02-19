@@ -46,7 +46,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 				},
 				async (batch) => {
 					console.log(`[${chain.name}] writing ${batch.length} records`);
-					api.upsertEntities(batch);
+					api.entities.upsertEntities(batch);
 				},
 			);
 		},

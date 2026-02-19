@@ -21,7 +21,7 @@ export const ofac = {
 				{ path: `${dataDir}/SDN_ADVANCED.XML` },
 				async (batch) => {
 					console.log("Writing batch of", batch.length, "records");
-					api.upsertEntities(batch);
+					api.entities.upsertEntities(batch);
 					console.log("Batch written");
 				},
 			);

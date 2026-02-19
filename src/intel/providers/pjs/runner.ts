@@ -20,7 +20,7 @@ export const polkadotJs = {
 				{ path: `${dataDir}/polkadot-phishing-addresses.json` },
 				async (batch) => {
 					console.log("Writing batch of", batch.length, "records");
-					api.upsertEntities(batch);
+					api.entities.upsertEntities(batch);
 					console.log("Batch written");
 				},
 			);
