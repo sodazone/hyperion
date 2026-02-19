@@ -53,7 +53,7 @@ export function Dashboard({
 			</form>
 
 			<div className="flex flex-col lg:flex-row space-y-4 lg:divide-x lg:divide-zinc-900">
-				<div className="flex flex-col p-4 space-y-2">
+				<div className="flex flex-col flex-1 p-4 space-y-2">
 					<h3 className="text-zinc-300 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
@@ -85,10 +85,7 @@ export function Dashboard({
 							</div>
 						</div>
 					</div>
-					<canvas
-						id="cex-flows-chart"
-						className="w-full h-80 max-h-80"
-					></canvas>
+					<canvas id="cex-flows-chart" className="w-full max-h-80"></canvas>
 				</div>
 
 				<div className="flex-1 p-4 flex flex-col space-y-4">
