@@ -10,9 +10,21 @@ export function LoginPage() {
 					id="login-container"
 					className="w-full max-w-sm px-6 -translate-y-20"
 				>
-					<h1 className="mb-8 text-center text-xl font-medium text-zinc-100 tracking-tight">
-						Hyperion
-					</h1>
+					<div className="flex flex-col gap-4 mb-4">
+						<div className="flex items-center gap-2">
+							<img
+								src="/img/logo.svg"
+								alt="Hyperion Logo"
+								className="h-6 w-6"
+							/>
+							<span className="text-base text-zinc-500 tracking-tight font-semibold">
+								Hyperion
+							</span>
+						</div>
+						<h2 className="text-3xl font-medium text-zinc-100 tracking-tight">
+							Sign in
+						</h2>
+					</div>
 
 					<form
 						action="/login"
@@ -23,25 +35,18 @@ export function LoginPage() {
 						className="flex flex-col gap-6"
 					>
 						<div className="flex flex-col gap-2">
-							<label
-								htmlFor="email"
-								className="text-xs uppercase tracking-wide text-zinc-500"
-							>
-								Email
-							</label>
-
 							<input
 								type="email"
 								id="email"
 								name="email"
 								required
-								placeholder="you@example.com"
+								placeholder="E-mail"
 								className="
                   bg-transparent
                   border-b border-zinc-800
                   px-0 py-2
                   text-zinc-100
-                  placeholder-zinc-600
+                  placeholder-zinc-500
                   focus:border-zinc-300
                   focus:outline-none
                 "
@@ -51,22 +56,11 @@ export function LoginPage() {
 						<button
 							type="submit"
 							hx-disabled-elt="this"
-							className="
-                relative
-                mt-4
-                border border-zinc-800
-                flex
-                justify-center
-                items-center
-                gap-2
-                py-2 text-sm
-                text-zinc-300
-                hover:border-zinc-600 hover:text-zinc-100
-                transition
-              "
+							className="relative ui-btn justify-center"
 						>
-							<span>Continue</span>
-							<span className="htmx-indicator absolute right-2">
+							<span className="pointer-events-none">Continue</span>
+
+							<span className="htmx-indicator absolute right-3 inset-y-0 flex items-center">
 								<Spinner title="Sending..." />
 							</span>
 						</button>
