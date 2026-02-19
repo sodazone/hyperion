@@ -202,14 +202,14 @@ export function Dashboard({
 
       zEl.textContent = kpis.z.toFixed(2);
 
-      zEl.classList.remove('text-pink-300', 'text-cyan-200', 'text-zinc-300');
+      zEl.classList.remove('text-pink-300', 'text-cyan-200', 'text-zinc-200');
 
       if (kpis.z > 2) {
         zEl.classList.add('text-cyan-200');
       } else if (kpis.z < -2) {
         zEl.classList.add('text-pink-300');
       } else {
-        zEl.classList.add('text-zinc-300');
+        zEl.classList.add('text-zinc-200');
       }
     }
 
