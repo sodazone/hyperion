@@ -8,7 +8,7 @@ export function MagicLinkSent({ succeeded }: { succeeded: boolean }) {
 				<div className="mx-auto text-green-500 w-8">
 					<CheckIcon />
 				</div>
-				<p className="text-sm text-zinc-400 text-center">
+				<p className="text-sm text-zinc-200 text-center">
 					We've sent you a magic link.
 					<br />
 					Check your email to continue.
@@ -21,7 +21,7 @@ export function MagicLinkSent({ succeeded }: { succeeded: boolean }) {
 				<div className="mx-auto text-zinc-500 w-8">
 					<SadIcon size={32} />
 				</div>
-				<p className="text-sm text-zinc-400 text-center">
+				<p className="text-sm text-zinc-200 text-center">
 					Oops! We couldn't send you a magic link.
 					<br />
 					Please try again later.
