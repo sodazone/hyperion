@@ -114,7 +114,7 @@ SELECT
   outflow_usd,
   inflow_usd - outflow_usd AS netflow_usd
 FROM aggregated
-ORDER BY ABS(inflow_usd - outflow_usd) DESC
+ORDER BY inflow_usd + outflow_usd DESC
 LIMIT ${limit};
 `;
 }

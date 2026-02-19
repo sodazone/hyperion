@@ -18,27 +18,39 @@ export async function TopExchangesFragment(
 
 	return render(
 		<table className="w-full table-auto border-collapse text-sm">
-			<thead className="bg-zinc-800">
-				<tr className="font-semibold">
-					<th className="text-left">Exchange</th>
-					<th className="text-right">Inflow (USD)</th>
-					<th className="text-right">Outflow (USD)</th>
-					<th className="text-right">Net Flow (USD)</th>
+			<thead className="bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500">
+				<tr>
+					<th className="px-4 py-2 text-left">Exchange</th>
+					<th className="px-4 py-2 text-right">Inflow</th>
+					<th className="px-4 py-2 text-right">Outflow</th>
+					<th className="px-4 py-2 text-right">Net Flow</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody className="divide-y divide-zinc-900/90">
+				{data.length === 0 && (
+					<tr>
+						<td
+							colSpan={4}
+							className="px-4 py-6 text-xs text-zinc-200 text-center"
+						>
+							No data available
+						</td>
+					</tr>
+				)}
 				{data.map((row) => (
 					<tr key={row.exchange}>
-						<td>
+						<td className="px-4 py-2 text-xs text-zinc-200">
 							<ExchangeName tag={row.exchange} />
 						</td>
-						<td className="text-right font-mono">
+						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-200">
 							{formatNumberSI(row.inflow_usd)}
 						</td>
-						<td className="text-right font-mono">
+						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-200">
 							{formatNumberSI(row.outflow_usd)}
 						</td>
-						<td className="text-right font-mono">
+						<td
+							className={`text-right font-mono px-4 py-2 text-xs ${row.netflow_usd >= 0 ? "text-cyan-200" : "text-pink-300"}`}
+						>
 							{formatNumberSI(row.netflow_usd)}
 						</td>
 					</tr>
