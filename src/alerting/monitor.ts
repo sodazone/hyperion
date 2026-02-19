@@ -36,6 +36,8 @@ export function createMonitor({
 	// TODO: handle too many rules... :D
 	const instances: RuleInstance[] = db.alerting.rules.findAllRuleInstances();
 
+	console.log("Rule instances:", instances.length);
+
 	for (const inst of instances) {
 		engine.addInstance(inst);
 	}

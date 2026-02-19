@@ -57,29 +57,29 @@ export function Dashboard({
 					<h3 className="text-zinc-300 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
-					<div className="flex space-x-6 py-1 font-mono">
-						<div className="">
+					<div className="flex py-1 font-mono divide-x divide-zinc-900">
+						<div className="pr-6">
 							<div className="text-xs text-zinc-500">Volume</div>
 							<div
 								id="kpi-volume"
-								className="text-lg font-semibold text-zinc-300"
+								className="text-sm font-semibold text-zinc-300"
 							>
 								<span className="text-zinc-600">–</span>
 							</div>
 						</div>
 
-						<div className="">
+						<div className="px-6">
 							<div className="text-xs text-zinc-500">Net Flow</div>
-							<div id="kpi-net" className="text-lg font-semibold text-zinc-300">
+							<div id="kpi-net" className="text-sm font-semibold text-zinc-300">
 								<span className="text-zinc-600">–</span>
 							</div>
 						</div>
 
-						<div className="">
+						<div className="pl-6">
 							<div className="text-xs text-zinc-500">Z-Score</div>
 							<div
 								id="kpi-zscore"
-								className="text-lg font-semibold text-zinc-300"
+								className="text-sm font-semibold text-zinc-300"
 							>
 								<span className="text-zinc-600">–</span>
 							</div>
