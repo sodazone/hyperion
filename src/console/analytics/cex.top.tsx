@@ -18,7 +18,7 @@ export async function TopExchangesFragment(
 
 	return render(
 		<table className="w-full table-auto border-collapse text-sm">
-			<thead className="bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500">
+			<thead className="bg-zinc-900 text-xs uppercase tracking-wide text-zinc-400">
 				<tr>
 					<th className="px-4 py-2 text-left">Exchange</th>
 					<th className="px-4 py-2 text-right">Inflow</th>
@@ -31,7 +31,7 @@ export async function TopExchangesFragment(
 					<tr>
 						<td
 							colSpan={4}
-							className="px-4 py-6 text-xs text-zinc-200 text-center"
+							className="px-4 py-6 text-xs text-zinc-300 text-center"
 						>
 							No data available
 						</td>
@@ -39,13 +39,13 @@ export async function TopExchangesFragment(
 				)}
 				{data.map((row) => (
 					<tr key={row.exchange}>
-						<td className="px-4 py-2 text-xs text-zinc-200">
+						<td className="px-4 py-2 text-xs text-zinc-100">
 							<ExchangeName tag={row.exchange} />
 						</td>
-						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-200">
+						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-100">
 							{formatNumberSI(row.inflow_usd)}
 						</td>
-						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-200">
+						<td className="text-right font-mono px-4 py-2 text-xs text-zinc-100">
 							{formatNumberSI(row.outflow_usd)}
 						</td>
 						<td

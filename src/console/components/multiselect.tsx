@@ -52,7 +52,7 @@ export function MultiselectScript() {
         selected.forEach(opt => {
           const chip = document.createElement("span");
           chip.className =
-            "inline-flex items-center gap-2 px-2 py-1 bg-zinc-900 rounded-md text-sm text-zinc-300";
+            "inline-flex items-center gap-2 px-2 py-1 bg-zinc-900 rounded-md text-sm text-zinc-200";
 
           chip.innerHTML = opt.label + '<button type="button" class="text-center text-zinc-500 px-1.5 hover:text-red-400">x</button>'+
             '<input type="hidden" name="' + name+'[]" value="'+opt.value+'" />';

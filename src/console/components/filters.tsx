@@ -82,7 +82,7 @@ export function SearchFilters({ path, values, defs }: Props) {
 		<div>
 			<button
 				type="button"
-				className="md:hidden flex w-full items-center justify-between px-3 py-3 text-sm text-zinc-300 hover:bg-zinc-900"
+				className="md:hidden flex w-full items-center justify-between px-3 py-3 text-sm text-zinc-200 hover:bg-zinc-900"
 				hx-on:click="
           const el = document.getElementById('filters-body');
           el.classList.toggle('hidden');
@@ -120,7 +120,7 @@ export function SearchFilters({ path, values, defs }: Props) {
 
 				<button
 					type="reset"
-					className="text-sm text-zinc-400 hover:text-zinc-200 ml-2"
+					className="text-sm text-zinc-300 hover:text-zinc-100 ml-2"
 					hx-on:click={`
             const form = this.closest('form');
 

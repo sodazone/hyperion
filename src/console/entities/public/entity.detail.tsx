@@ -8,7 +8,7 @@ import { NetworkMap } from "@/intel/mapping";
 function EntityHeader({ address }: { address: string }) {
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+			<span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
 				Address
 			</span>
 
@@ -30,7 +30,7 @@ function NetworkSection({
 	return (
 		<section className="space-y-6 rounded-lg md:border md:border-zinc-900 bg-zinc-950/60 p-5">
 			<div className="flex items-center justify-between">
-				<h2 className="text-sm font-semibold text-zinc-200">
+				<h2 className="text-sm font-semibold text-zinc-100">
 					<NetworkIcon
 						urn={NetworkMap.toURN(networkId) ?? "unknown"}
 						showName={true}
@@ -55,10 +55,10 @@ function SanctionsPanel({ sanctioned, lists }: AddressAnalysis["sanctioned"]) {
 
 	return (
 		<div>
-			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
 				Sanctions
 			</h3>
-			<ul className="list-inside text-sm text-zinc-300">
+			<ul className="list-inside text-sm text-zinc-200">
 				{lists.map((l) => (
 					<li key={l} className="flex gap-2">
 						<span className="text-zinc-600">-</span>
@@ -102,14 +102,14 @@ function RiskIndicator({
 		<div className="space-y-2">
 			<div className={`text-sm font-semibold ${cfg.text}`}>{cfg.label}</div>
 
-			<div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+			<div className="h-1 w-full overflow-hidden rounded-full bg-zinc-800">
 				<div
 					className={`h-full ${cfg.color}`}
 					style={{ width: `${Math.min(score, 100)}%` }}
 				/>
 			</div>
 
-			<div className="text-xs text-zinc-500">Risk score: {score}/100</div>
+			<div className="text-xs text-zinc-400">Risk score: {score}/100</div>
 		</div>
 	);
 }
@@ -117,15 +117,15 @@ function RiskIndicator({
 function RiskPanel({ risk }: { risk: AddressAnalysis["risk"] }) {
 	return (
 		<div>
-			<h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+			<h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">
 				Risk Assessment
 			</h3>
 
-			<div className="space-y-4 rounded-lg border border-zinc-900 bg-zinc-950/60 p-4">
+			<div className="space-y-4">
 				<RiskIndicator level={risk.level} score={risk.score} />
 
 				{risk.reasons.length > 0 && (
-					<ul className="list-inside space-y-1 text-xs text-zinc-400">
+					<ul className="list-inside space-y-1 text-xs text-zinc-300">
 						{risk.reasons.map((reason) => (
 							<li key={reason} className="flex gap-2">
 								<span className="text-zinc-600">-</span>
@@ -146,7 +146,7 @@ function CategoriesPanel({
 }) {
 	return (
 		<div>
-			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
 				Attribution
 			</h3>
 
@@ -168,7 +168,7 @@ function TagsPanel({ tags }: { tags: AddressAnalysis["tags"] }) {
 
 	return (
 		<div>
-			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+			<h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
 				Tags
 			</h3>
 

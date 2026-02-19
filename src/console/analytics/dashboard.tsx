@@ -54,7 +54,7 @@ export function Dashboard({
 
 			<div className="flex flex-col lg:flex-row space-y-4 lg:divide-x lg:divide-zinc-900">
 				<div className="flex flex-col flex-1 p-4 space-y-2">
-					<h3 className="text-zinc-300 text-sm font-semibold">
+					<h3 className="text-zinc-200 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
 					<div className="flex py-1 font-mono divide-x divide-zinc-900">
@@ -62,7 +62,7 @@ export function Dashboard({
 							<div className="text-xs text-zinc-500">Volume</div>
 							<div
 								id="kpi-volume"
-								className="text-sm font-semibold text-zinc-300"
+								className="text-sm font-semibold text-zinc-100"
 							>
 								<span className="text-zinc-600">–</span>
 							</div>
@@ -70,7 +70,7 @@ export function Dashboard({
 
 						<div className="px-6">
 							<div className="text-xs text-zinc-500">Net Flow</div>
-							<div id="kpi-net" className="text-sm font-semibold text-zinc-300">
+							<div id="kpi-net" className="text-sm font-semibold text-zinc-100">
 								<span className="text-zinc-600">–</span>
 							</div>
 						</div>
@@ -79,7 +79,7 @@ export function Dashboard({
 							<div className="text-xs text-zinc-500">Z-Score</div>
 							<div
 								id="kpi-zscore"
-								className="text-sm font-semibold text-zinc-300"
+								className="text-sm font-semibold text-zinc-100"
 							>
 								<span className="text-zinc-600">–</span>
 							</div>
@@ -89,7 +89,7 @@ export function Dashboard({
 				</div>
 
 				<div className="flex-1 p-4 flex flex-col space-y-4">
-					<h3 className="text-zinc-300 text-sm font-semibold">Top Exchanges</h3>
+					<h3 className="text-zinc-200 text-sm font-semibold">Top Exchanges</h3>
 
 					<div
 						id="top-exchanges-table"
@@ -103,7 +103,7 @@ export function Dashboard({
 			</div>
 
 			<div className="flex flex-col p-4 space-y-4">
-				<h3 className="text-zinc-300 text-sm font-semibold">Latest Alerts</h3>
+				<h3 className="text-zinc-200 text-sm font-semibold">Latest Alerts</h3>
 				<div>TBD</div>
 			</div>
 

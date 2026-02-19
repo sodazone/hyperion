@@ -37,6 +37,11 @@ const CATEGORY_STYLE: Record<
 		priority: 60,
 	},
 
+	[CAT.SERVICES]: {
+		className: "bg-purple-950 text-purple-400",
+		priority: 60,
+	},
+
 	[CAT.AUTOMATED]: {
 		className: "bg-purple-950 text-purple-400",
 		priority: 50,

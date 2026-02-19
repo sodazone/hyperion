@@ -23,7 +23,7 @@ export function EntityTable({
 					<col className="w-20" />
 				</colgroup>
 
-				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-500 z-10">
+				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-400 z-10">
 					<tr>
 						<th className="px-4 py-2 text-left">Address</th>
 						<th className="px-4 py-2 text-left">Networks</th>
@@ -35,7 +35,7 @@ export function EntityTable({
 				<tbody className="divide-y divide-zinc-900/90">
 					{rows.length === 0 && (
 						<tr>
-							<td colSpan={4} className="px-4 py-16 text-center text-zinc-500">
+							<td colSpan={4} className="px-4 py-16 text-center text-zinc-400">
 								{empty ?? "No entities found"}
 							</td>
 						</tr>
@@ -50,7 +50,7 @@ export function EntityTable({
 							hx-push-url="true"
 						>
 							{/* Address */}
-							<td className="px-4 py-2 font-mono text-xs text-zinc-200">
+							<td className="px-4 py-2 font-mono text-xs text-zinc-100">
 								<div className="flex items-center gap-2 min-w-0">
 									<span className="truncate max-w-full">
 										{e.address_formatted}
@@ -60,7 +60,7 @@ export function EntityTable({
 							</td>
 
 							{/* Networks */}
-							<td className="px-4 py-2 text-zinc-300">
+							<td className="px-4 py-2 text-zinc-200">
 								<NetworkIconGroup urns={e.sets.networks} />
 							</td>
 
@@ -71,7 +71,7 @@ export function EntityTable({
 										<CategoryBadge categoryCode={e.sets.categories[0] ?? 0} />
 
 										{e.sets.categories.length > 1 && (
-											<span className="text-xs text-zinc-500">
+											<span className="text-xs text-zinc-400">
 												+{e.sets.categories.length - 1}
 											</span>
 										)}
@@ -88,7 +88,7 @@ export function EntityTable({
 										<TagBadge tag={e.sets.tags[0] ?? ""} />
 
 										{e.sets.tags.length > 1 && (
-											<span className="text-xs text-zinc-500">
+											<span className="text-xs text-zinc-400">
 												+{e.sets.tags.length - 1}
 											</span>
 										)}

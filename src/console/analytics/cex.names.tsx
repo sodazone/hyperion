@@ -71,7 +71,7 @@ export function ExchangeName({ tag }: { tag: string }) {
 	return (
 		<div className="inline-flex gap-2 items-center">
 			{icon && <img src={icon} alt={name} className="w-4 h-4 rounded-full" />}
-			<span>{name}</span>
+			<span className="font-semibold">{name}</span>
 		</div>
 	);
 }

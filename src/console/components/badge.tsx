@@ -27,7 +27,7 @@ export function SplitBadge({
 export function TagBadge({ tag }: { tag: string }) {
 	return (
 		<span
-			className={`truncate inline-flex items-center rounded-md border px-1 py-0.5 text-xs bg-zinc-900 text-zinc-200 border-zinc-700/80
+			className={`truncate inline-flex items-center rounded-md border px-1 py-0.5 text-xs bg-zinc-900 text-zinc-100 border-zinc-700/80
 `}
 		>
 			<span className="opacity-80 truncate">{tag}</span>
