@@ -57,7 +57,7 @@ export function Dashboard({
 					<h3 className="text-zinc-200 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
-					<div className="flex py-1 font-mono divide-x divide-zinc-900">
+					<div className="flex py-1 font-mono divide-x divide-zinc-900 mb-6">
 						<div className="pr-6">
 							<div className="text-xs text-zinc-500">Volume</div>
 							<div
