@@ -38,7 +38,7 @@ export function RichSelect({
 							className="bg-zinc-900 w-6 h-6 rounded-full"
 						/>
 					)}
-					<span className="font-semibold">{current.label}</span>
+					<span>{current.label}</span>
 				</span>
 				<ChevronUpDownIcon />
 			</button>
