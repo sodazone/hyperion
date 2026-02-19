@@ -1,27 +1,6 @@
 import { RichSelect, RichSelectScript } from "../components/select";
 import { TopBar } from "../components/top.bar";
-
-export type BucketString = "hour" | "day";
-export const BUCKETS = ["hour", "day"];
-
-const NETWORK_OPTIONS = [
-	{
-		label: "Polkadot",
-		value: "urn:ocn:polkadot:1000",
-		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/0/icon.svg",
-	},
-	{
-		label: "Hydration",
-		value: "urn:ocn:polkadot:2034",
-		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2034/icon.svg",
-	},
-	{
-		label: "Moonbeam",
-		value: "urn:ocn:polkadot:2004",
-		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2004/icon.svg",
-	},
-];
-export const NETWORKS = NETWORK_OPTIONS.map((opt) => opt.value);
+import { type BucketString, NETWORK_OPTIONS } from "./params";
 
 export function Dashboard({
 	network = "urn:ocn:polkadot:1000",
@@ -41,7 +20,7 @@ export function Dashboard({
 
 			{/* Filters Bar */}
 			<div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-6 p-2">
-				<div className="flex flex-wrap gap-2">
+				<div className="flex flex-wrap gap-2 w-full justify-between">
 					<div className="relative w-56">
 						<RichSelect
 							name="network"
@@ -55,7 +34,7 @@ export function Dashboard({
 								key={b}
 								type="button"
 								data-bucket={b}
-								className={`px-3 py-1 ${index === 0 ? "rounded-s-sm" : ""} ${index === 1 ? "rounded-e-sm" : ""} border border-zinc-800 text-xs font-semibold hover:bg-zinc-900 hover:text-zinc-100 transition-colors`}
+								className={`px-2 ${index === 0 ? "rounded-s-sm" : ""} ${index === 1 ? "rounded-e-sm" : ""} border border-zinc-800 text-xs font-semibold hover:bg-zinc-900 hover:text-zinc-100 transition-colors`}
 							>
 								{b === "hour" ? "24h" : "30D"}
 							</button>
@@ -253,7 +232,7 @@ export function Dashboard({
                   y: { border: { display: false }, ticks: { maxTicksLimit: 8, callback: (v) => formatShortNumber(v), color: 'rgba(255,255,255,0.8)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
                 },
                 plugins: {
-                  legend: { labels: { color: 'rgba(255,255,255,0.8)' } },
+                  legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.8)' } },
                   tooltip: { mode: 'index', intersect: false,
                     callbacks: { label: (ctx) => ctx.dataset.label + ': $' + formatShortNumber(ctx.raw) }
                   },

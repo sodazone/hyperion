@@ -9,7 +9,8 @@ import {
 	AlertListPage,
 	AlertListPoller,
 } from "@/console/alerting/public/pages";
-import { DashboardPage, TopExchangesFragment } from "@/console/analytics/pages";
+import { TopExchangesFragment } from "@/console/analytics/cex.top";
+import { DashboardPage } from "@/console/analytics/pages";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,

@@ -28,7 +28,7 @@ export function RichSelect({
 
 			<button
 				type="button"
-				className="flex items-center justify-between w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-md hover:bg-zinc-800 transition-colors"
+				className="flex items-center justify-between w-full px-3 py-2 border border-zinc-800 rounded-md hover:bg-zinc-900 transition-colors"
 			>
 				<span className="flex items-center gap-2">
 					{current.icon && (
