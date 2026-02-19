@@ -29,17 +29,17 @@ export function TagBadge({ tag }: { tag: string }) {
 
 	return (
 		<span
-			className="inline-flex items-center rounded-full border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-200 max-w-xs"
+			className="inline-flex truncate items-center rounded-full border border-zinc-800 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-200 max-w-xs"
 			title={tag}
 		>
 			{value != null ? (
 				<>
-					<span className="opacity-80">{key}</span>
+					<span className="opacity-80 truncate">{key}</span>
 					<span className="mx-1 h-3 w-px bg-current opacity-30" />
-					<span>{value}</span>
+					<span className="truncate">{value}</span>
 				</>
 			) : (
-				<span>{key}</span>
+				<span className="truncate">{key}</span>
 			)}
 		</span>
 	);
