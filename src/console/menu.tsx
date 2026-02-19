@@ -75,13 +75,13 @@ export function Sidebar({ member }: Props) {
 
 				<nav className="collapsible flex-1 px-3 py-4 space-y-6 text-sm overflow-hidden">
 					<div>
-						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
+						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-600 flex items-center gap-2">
 							<DashboardIcon />
 							<span>Dashboard</span>
 						</h3>
 						<ul className="space-y-1">
 							<li
-								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 								data-href="/console/dashboard"
 								hx-get="/console/dashboard"
 								hx-target="#main-content"
@@ -93,13 +93,13 @@ export function Sidebar({ member }: Props) {
 						</ul>
 					</div>
 					<div>
-						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
+						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-600 flex items-center gap-2">
 							<BellIcon />
 							<span>Alerting</span>
 						</h3>
 						<ul className="space-y-1">
 							<li
-								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 								data-href="/console/public/alerts"
 								hx-get="/console/public/alerts"
 								hx-target="#main-content"
@@ -111,7 +111,7 @@ export function Sidebar({ member }: Props) {
 							{authenticated && (
 								<>
 									<li
-										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 										data-href="/console/my/alerts"
 										hx-get="/console/my/alerts"
 										hx-target="#main-content"
@@ -121,7 +121,7 @@ export function Sidebar({ member }: Props) {
 										My Alerts
 									</li>
 									<li
-										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 										data-href="/console/rules"
 										hx-get="/console/rules"
 										hx-target="#main-content"
@@ -132,7 +132,7 @@ export function Sidebar({ member }: Props) {
 									</li>
 									{/*
 									<li
-										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 										data-href="/console/destinations"
 										hx-get="/console/destinations"
 										hx-target="#main-content"
@@ -147,13 +147,13 @@ export function Sidebar({ member }: Props) {
 					</div>
 
 					<div>
-						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 flex items-center gap-2">
+						<h3 className="mb-2 px-2 text-xs font-semibold uppercase tracking-wider text-zinc-600 flex items-center gap-2">
 							<TagIcon />
 							<span>Entities</span>
 						</h3>
 						<ul className="space-y-1">
 							<li
-								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+								className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 								data-href="/console/entities"
 								hx-get="/console/entities"
 								hx-target="#main-content"
@@ -164,7 +164,7 @@ export function Sidebar({ member }: Props) {
 							</li>
 							{authenticated && (
 								<li
-									className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 cursor-pointer"
+									className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
 									data-href="/console/watchlist"
 									hx-get="/console/watchlist"
 									hx-target="#main-content"
@@ -297,10 +297,10 @@ export function Sidebar({ member }: Props) {
                 document.querySelectorAll("#sidebar .nav-link").forEach(el => {
                   if (path === el.dataset.href || path.startsWith(el.dataset.href + "/")) {
                     el.classList.add("bg-zinc-900", "text-zinc-100");
-                    el.classList.remove("text-zinc-400", "hover:text-zinc-200");
+                    el.classList.remove("text-zinc-300", "hover:text-zinc-100");
                   } else {
                     el.classList.remove("bg-zinc-900", "text-zinc-100");
-                    el.classList.add("text-zinc-400", "hover:text-zinc-200");
+                    el.classList.add("text-zinc-300", "hover:text-zinc-100");
                   }
                 });
               }
