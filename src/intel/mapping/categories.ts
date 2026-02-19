@@ -15,10 +15,11 @@ function createCategoriesMap() {
 	categories.add(0x0002, 0x0001, "Swap");
 	categories.add(0x0002, 0x0002, "Lending");
 	categories.add(0x0002, 0x0003, "Staking");
-	categories.add(0x0002, 0x0005, "Perpetuals");
-	categories.add(0x0002, 0x0006, "Derivatives");
-	categories.add(0x0002, 0x0007, "Insurance");
-	categories.add(0x0002, 0x0008, "Pool");
+	categories.add(0x0002, 0x0004, "Perpetuals");
+	categories.add(0x0002, 0x0005, "Derivatives");
+	categories.add(0x0002, 0x0006, "Insurance");
+	categories.add(0x0002, 0x0007, "Pool");
+	categories.add(0x0002, 0x0008, "Periphery");
 
 	// Category 0x0003 - Infrastructure
 	categories.add(0x0003, 0x0000, "Infrastructure");
