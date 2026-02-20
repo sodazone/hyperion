@@ -1,5 +1,5 @@
 import { withAuth } from "@/console/authenticated";
-import { Multiselect } from "@/console/components/multiselect";
+import { Multiselect } from "@/console/components/select.multi";
 import { render } from "../render";
 
 export const TagsFragment = withAuth<"/console/rules/fragments/tags">(

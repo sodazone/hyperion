@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { RuleDefinition } from "@/alerting";
 import { BackButton } from "@/console/components/btn.back";
-import { MultiselectScript } from "@/console/components/multiselect";
+import { MultiselectScript } from "@/console/components/select.multi";
 import { ConfigField } from "./rule.config";
 
 export function RuleForm({

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { FieldMeta } from "@/alerting";
 import { ChevronUpDownIcon } from "@/console/components/icons";
-import { Multiselect } from "@/console/components/multiselect";
+import { Multiselect } from "@/console/components/select.multi";
 import { NetworkCache } from "@/console/network.cache";
 
 function unwrap(schema: z.ZodTypeAny): z.ZodTypeAny {
