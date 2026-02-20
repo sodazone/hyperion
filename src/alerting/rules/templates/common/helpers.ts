@@ -18,10 +18,13 @@ export const getName = (entity?: Tagged): string | undefined => {
 export const makeLabels = (entity?: Tagged): string[] => {
 	if (!entity?.tags) return [];
 
-	return entity.tags
-		.map((t) => {
-			const colonIndex = t.indexOf(":");
-			return colonIndex > -1 ? t.slice(colonIndex + 1) : t;
-		})
-		.filter(Boolean);
+	const labelsSet = new Set<string>();
+
+	for (const t of entity.tags) {
+		const colonIndex = t.indexOf(":");
+		const label = colonIndex > -1 ? t.slice(colonIndex + 1) : t;
+		if (label) labelsSet.add(label);
+	}
+
+	return [...labelsSet];
 };
