@@ -66,18 +66,26 @@ export const WatchlistPostHandler = withAuth(
 		}));
 
 		try {
-			db.entities.deleteAllTags({ owner, address: normalizedAddress });
-			db.entities.deleteAllCategories({ owner, address: normalizedAddress });
-
-			db.entities.upsertEntities([
-				{
+			db.entities.runTransaction(() => {
+				db.entities.deleteAllTags({ owner, address: normalizedAddress });
+				db.entities.deleteAllCategories({
 					owner,
 					address: normalizedAddress,
-					address_formatted: address,
-					tags,
-					categories,
-				},
-			]);
+				});
+
+				db.entities.upsertEntities(
+					[
+						{
+							owner,
+							address: normalizedAddress,
+							address_formatted: address,
+							tags,
+							categories,
+						},
+					],
+					false,
+				);
+			});
 
 			return new Response(null, {
 				headers: { "HX-Redirect": "/console/watchlist" },

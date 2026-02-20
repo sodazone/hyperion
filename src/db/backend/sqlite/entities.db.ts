@@ -806,8 +806,8 @@ export class EntitiesDB {
 		}));
 	}
 
-	upsertEntities(records: Entity[]) {
-		this.db.run("BEGIN");
+	upsertEntities(records: Entity[], createTx = true) {
+		if (createTx) this.db.run("BEGIN");
 
 		try {
 			for (const r of records) {
@@ -829,16 +829,26 @@ export class EntitiesDB {
 					});
 				}
 			}
-
-			this.db.run("COMMIT");
+			if (createTx) this.db.run("COMMIT");
 		} catch (e) {
-			this.db.run("ROLLBACK");
+			if (createTx) this.db.run("ROLLBACK");
 			throw e;
 		}
 	}
 
 	close() {
 		this.db.close();
+	}
+
+	runTransaction(callback: () => void) {
+		this.db.run("BEGIN");
+		try {
+			callback();
+			this.db.run("COMMIT");
+		} catch (err) {
+			this.db.run("ROLLBACK");
+			throw err;
+		}
 	}
 
 	private all<T>(sql: string, ...params: SQLQueryBindings[]): T[] {
