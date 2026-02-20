@@ -63,7 +63,9 @@ export class RuleEngine extends EventEmitter {
 		const now = global.now();
 
 		for (const inst of this.#instances) {
-			if (!inst.enabled) continue;
+			if (!inst.enabled) {
+				continue;
+			}
 
 			try {
 				if (inst.cooldownMs) {
