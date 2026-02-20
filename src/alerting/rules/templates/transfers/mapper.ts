@@ -9,7 +9,6 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const { from, to, fromFormatted, toFormatted, asset, amount, amountUsd } =
 		event.payload;
 
-	// normalize assets array
 	const assetsArray = (Array.isArray(asset) ? asset : [asset]).map((a, i) => ({
 		id: a.id,
 		symbol: a.symbol,

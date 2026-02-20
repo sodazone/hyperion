@@ -1,11 +1,11 @@
 import { createEntitiesDB } from "@/db";
-import { polkadotJs } from "./runner";
+import { soda } from "./runner";
 
 const db = await createEntitiesDB("./.db/current");
 
 const t0 = performance.now();
 
-await polkadotJs.run(db);
+await soda.run(db);
 
 const t1 = performance.now();
 

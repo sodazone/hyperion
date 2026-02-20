@@ -15,12 +15,18 @@ export interface BaseEvent<T extends string = string, P = unknown> {
 	assets?: string[];
 }
 
+export enum TransferStatus {
+	SUCCESS = 0,
+	FAILURE = 1,
+}
+
 export type TransferPayload = {
 	correlationId: string;
 	from: string;
 	to: string;
 	fromFormatted: string;
 	toFormatted: string;
+	status: TransferStatus;
 	protocol?: string;
 	fromCategories?: number[];
 	toCategories?: number[];
@@ -114,6 +120,7 @@ export type RuleDependency =
 	| {
 			kind: "transfer";
 	  }
+	| { kind: "xc" }
 	| {
 			kind: "custom";
 			stream: string;

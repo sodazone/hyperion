@@ -45,7 +45,7 @@ function accept(event: TransferEvent, config: Config): boolean {
 
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleId,
-	dependencies: [{ kind: "transfer" }],
+	dependencies: [{ kind: "transfer" }, { kind: "xc" }],
 	title: "Asset Movement",
 	description:
 		"Detects asset movements in USD using thresholds, tags and categories.",

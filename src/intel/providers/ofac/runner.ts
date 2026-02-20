@@ -1,5 +1,5 @@
 import { config } from "@/config";
-import type { HyperionDB } from "@/db";
+import type { EntitiesDB } from "@/db/backend/sqlite/entities.db";
 import type { Entity } from "@/db/model";
 import { runWorker } from "@/intel/worker";
 import { safePath } from "@/utils";
@@ -13,7 +13,7 @@ export const ofac = {
 		const scriptPath = safePath(import.meta.url, "./update.sh");
 		return updateData({ scriptPath, env: { DATA_DIR: dataDir } });
 	},
-	run: async (api: HyperionDB) => {
+	run: async (db: EntitiesDB) => {
 		const updated = await ofac.update();
 		if (updated) {
 			await runWorker<Entity>(
@@ -21,7 +21,7 @@ export const ofac = {
 				{ path: `${dataDir}/SDN_ADVANCED.XML` },
 				async (batch) => {
 					console.log("Writing batch of", batch.length, "records");
-					api.entities.upsertEntities(batch);
+					db.upsertEntities(batch);
 					console.log("Batch written");
 				},
 			);

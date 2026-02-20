@@ -21,6 +21,7 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@sodazone/ocelloids-client": "link:@sodazone/ocelloids-client",
 		"@duckdb/node-api": "^1.4.4-r.1",
 		"@scure/base": "^2.0.0",
 		"bs58": "^6.0.0",

@@ -15,6 +15,7 @@ const NetworkURNMap: Record<string, number> = {
 	"urn:ocn:polkadot:2034": 0x010a,
 	"urn:ocn:polkadot:3367": 0x010b,
 	"urn:ocn:polkadot:3369": 0x010c,
+	"urn:ocn:polkadot:1004": 0x010d,
 
 	// ────────────────────────────────
 	// Kusama ecosystem (0x0200–0x02FF)
@@ -23,6 +24,7 @@ const NetworkURNMap: Record<string, number> = {
 	"urn:ocn:kusama:1000": 0x0201,
 	"urn:ocn:kusama:1002": 0x0202,
 	"urn:ocn:kusama:1005": 0x0203,
+	"urn:ocn:kusama:1004": 0x0204,
 
 	// ────────────────────────────────
 	// Ethereum & EVM networks (0x0300–0x03FF)

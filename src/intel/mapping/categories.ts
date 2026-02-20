@@ -83,6 +83,11 @@ function createCategoriesMap() {
 	categories.add(0x000b, 0x0005, "Leaked Private Key");
 	categories.add(0x000b, 0x0006, "Dusting Victim");
 
+	// Category 0x000C - Identified
+	categories.add(0x000c, 0x0000, "Identified");
+	categories.add(0x000c, 0x0001, "Onchain Attestation");
+	categories.add(0x000c, 0x0002, "National Identity");
+
 	return categories;
 }
 
@@ -105,6 +110,7 @@ export const CAT = {
 	CYBERCRIME: 0x0009,
 	AUTOMATED: 0x000a,
 	COMPROMISED: 0x000b,
+	IDENTIFIED: 0x000c,
 } as const;
 
 export const topLevelCategories = CategoriesMap.entries()

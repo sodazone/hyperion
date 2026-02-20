@@ -51,3 +51,30 @@ export function safeStringify(obj: unknown, space?: number) {
 		space,
 	);
 }
+
+const forbiddenChars = ["<", ">", ";", "'", '"'];
+
+export const sanitizeRelaxed = (s: string): string => {
+	let out = "";
+	let changed = false;
+
+	for (let i = 0; i < s.length; i++) {
+		const code = s.charCodeAt(i);
+
+		if (code < 32 || code === 127) {
+			changed = true;
+			continue;
+		}
+
+		const c = s[i];
+
+		if (c === undefined || forbiddenChars.includes(c)) {
+			changed = true;
+			continue;
+		}
+
+		out += c;
+	}
+
+	return (changed ? out : s).trim();
+};

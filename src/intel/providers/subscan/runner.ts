@@ -1,5 +1,6 @@
 import { config } from "@/config";
-import type { Entity, HyperionDB } from "@/db";
+import type { Entity } from "@/db";
+import type { EntitiesDB } from "@/db/backend/sqlite/entities.db";
 import { NetworkMap } from "@/intel/mapping";
 import { runWorker } from "@/intel/worker";
 import { safePath } from "@/utils";
@@ -28,7 +29,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 
 		update,
 
-		run: async (api: HyperionDB) => {
+		run: async (db: EntitiesDB) => {
 			const updated = await update();
 			if (!updated) return;
 
@@ -46,7 +47,7 @@ function createMerkleSubscan(chain: SubscanChain) {
 				},
 				async (batch) => {
 					console.log(`[${chain.name}] writing ${batch.length} records`);
-					api.entities.upsertEntities(batch);
+					db.upsertEntities(batch);
 				},
 			);
 		},

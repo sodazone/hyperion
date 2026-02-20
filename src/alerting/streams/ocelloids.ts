@@ -1,6 +1,15 @@
-import { createTransfersAgent } from "@sodazone/ocelloids-client";
-import type { AnyEvent, TransferEvent } from "../rules";
+import {
+	createCrosschainAgent,
+	createTransfersAgent,
+} from "@sodazone/ocelloids-client";
+import type { AnyEvent } from "../rules";
+import { mapJourney, mapTransfer } from "./mapper";
 import { createPointerStorage } from "./pointers";
+
+const OC_CONFIG = {
+	httpUrl: Bun.env.OC_HTTP_URL || "http://127.0.0.1:3000",
+	wsUrl: Bun.env.OC_WS_URL || "ws://127.0.0.1:3000",
+};
 
 export type OcelloidsClient = {
 	subscribeStorage: (
@@ -12,50 +21,25 @@ export type OcelloidsClient = {
 		emit: (msg: AnyEvent) => void,
 	) => Promise<() => void> | (() => void);
 
+	subscribeXc: (
+		emit: (msg: AnyEvent) => void,
+	) => Promise<() => void> | (() => void);
+
 	close: () => Promise<void>;
 };
 
 const subIds = {
 	transfers: "transfers-all-networks",
+	xc: "xc-all-networks",
 };
-
-function mapTransfer(tx: any): TransferEvent {
-	return {
-		type: "transfer",
-		chain: tx.network,
-		blockHeight: tx.blockNumber,
-		txHash: tx.txPrimary,
-		blockHash: tx.blockHash,
-		timestamp: tx.sentAt ?? Date.now(),
-		addresses: [tx.from, tx.to],
-		assets: [tx.asset],
-		payload: {
-			correlationId: tx.transferHash,
-			protocol: tx.eventModule,
-			from: tx.from,
-			to: tx.to,
-			fromFormatted: tx.fromFormatted,
-			toFormatted: tx.toFormatted,
-			amount: BigInt(tx.amount),
-			amountUsd: tx.usd,
-			asset: {
-				id: tx.asset,
-				symbol: tx.symbol,
-				decimals: tx.decimals,
-			},
-		},
-	};
-}
 
 export async function createOcelloidsClient({
 	storagePath,
 }: {
 	storagePath: string;
 }): Promise<OcelloidsClient> {
-	const transfers = createTransfersAgent({
-		httpUrl: "http://127.0.0.1:3000",
-		wsUrl: "ws://127.0.0.1:3000",
-	});
+	const transfers = createTransfersAgent(OC_CONFIG);
+	const crosschain = createCrosschainAgent(OC_CONFIG);
 
 	const pointers = createPointerStorage(storagePath);
 	const lastSeenId = await pointers.load("t");
@@ -66,8 +50,33 @@ export async function createOcelloidsClient({
 		subscribeStorage: (_params, _emit) => {
 			throw new Error("Not implemented");
 		},
+		subscribeXc: async (_emit) => {
+			const xcSub = await crosschain.subscribeWithReplay(
+				subIds.xc,
+				{
+					onMessage: ({ payload }) => {
+						//emit(mapJourney(payload));
+						mapJourney(payload);
+					},
+					onError: (error) => console.log(error),
+					onClose: (event) => console.log(event.reason),
+				},
+				{
+					onPersist: async (id: number) => {
+						pointers.save("x", id);
+					},
+					lastSeenId,
+				},
+			);
+
+			subs.push(xcSub);
+
+			return () => {
+				xcSub.close();
+			};
+		},
 		subscribeTransfers: async (emit) => {
-			const sub = await transfers.subscribeWithReplay(
+			const transfersSub = await transfers.subscribeWithReplay(
 				subIds.transfers,
 				{
 					onMessage: ({ payload }) => {
@@ -83,9 +92,11 @@ export async function createOcelloidsClient({
 					lastSeenId,
 				},
 			);
-			subs.push(sub);
+
+			subs.push(transfersSub);
+
 			return () => {
-				sub.close();
+				transfersSub.close();
 			};
 		},
 		close: async () => {

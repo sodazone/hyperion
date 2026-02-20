@@ -33,8 +33,9 @@ export class SubscriptionManager extends EventEmitter {
 				this.addStorageSubscription(dep);
 			} else if (dep.kind === "transfer") {
 				this.addTransferSubscription();
+			} else if (dep.kind === "xc") {
+				this.addXcSubscription();
 			}
-			// future: tx, logs, events, etc
 		}
 	}
 
@@ -57,7 +58,30 @@ export class SubscriptionManager extends EventEmitter {
 			return;
 		}
 
+		console.log("Subscribe:", subKey);
+
 		const unsubscribe = await this.ocelloids.subscribeTransfers((msg) => {
+			this.emit("data", msg);
+		});
+
+		this.#active.set(subKey, {
+			key: subKey,
+			refCount: 1,
+			unsubscribe,
+		});
+	}
+
+	private async addXcSubscription() {
+		const subKey = "xc";
+		const existing = this.#active.get(subKey);
+		if (existing) {
+			existing.refCount += 1;
+			return;
+		}
+
+		console.log("Subscribe:", subKey);
+
+		const unsubscribe = await this.ocelloids.subscribeXc((msg) => {
 			this.emit("data", msg);
 		});
 
@@ -76,6 +100,8 @@ export class SubscriptionManager extends EventEmitter {
 			existing.refCount += 1;
 			return;
 		}
+
+		console.log("Subscribe:", subKey);
 
 		const unsubscribe = await this.ocelloids.subscribeStorage(
 			{
