@@ -37,6 +37,8 @@ export interface AlertPayload {
 	actors: Array<AlertActor>;
 }
 
+export type AlertMessagePart = ["t" | "a" | "e" | "cex" | "addr", string];
+
 export interface Alert<T extends AlertPayload = AlertPayload> {
 	id?: number;
 	timestamp: number;
@@ -49,7 +51,7 @@ export interface Alert<T extends AlertPayload = AlertPayload> {
 	tx_hash?: string;
 	block_number?: string;
 	block_hash?: string;
-	message: string;
+	message: AlertMessagePart[];
 	payload?: T;
 }
 

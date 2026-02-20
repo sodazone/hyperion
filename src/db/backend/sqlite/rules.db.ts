@@ -1,7 +1,7 @@
 import type { Database, SQLQueryBindings } from "bun:sqlite";
 import type { RuleInstance } from "@/alerting";
 import { safeStringify } from "@/utils/strings";
-import { b, parseRaw } from "../util";
+import { b, parseJSON } from "../util";
 
 type OwnedId = {
 	id: number;
@@ -17,7 +17,7 @@ function asRuleInstance(row: any): RuleInstance {
 		cooldownMs: row.cooldown_ms,
 		priority: row.priority,
 		enabled: !!row.enabled,
-		config: parseRaw(row.config) ?? {},
+		config: parseJSON(row.config) ?? {},
 	};
 }
 

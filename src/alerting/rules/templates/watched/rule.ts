@@ -1,7 +1,8 @@
-import { truncMid } from "@/console/util";
-import type { Alert, AlertActor, AlertPayload } from "@/db";
+import type { Alert, AlertActor, AlertMessagePart, AlertPayload } from "@/db";
 import { CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { capFirst } from "@/utils/strings";
 import type { BaseEvent, RuleDefinition } from "../../types";
+import { getName } from "../common/helpers";
 import { toOwners } from "../common/owner";
 import {
 	type Config,
@@ -112,12 +113,8 @@ export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			address: entity.address,
 			address_formatted: entity.addressFormatted,
 			labels: makeLabels(entity),
+			name: getName(entity),
 		}));
-		const flaggedAddrs =
-			actors
-				.filter((a) => a.role === "watched")
-				.map((a) => truncMid(a.address_formatted))
-				.join(", ") || "???";
 
 		const alert: Alert<WatchedAlertPayload> = {
 			timestamp: Date.now(),
@@ -127,7 +124,18 @@ export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			tx_hash: event.txHash,
 			block_number: event.blockHeight,
 			block_hash: event.blockHash,
-			message: `Entity ${flaggedAddrs} watched`,
+			message: [
+				["t", `${capFirst(event.type)} involving`],
+				...actors
+					.filter((a) => a.role === "watched")
+					.map(
+						(a) =>
+							(a.name
+								? ["e", a.name]
+								: ["addr", a.address_formatted]) as AlertMessagePart,
+					),
+				["t", "observed"],
+			],
 			payload: {
 				kind: "watched",
 				actors,

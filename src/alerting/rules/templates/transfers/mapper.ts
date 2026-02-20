@@ -1,3 +1,5 @@
+import type { AlertMessagePart } from "@/db";
+import { CAT } from "@/intel/mapping";
 import { formatNumberSI, toDecimal } from "@/utils/amounts";
 import type { TransferEvent } from "../../types";
 import { getName, makeLabels } from "../common/helpers";
@@ -22,17 +24,33 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const toEntity = local.entities[to];
 
 	const usdStr = `$${formatNumberSI(totalUsd, 0)}`;
-	const assetStr = assetsArray
-		.map((a) => `${formatNumberSI(toDecimal(a))} ${a.symbol}`)
-		.join(", ");
+	const assetParts = assetsArray.flatMap(
+		(a) =>
+			[
+				["a", formatNumberSI(toDecimal(a))],
+				["t", a.symbol],
+			] as AlertMessagePart[],
+	);
 
-	let message = `Transfer of ${assetStr} (${usdStr})`;
+	const message: AlertMessagePart[] = [
+		["t", "Transfer of"],
+		...assetParts,
+		["a", `(${usdStr})`],
+	];
 
 	const fromName = getName(fromEntity);
 	const toName = getName(toEntity);
 
-	if (fromName) message += ` from ${fromName}`;
-	if (toName) message += ` to ${toName}`;
+	if (fromName)
+		message.push(
+			["t", "from"],
+			[fromEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e", fromName],
+		);
+	if (toName)
+		message.push(
+			["t", "to"],
+			[toEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e", toName],
+		);
 
 	return {
 		message,

@@ -58,16 +58,20 @@ const cexMap: Record<string, { name: string; icon?: string }> = {
 
 const fallback = (name: string) => ({ name, icon: "" });
 
-function resolveExchange(raw: string) {
-	if (!raw) return { name: raw, icon: "" };
-	const [, key] = raw.split("exchange_name:");
-	const name = key?.toLowerCase() ?? "unknown";
+export function resolveExchange(name: string) {
 	const resolved = cexMap[name] || fallback(name);
 	return resolved;
 }
 
+function resolveExchangeFromTag(tag: string) {
+	if (!tag) return { name: tag, icon: "" };
+	const [, key] = tag.split("exchange_name:");
+	const name = key?.toLowerCase() ?? "unknown";
+	return resolveExchange(name);
+}
+
 export function ExchangeName({ tag }: { tag: string }) {
-	const { icon, name } = resolveExchange(tag);
+	const { icon, name } = resolveExchangeFromTag(tag);
 	return (
 		<div className="inline-flex gap-2 items-center">
 			{icon && <img src={icon} alt={name} className="w-4 h-4 rounded-full" />}

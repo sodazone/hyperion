@@ -7,7 +7,7 @@ export function cleanFilter<T>(v: T | "*" | undefined): T | undefined {
 export const b = (x: Uint8Array | string) =>
 	Buffer.from(typeof x === "string" ? normalizeAddress(x) : x);
 
-export function parseRaw<T>(raw: unknown): T | undefined {
+export function parseJSON<T>(raw: unknown): T | undefined {
 	if (!raw) return undefined;
 	try {
 		return JSON.parse(raw as string);

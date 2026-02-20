@@ -1,8 +1,13 @@
 import type { Database, SQLQueryBindings } from "bun:sqlite";
-import type { AlertPage, AlertPayload, OwnedAlert } from "@/db/model";
+import type {
+	AlertMessagePart,
+	AlertPage,
+	AlertPayload,
+	OwnedAlert,
+} from "@/db/model";
 import { safeStringify } from "@/utils/strings";
 import { alertCursor } from "../cursors";
-import { b, parseRaw } from "../util";
+import { b, parseJSON } from "../util";
 
 type AlertQuery = {
 	owner: Uint8Array | string;
@@ -140,7 +145,7 @@ export function createAlertsDB(db: Database) {
 					a.tx_hash ?? null,
 					a.block_number ?? null,
 					a.block_hash ?? null,
-					a.message,
+					safeStringify(a.message),
 					a.payload ? safeStringify(a.payload) : null,
 				],
 			);
@@ -204,8 +209,8 @@ export function createAlertsDB(db: Database) {
 				tx_hash: r.tx_hash ?? undefined,
 				block_number: r.block_number ?? undefined,
 				block_hash: r.block_hash ?? undefined,
-				message: r.message,
-				payload: parseRaw<AlertPayload>(r.payload),
+				message: parseJSON<AlertMessagePart[]>(r.message) ?? [],
+				payload: parseJSON<AlertPayload>(r.payload),
 			}));
 
 			const last = rows.at(-1);

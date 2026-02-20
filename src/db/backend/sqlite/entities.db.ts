@@ -2,7 +2,7 @@ import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { safeStringify } from "@/utils/strings";
 import type { Category, Entity, Tag } from "../../model";
 import { entityCursor } from "../cursors";
-import { b, cleanFilter, parseRaw } from "../util";
+import { b, cleanFilter, parseJSON } from "../util";
 
 export class EntitiesDB {
 	private db: Database;
@@ -447,7 +447,7 @@ export class EntitiesDB {
 			entity.tags.push({
 				...r,
 				source: r.source ?? undefined,
-				raw: parseRaw(r.raw),
+				raw: parseJSON(r.raw),
 				network: r.network ?? 0,
 			});
 		}
@@ -477,7 +477,7 @@ export class EntitiesDB {
 			entity.categories.push({
 				...r,
 				source: r.source ?? undefined,
-				raw: parseRaw(r.raw),
+				raw: parseJSON(r.raw),
 				network: r.network ?? 0,
 			});
 		}
@@ -673,7 +673,7 @@ export class EntitiesDB {
 					version,
 					network: network ?? 0,
 					source: source ?? undefined,
-					raw: parseRaw(raw),
+					raw: parseJSON(raw),
 				});
 			}
 		}
@@ -697,7 +697,7 @@ export class EntitiesDB {
 					version,
 					network: network ?? 0,
 					source: source ?? undefined,
-					raw: parseRaw(raw),
+					raw: parseJSON(raw),
 				});
 			}
 		}
@@ -764,7 +764,7 @@ export class EntitiesDB {
 				timestamp,
 				version,
 				source: source ?? undefined,
-				raw: parseRaw(raw),
+				raw: parseJSON(raw),
 			}),
 		);
 	}
@@ -802,7 +802,7 @@ export class EntitiesDB {
 			timestamp,
 			version,
 			source: source ?? undefined,
-			raw: parseRaw(raw),
+			raw: parseJSON(raw),
 		}));
 	}
 

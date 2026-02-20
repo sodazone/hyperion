@@ -7,6 +7,14 @@ const allowedCodes = [
 	32, // space
 ];
 
+export function capFirst(s: string): string {
+	if (!s.length) return s;
+	const first = s[0];
+	const upper = first?.toUpperCase() ?? "";
+	if (first === upper) return s;
+	return upper.concat(s.substring(1));
+}
+
 export function safeString(input: any): string {
 	if (typeof input !== "string" || input.trim() === "") {
 		return "";
