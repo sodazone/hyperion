@@ -42,7 +42,6 @@ export async function createOcelloidsClient({
 	const crosschain = createCrosschainAgent(OC_CONFIG);
 
 	const pointers = createPointerStorage(storagePath);
-	const lastSeenId = await pointers.load("t");
 
 	const subs: WebSocket[] = [];
 
@@ -51,6 +50,8 @@ export async function createOcelloidsClient({
 			throw new Error("Not implemented");
 		},
 		subscribeXc: async (_emit) => {
+			const lastSeenId = await pointers.load("x");
+
 			const xcSub = await crosschain.subscribeWithReplay(
 				subIds.xc,
 				{
@@ -76,6 +77,8 @@ export async function createOcelloidsClient({
 			};
 		},
 		subscribeTransfers: async (emit) => {
+			const lastSeenId = await pointers.load("t");
+
 			const transfersSub = await transfers.subscribeWithReplay(
 				subIds.transfers,
 				{
