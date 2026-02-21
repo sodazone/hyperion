@@ -22,7 +22,7 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const fromEntity = local.entities[from];
 	const toEntity = local.entities[to];
 
-	const usdStr = `$${formatNumberSI(totalUsd, 0)}`;
+	const usdStr = `$${formatNumberSI(totalUsd, 2)}`;
 	const assetParts = assetsArray.flatMap(
 		(a) =>
 			[
