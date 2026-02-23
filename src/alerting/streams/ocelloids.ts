@@ -58,7 +58,6 @@ export async function createOcelloidsClient({
 					onMessage: ({ payload }) => {
 						const event = mapJourney(payload);
 						if (event !== null) {
-							console.log("EMIT", event);
 							emit(event);
 						}
 					},

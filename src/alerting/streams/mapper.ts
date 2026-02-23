@@ -49,27 +49,25 @@ export function mapJourney({
 		(status === "received" || status === "failed") &&
 		assets?.length
 	) {
-		const stop = stops[0];
-		if (stop?.from.blockHash === undefined) {
-			console.log(JSON.stringify(stops, null, 2));
-		}
-		if (stop !== undefined) {
+		const start = stops[0];
+		const end = stops[stops.length - 1];
+		if (start !== undefined && end !== undefined) {
 			return {
 				type: "transfer",
 				origin: {
 					chainURN: origin,
-					blockHeight: stop.from.blockNumber,
+					blockHeight: start.from.blockNumber,
 					txHash: originTxPrimary,
-					blockHash: stop.from.blockHash,
-					timestamp: stop.from.timestamp ?? Date.now(),
+					blockHash: start.from.blockHash,
+					timestamp: start.from.timestamp ?? Date.now(),
 					protocol: originProtocol,
 				},
 				destination: {
 					chainURN: destination,
-					blockHeight: stop.to.blockNumber,
+					blockHeight: end.to.blockNumber,
 					txHash: destinationTxPrimary,
-					blockHash: stop.to.blockHash,
-					timestamp: stop.to.timestamp ?? Date.now(),
+					blockHash: end.to.blockHash,
+					timestamp: end.to.timestamp ?? Date.now(),
 					protocol: destinationProtocol,
 				},
 				payload: {
