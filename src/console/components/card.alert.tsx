@@ -66,37 +66,35 @@ function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 				const urn = n.network ? NetworkMap.toURN(n.network) : "unknown";
 
 				return (
-					<div
-						key={`${n.role}-${i}`}
-						className="flex flex-col gap-1 border-l border-zinc-800 pl-3"
-					>
-						<div className="flex items-center gap-2 text-sm text-zinc-500 capitalize">
-							<span className="w-16 truncate">{n.role}</span>
-							<NetworkIcon urn={urn} size={16} showName />
+					<div key={`${n.role}-${i}`} className="flex flex-col gap-2 my-2">
+						<div className="flex items-center gap-2 text-sm">
+							<NetworkIcon urn={urn} size={16} showName />{" "}
 						</div>
 
-						{n.block_hash && (
-							<div className="flex items-center gap-2 text-sm">
-								<span className="text-zinc-500 w-16">Block</span>
-								<span className="font-mono truncate">
-									{trunc(n.block_hash)}
-								</span>
-								<CopyButton title="Copy Block Hash" text={n.block_hash} />
-								{n.block_number && (
-									<span className="text-xs text-zinc-500 font-mono">
-										(#{n.block_number})
+						<div className="flex flex-col gap-2 pl-3">
+							{n.block_hash && (
+								<div className="flex items-center gap-2 text-sm">
+									<span className="text-zinc-500 w-16">Block</span>
+									<span className="font-mono truncate">
+										{trunc(n.block_hash)}
 									</span>
-								)}
-							</div>
-						)}
+									<CopyButton title="Copy Block Hash" text={n.block_hash} />
+									{n.block_number && (
+										<span className="text-xs text-zinc-500 font-mono">
+											(#{n.block_number})
+										</span>
+									)}
+								</div>
+							)}
 
-						{n.tx_hash && (
-							<div className="flex items-center gap-2 text-sm">
-								<span className="text-zinc-500 w-16">Tx</span>
-								<span className="font-mono truncate">{trunc(n.tx_hash)}</span>
-								<CopyButton title="Copy Tx Hash" text={n.tx_hash} />
-							</div>
-						)}
+							{n.tx_hash && (
+								<div className="flex items-center gap-2 text-sm">
+									<span className="text-zinc-500 w-16">Tx</span>
+									<span className="font-mono truncate">{trunc(n.tx_hash)}</span>
+									<CopyButton title="Copy Tx Hash" text={n.tx_hash} />
+								</div>
+							)}
+						</div>
 					</div>
 				);
 			})}
