@@ -5,6 +5,7 @@ import { resolveExchange } from "../analytics/cex.names";
 import { trunc, truncMid } from "../util";
 import { SeverityBadge } from "./badge.severity";
 import { CopyButton } from "./btn.copy";
+import { ArrowRightStroke } from "./icons";
 import { NetworkIcon } from "./network.icon";
 import { RuleIcons } from "./rule.icons";
 
@@ -56,6 +57,53 @@ function renderMessage(parts: AlertMessagePart[]) {
 	);
 }
 
+function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
+	if (!networks || networks.length === 0) return null;
+
+	return (
+		<div className="flex flex-col gap-2">
+			{networks.map((n, i) => {
+				const urn = n.network ? NetworkMap.toURN(n.network) : "unknown";
+
+				return (
+					<div
+						key={`${n.role}-${i}`}
+						className="flex flex-col gap-1 border-l border-zinc-800 pl-3"
+					>
+						<div className="flex items-center gap-2 text-sm text-zinc-500 capitalize">
+							<span className="w-16 truncate">{n.role}</span>
+							<NetworkIcon urn={urn} size={16} showName />
+						</div>
+
+						{n.block_hash && (
+							<div className="flex items-center gap-2 text-sm">
+								<span className="text-zinc-500 w-16">Block</span>
+								<span className="font-mono truncate">
+									{trunc(n.block_hash)}
+								</span>
+								<CopyButton title="Copy Block Hash" text={n.block_hash} />
+								{n.block_number && (
+									<span className="text-xs text-zinc-500 font-mono">
+										(#{n.block_number})
+									</span>
+								)}
+							</div>
+						)}
+
+						{n.tx_hash && (
+							<div className="flex items-center gap-2 text-sm">
+								<span className="text-zinc-500 w-16">Tx</span>
+								<span className="font-mono truncate">{trunc(n.tx_hash)}</span>
+								<CopyButton title="Copy Tx Hash" text={n.tx_hash} />
+							</div>
+						)}
+					</div>
+				);
+			})}
+		</div>
+	);
+}
+
 export function AlertCard({ alert }: { alert: Alert }) {
 	const actors = alert.payload?.actors ?? [];
 	return (
@@ -102,29 +150,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 								)}
 							</div>
 						))}
-					{alert.block_hash && (
-						<div className="flex flex-wrap items-center gap-2">
-							<span className="text-zinc-500 w-16 capitalize">Block</span>
-							<span className="flex gap-1 items-center font-mono">
-								<span className="truncate">{trunc(alert.block_hash)}</span>
-								<CopyButton title="Copy Block Hash" text={alert.block_hash} />
-							</span>
-							<span className="text-xs text-zinc-500 font-mono">
-								(#{alert.block_number})
-							</span>
-						</div>
-					)}
-					{alert.tx_hash && (
-						<div className="flex flex-wrap gap-2">
-							<span className="text-zinc-500 w-16 capitalize">Tx</span>
-							<span className="font-mono truncate">
-								<span className="flex gap-1 items-center font-mono">
-									<span className="truncate">{trunc(alert.tx_hash)}</span>
-									<CopyButton title="Copy Tx Hash" text={alert.tx_hash} />
-								</span>
-							</span>
-						</div>
-					)}
+					<NetworkContext networks={alert.networks} />
 					{alert.remark && (
 						<div className="flex gap-2">
 							<span className="text-zinc-500 w-16 capitalize">Remark</span>
@@ -134,12 +160,47 @@ export function AlertCard({ alert }: { alert: Alert }) {
 				</div>
 			</details>
 			<div className="flex justify-between items-center text-xs">
-				{alert.network && (
-					<NetworkIcon
-						urn={NetworkMap.toURN(alert.network) ?? "unknown"}
-						size={16}
-						showName
-					/>
+				{alert.networks && alert.networks.length > 0 && (
+					<div className="flex items-center gap-2">
+						{alert.networks.length === 1 ? (
+							<NetworkIcon
+								urn={
+									alert.networks[0]?.network
+										? NetworkMap.toURN(alert.networks[0].network)
+										: "unknown"
+								}
+								size={16}
+								showName
+							/>
+						) : (
+							<>
+								<NetworkIcon
+									urn={
+										alert.networks[0]?.network
+											? NetworkMap.toURN(alert.networks[0].network)
+											: "unknown"
+									}
+									size={16}
+									showName
+								/>
+								<span className="text-zinc-600 text-xs">
+									<ArrowRightStroke size={14} />
+								</span>
+								<NetworkIcon
+									urn={
+										alert.networks[alert.networks.length - 1]?.network
+											? NetworkMap.toURN(
+													alert.networks[alert.networks?.length - 1]?.network ??
+														0,
+												)
+											: "unknown"
+									}
+									size={16}
+									showName
+								/>
+							</>
+						)}
+					</div>
 				)}
 				<div className="inline-flex items-center overflow-hidden text-xs leading-none gap-2">
 					<span className="text-zinc-700 pr-4">#{alert.id}</span>

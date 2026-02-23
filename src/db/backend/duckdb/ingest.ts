@@ -1,4 +1,4 @@
-import type { AnyEvent, TransferEvent } from "@/alerting";
+import { type AnyEvent, type TransferEvent, TransferStatus } from "@/alerting";
 import { PUBLIC_OWNER } from "../../db";
 import type { EntitiesDB } from "../sqlite/entities.db";
 import type { AnalyticsDB } from "./db";
@@ -21,24 +21,27 @@ export function createAnalyticsIngestionPipeline({
 	function onTransfer(event: TransferEvent) {
 		const { from, to } = event.payload;
 
-		const fromEntity = classify(from);
-		const toEntity = classify(to);
+		const fromEntity = classify(from.address);
+		const toEntity = classify(to.address);
 
-		event.payload.fromCategories = fromEntity?.categories?.map(
+		event.payload.from.categories = fromEntity?.categories?.map(
 			(category) => category.category,
 		);
-		event.payload.fromTags = fromEntity?.tags?.map((tag) => tag.tag);
-		event.payload.toCategories = toEntity?.categories?.map(
+		event.payload.from.tags = fromEntity?.tags?.map((tag) => tag.tag);
+		event.payload.to.categories = toEntity?.categories?.map(
 			(category) => category.category,
 		);
-		event.payload.toTags = toEntity?.tags?.map((tag) => tag.tag);
+		event.payload.to.tags = toEntity?.tags?.map((tag) => tag.tag);
 
 		analytics.ingestTransfer(event);
 	}
 
 	return {
 		onEvent: (event: AnyEvent) => {
-			if (event.type === "transfer") {
+			if (
+				event.type === "transfer" &&
+				event.payload.status === TransferStatus.SUCCESS
+			) {
 				onTransfer(event);
 			}
 		},

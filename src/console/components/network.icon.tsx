@@ -14,7 +14,6 @@ export function NetworkIcon({
 	if (!urn) return null;
 
 	const net = NetworkCache.fromURN(urn);
-
 	const label = net?.name ?? urn;
 	const icon = net?.icon;
 

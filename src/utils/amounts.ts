@@ -10,6 +10,6 @@ export const toDecimal = ({
 	amount,
 	decimals,
 }: {
-	amount: string | number;
+	amount: string | number | bigint;
 	decimals: number;
 }) => Number(amount) / 10 ** decimals;

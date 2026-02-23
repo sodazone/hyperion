@@ -1,6 +1,7 @@
 import type { Database, SQLQueryBindings } from "bun:sqlite";
 import type {
 	AlertMessagePart,
+	AlertNetwork,
 	AlertPage,
 	AlertPayload,
 	OwnedAlert,
@@ -27,6 +28,7 @@ function buildAlertQuery(opts: AlertQuery) {
 	const clauses: string[] = ["a.owner = ?"];
 	const params: SQLQueryBindings[] = [b(opts.owner)];
 	let joinActor = false;
+	let joinNetwork = false;
 
 	if (opts.ruleId) {
 		clauses.push("a.rule_id = ?");
@@ -43,8 +45,9 @@ function buildAlertQuery(opts: AlertQuery) {
 		params.push(opts.levelMax);
 	}
 
-	if (opts.network) {
-		clauses.push("a.network = ?");
+	if (opts.network !== undefined) {
+		joinNetwork = true;
+		clauses.push("an.network = ?");
 		params.push(opts.network);
 	}
 
@@ -78,6 +81,7 @@ function buildAlertQuery(opts: AlertQuery) {
 		where: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "",
 		params,
 		joinActor,
+		joinNetwork,
 	};
 }
 
@@ -98,12 +102,6 @@ export function createAlertsDB(db: Database) {
           level  INTEGER NOT NULL,
           remark TEXT,
 
-          network INTEGER,
-
-          tx_hash TEXT,
-          block_number TEXT,
-          block_hash TEXT,
-
           message TEXT NOT NULL,
           payload TEXT
         );
@@ -117,6 +115,22 @@ export function createAlertsDB(db: Database) {
             REFERENCES alert(id)
             ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS alert_network (
+          alert_id    INTEGER NOT NULL,
+          role        TEXT NOT NULL,
+          network     INTEGER,
+          tx_hash     TEXT,
+          block_number TEXT,
+          block_hash   TEXT,
+
+          FOREIGN KEY(alert_id)
+            REFERENCES alert(id)
+            ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_alert_network_network
+          ON alert_network(network, alert_id);
 
         CREATE INDEX IF NOT EXISTS idx_alert_owner_time
           ON alert(owner, timestamp DESC, id DESC);
@@ -132,8 +146,8 @@ export function createAlertsDB(db: Database) {
 			const res = db.run(
 				`
         INSERT INTO alert
-        (owner, timestamp, rule_id, level, remark, network, tx_hash, block_number, block_hash, message, payload)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (owner, timestamp, rule_id, level, remark, message, payload)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         `,
 				[
 					b(a.owner),
@@ -141,10 +155,6 @@ export function createAlertsDB(db: Database) {
 					a.rule_id,
 					a.level,
 					a.remark ?? null,
-					a.network ?? null,
-					a.tx_hash ?? null,
-					a.block_number ?? null,
-					a.block_hash ?? null,
 					safeStringify(a.message),
 					a.payload ? safeStringify(a.payload) : null,
 				],
@@ -165,6 +175,26 @@ export function createAlertsDB(db: Database) {
 				}
 			}
 
+			if (Array.isArray(a.networks)) {
+				for (const n of a.networks) {
+					db.run(
+						`
+            INSERT INTO alert_network
+            (alert_id, role, network, tx_hash, block_number, block_hash)
+            VALUES (?, ?, ?, ?, ?, ?)
+            `,
+						[
+							id,
+							n.role ?? "unknown",
+							n.network ?? null,
+							n.tx_hash ?? null,
+							n.block_number ?? null,
+							n.block_hash ?? null,
+						],
+					);
+				}
+			}
+
 			return id;
 		},
 
@@ -180,14 +210,14 @@ export function createAlertsDB(db: Database) {
 		},
 
 		findAlerts(opts: AlertQuery): AlertPage {
-			const { where, params, joinActor } = buildAlertQuery(opts);
-
 			const limit = opts.limit ?? 100;
+			const { where, params, joinActor, joinNetwork } = buildAlertQuery(opts);
 
 			const sql = `
         SELECT DISTINCT a.*
         FROM alert a
         ${joinActor ? "JOIN alert_actor aa ON aa.alert_id = a.id" : ""}
+        ${joinNetwork ? "JOIN alert_network an ON an.alert_id = a.id" : ""}
         ${where}
         ORDER BY a.timestamp DESC, a.id DESC
         LIMIT ?
@@ -198,20 +228,31 @@ export function createAlertsDB(db: Database) {
 			const hasNext = rowsRaw.length > limit;
 			if (hasNext) rowsRaw.pop();
 
-			const rows = rowsRaw.map((r) => ({
+			const rows: OwnedAlert[] = rowsRaw.map((r) => ({
 				id: r.id,
 				owner: r.owner,
 				timestamp: r.timestamp,
 				rule_id: r.rule_id,
 				level: r.level,
 				remark: r.remark ?? undefined,
-				network: r.network ?? undefined,
-				tx_hash: r.tx_hash ?? undefined,
-				block_number: r.block_number ?? undefined,
-				block_hash: r.block_hash ?? undefined,
 				message: parseJSON<AlertMessagePart[]>(r.message) ?? [],
 				payload: parseJSON<AlertPayload>(r.payload),
 			}));
+
+			// TODO: consider one pass with map
+			for (const row of rows) {
+				if (row.id !== undefined) {
+					const networks = all<AlertNetwork>(
+						`
+        SELECT role, network, tx_hash, block_number, block_hash
+        FROM alert_network
+        WHERE alert_id = ?
+        `,
+						row.id,
+					);
+					row.networks = networks.length ? networks : undefined;
+				}
+			}
 
 			const last = rows.at(-1);
 
@@ -224,12 +265,13 @@ export function createAlertsDB(db: Database) {
 		},
 
 		countAlerts(opts: AlertQuery): number {
-			const { where, params, joinActor } = buildAlertQuery(opts);
+			const { where, params, joinActor, joinNetwork } = buildAlertQuery(opts);
 
 			const sql = `
         SELECT COUNT(DISTINCT a.id) as count
         FROM alert a
         ${joinActor ? "JOIN alert_actor aa ON aa.alert_id = a.id" : ""}
+        ${joinNetwork ? "JOIN alert_network an ON an.alert_id = a.id" : ""}
         ${where}
       `;
 

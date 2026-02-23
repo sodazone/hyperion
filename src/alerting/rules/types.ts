@@ -1,13 +1,19 @@
 import type z from "zod";
 import type { Alert, HyperionDB } from "@/db";
 
-export interface BaseEvent<T extends string = string, P = unknown> {
-	type: T;
-	chain: string;
+export type Segment = {
+	chainURN: string;
 	blockHeight: string;
 	blockHash: string;
 	txHash?: string;
 	timestamp?: number;
+	protocol?: string;
+};
+
+export interface BaseEvent<T extends string = string, P = unknown> {
+	type: T;
+	origin: Segment;
+	destination?: Segment;
 
 	payload: P;
 
@@ -20,25 +26,28 @@ export enum TransferStatus {
 	FAILURE = 1,
 }
 
+export type AssetAmount = {
+	id: string;
+	symbol: string;
+	decimals: number;
+	amount: string;
+	amountUsd: number;
+};
+
+export type TransferSegment = {
+	address: string;
+	addressFormatted?: string;
+	categories?: number[];
+	tags?: string[];
+};
+
 export type TransferPayload = {
 	correlationId: string;
-	from: string;
-	to: string;
-	fromFormatted: string;
-	toFormatted: string;
 	status: TransferStatus;
-	protocol?: string;
-	fromCategories?: number[];
-	toCategories?: number[];
-	fromTags?: string[];
-	toTags?: string[];
-	amount: bigint;
-	amountUsd: number;
-	asset: {
-		id: string;
-		symbol: string;
-		decimals: number;
-	};
+	from: TransferSegment;
+	to: TransferSegment;
+	assets: AssetAmount[];
+	totalUsd: number;
 };
 
 export type TransferEvent = BaseEvent<"transfer", TransferPayload>;
@@ -120,7 +129,7 @@ export type RuleDependency =
 	| {
 			kind: "transfer";
 	  }
-	| { kind: "xc" }
+	| { kind: "xc"; fromChain?: string; toChain?: string; protocol?: string }
 	| {
 			kind: "custom";
 			stream: string;

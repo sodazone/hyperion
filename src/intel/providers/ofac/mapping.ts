@@ -22,7 +22,7 @@ const ofacSymbolsToNetwork: Record<string, string | Record<string, string>> = {
 	USDC: {
 		ERC20: "urn:ocn:ethereum:1",
 	},
-	SOL: "urn:ocn:solana:0",
+	SOL: "urn:ocn:solana:101",
 	USDT: {
 		ERC20: "urn:ocn:ethereum:1",
 		TRC20: "urn:ocn:tron:0",

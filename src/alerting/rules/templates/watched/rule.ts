@@ -1,8 +1,8 @@
 import type { Alert, AlertActor, AlertMessagePart, AlertPayload } from "@/db";
-import { CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { CategoriesMap } from "@/intel/mapping";
 import { capFirst } from "@/utils/strings";
 import type { BaseEvent, RuleDefinition } from "../../types";
-import { getName } from "../common/helpers";
+import { getName, makeNetworks } from "../common/helpers";
 import { toOwners } from "../common/owner";
 import {
 	type Config,
@@ -62,7 +62,12 @@ export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 		if (
 			event.addresses === undefined ||
 			event.addresses.length === 0 ||
-			(config.networks?.length && !config.networks.includes(event.chain))
+			(config.networks?.length &&
+				!(
+					config.networks.includes(event.origin.chainURN) ||
+					(event.destination !== undefined &&
+						config.networks.includes(event.destination.chainURN))
+				))
 		) {
 			return { matched: false };
 		}
@@ -120,10 +125,7 @@ export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 			timestamp: Date.now(),
 			rule_id: ruleId,
 			level: config.level,
-			network: NetworkMap.fromURN(event.chain),
-			tx_hash: event.txHash,
-			block_number: event.blockHeight,
-			block_hash: event.blockHash,
+			networks: makeNetworks(event),
 			message: [
 				["t", `${capFirst(event.type)} involving`],
 				...actors

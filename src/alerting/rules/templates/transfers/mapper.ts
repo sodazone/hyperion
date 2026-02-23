@@ -6,24 +6,13 @@ import { getName, makeLabels } from "../common/helpers";
 import type { LocalData } from "./schema";
 
 export function mapTransferAlert(event: TransferEvent, local: LocalData) {
-	const { from, to, fromFormatted, toFormatted, asset, amount, amountUsd } =
-		event.payload;
+	const { from, to, assets, totalUsd } = event.payload;
 
-	const assetsArray = (Array.isArray(asset) ? asset : [asset]).map((a, i) => ({
-		id: a.id,
-		symbol: a.symbol,
-		decimals: a.decimals,
-		amount: Array.isArray(amount) ? amount[i] : amount,
-		usd: Array.isArray(amountUsd) ? amountUsd[i] : amountUsd,
-	}));
-
-	const totalUsd = assetsArray.reduce((sum, a) => sum + (a.usd ?? 0), 0);
-
-	const fromEntity = local.entities[from];
-	const toEntity = local.entities[to];
+	const fromEntity = local.entities[from.address];
+	const toEntity = local.entities[to.address];
 
 	const usdStr = `$${formatNumberSI(totalUsd, 2)}`;
-	const assetParts = assetsArray.flatMap(
+	const assetParts = assets.flatMap(
 		(a) =>
 			[
 				["a", formatNumberSI(toDecimal(a))],
@@ -40,34 +29,49 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 	const fromName = getName(fromEntity);
 	const toName = getName(toEntity);
 
-	if (fromName)
-		message.push(
-			["t", "from"],
-			[fromEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e", fromName],
-		);
-	if (toName)
-		message.push(
-			["t", "to"],
-			[toEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e", toName],
-		);
+	if (fromName !== undefined || toName !== undefined) {
+		if (fromName === toName) {
+			message.push(
+				["t", "between"],
+				[
+					fromEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e",
+					fromName ?? toName ?? "",
+				],
+			);
+		} else {
+			if (fromName)
+				message.push(
+					["t", "from"],
+					[
+						fromEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e",
+						fromName,
+					],
+				);
+			if (toName)
+				message.push(
+					["t", "to"],
+					[toEntity?.categories?.includes(CAT.EXCHANGE) ? "cex" : "e", toName],
+				);
+		}
+	}
 
 	return {
 		message,
 		actors: [
 			{
 				role: "from",
-				address: from,
-				address_formatted: fromFormatted,
+				address: from.address,
+				address_formatted: from.addressFormatted ?? from.address,
 				labels: makeLabels(fromEntity),
 			},
 			{
 				role: "to",
-				address: to,
-				address_formatted: toFormatted,
+				address: to.address,
+				address_formatted: to.addressFormatted ?? to.address,
 				labels: makeLabels(toEntity),
 			},
 		],
-		assets: assetsArray,
+		assets,
 		totalUsd,
 	};
 }

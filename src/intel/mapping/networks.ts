@@ -63,7 +63,7 @@ const NetworkURNMap: Record<string, number> = {
 	// ────────────────────────────────
 	"urn:ocn:tron:0": 0x0700,
 	"urn:ocn:ripple:0": 0x0701,
-	"urn:ocn:solana:0": 0x0702,
+	"urn:ocn:solana:101": 0x0702,
 	"urn:ocn:monero:0": 0x0703,
 } as const;
 
@@ -75,6 +75,10 @@ const entries = Object.entries(NetworkURNMap) as [string, number][];
 
 export const NetworkMap = {
 	fromURN(urn: string): number | undefined {
+		if (!NetworkURNMap[urn]) {
+			console.log(`Network URN ${urn} not found in map`);
+			return undefined;
+		}
 		return NetworkURNMap[urn];
 	},
 	toURN(networkId: number): string | undefined {

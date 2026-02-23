@@ -39,6 +39,14 @@ export interface AlertPayload {
 
 export type AlertMessagePart = ["t" | "a" | "e" | "cex" | "addr", string];
 
+export type AlertNetwork = {
+	network?: number;
+	tx_hash?: string;
+	block_number?: string;
+	block_hash?: string;
+	role: string;
+};
+
 export interface Alert<T extends AlertPayload = AlertPayload> {
 	id?: number;
 	timestamp: number;
@@ -47,10 +55,8 @@ export interface Alert<T extends AlertPayload = AlertPayload> {
 	level: number;
 	remark?: string;
 
-	network?: number;
-	tx_hash?: string;
-	block_number?: string;
-	block_hash?: string;
+	networks?: AlertNetwork[];
+
 	message: AlertMessagePart[];
 	payload?: T;
 }

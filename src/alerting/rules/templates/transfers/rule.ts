@@ -1,10 +1,11 @@
 import type { Alert, AlertPayload } from "@/db";
-import { CategoriesMap, NetworkMap } from "@/intel/mapping";
+import { CategoriesMap } from "@/intel/mapping";
 import type {
 	RuleDefinition,
 	TransferEvent,
 	TransferPayload,
 } from "../../types";
+import { makeNetworks } from "../common/helpers";
 import { toOwners } from "../common/owner";
 import { mapTransferAlert } from "./mapper";
 import { type Config, type LocalData, schema } from "./schema";
@@ -27,20 +28,21 @@ interface TransferAlertPayload extends AlertPayload {
 		symbol: string;
 		decimals: number;
 		amount: string;
-		usd: number;
+		amountUsd: number;
 	}[];
 	totals: {
-		usd: number;
+		amountUsd: number;
 	};
 }
 
-function accept(event: TransferEvent, config: Config): boolean {
-	return (
-		event.type === "transfer" &&
-		(!config.networks ||
-			config.networks.length === 0 ||
-			config.networks.includes(event.chain))
-	);
+function matchesNetwork(event: TransferEvent, config: Config): boolean {
+	if (!config.networks || config.networks.length === 0) return true;
+
+	const originMatch = config.networks.includes(event.origin.chainURN);
+	const destinationMatch =
+		event.destination && config.networks.includes(event.destination.chainURN);
+
+	return originMatch || !!destinationMatch;
 }
 
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
@@ -53,16 +55,17 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	defaults,
 
 	matcher: async (event, { config, global: { db }, owner }) => {
-		if (!accept(event, config)) return { matched: false };
+		if (event.type !== "transfer") return { matched: false };
+		if (!matchesNetwork(event, config)) return { matched: false };
 
-		const { from, to, amountUsd } = event.payload as TransferPayload;
-		if (!amountUsd || amountUsd < config.minUsd) return { matched: false };
+		const { from, to, totalUsd } = event.payload as TransferPayload;
+		if (!totalUsd || totalUsd < config.minUsd) return { matched: false };
 
 		const local: LocalData = { addresses: new Set(), entities: {} };
 		const owners = toOwners(owner, config.includePublicEntities);
 
 		let found = false;
-		for (const addr of [from, to]) {
+		for (const addr of [from.address, to.address]) {
 			local.addresses.add(addr);
 
 			const entity = db.entities.findEntity({
@@ -111,16 +114,13 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 			rule_id: ruleId,
 			level: config.level,
 			remark,
-			network: NetworkMap.fromURN(event.chain),
-			tx_hash: event.txHash,
-			block_number: event.blockHeight,
-			block_hash: event.blockHash,
+			networks: makeNetworks(event),
 			message,
 			payload: {
 				kind: "transfer",
 				actors,
 				assets,
-				totals: { usd: totalUsd },
+				totals: { amountUsd: totalUsd },
 			},
 		};
 	},

@@ -79,67 +79,91 @@ export class AnalyticsDB {
 	}
 
 	private async _ingestTransfer(event: TransferEvent) {
-		const p = event.payload;
+		const { payload: p, origin, destination } = event;
 
-		const rawAmount = event.payload.amount;
-		const decimals = p.asset?.decimals ?? 0;
-		const amount =
-			typeof rawAmount === "bigint"
-				? Number(rawAmount) / 10 ** decimals
-				: Number(rawAmount) / 10 ** decimals;
-
-		const amountUsd = safeNumber(p.amountUsd, 0);
+		const isXC = !!destination;
 
 		const correlationId =
 			p.correlationId ??
-			`${event.chain}-${event.blockHeight}-${event.txHash ?? ""}`;
-		const chain = String(event.chain ?? "");
-		const protocol = String(p.protocol ?? "");
+			`${origin.chainURN}-${origin.blockHeight}-${origin.txHash ?? ""}`;
+
+		const originDomain = String(origin.chainURN ?? "");
+		const destinationDomain = String(
+			destination?.chainURN ?? origin.chainURN ?? "",
+		);
+
+		const originProtocol = String(origin.protocol ?? "");
+		const destinationProtocol = String(
+			destination?.protocol ?? origin.protocol ?? "",
+		);
+
 		const blockHeight =
-			typeof event.blockHeight === "number" &&
-			Number.isSafeInteger(event.blockHeight)
-				? event.blockHeight
+			typeof origin.blockHeight === "number" &&
+			Number.isSafeInteger(origin.blockHeight)
+				? origin.blockHeight
 				: 0;
 
-		const timestamp = new Date(event.timestamp ?? Date.now()).toISOString();
+		const blockHash = safe(origin.blockHash);
+		const txHash = safe(origin.txHash);
+
+		const sentAt = new Date(origin.timestamp ?? Date.now()).toISOString();
+		const recvAt = new Date(
+			destination?.timestamp ?? origin.timestamp ?? Date.now(),
+		).toISOString();
+
+		const fromAddress = safe(p.from.address);
+		const toAddress = safe(p.to.address);
 
 		try {
-			await this.conn.run(
-				`
-      INSERT INTO transfers (
-        correlation_id, transfer_type,
-        origin_domain, destination_domain,
-        origin_protocol, destination_protocol,
-        block_height, block_hash, tx_hash,
-        ts, sent_at, recv_at,
-        from_address, to_address,
-        asset_id, asset_symbol, asset_decimals,
-        amount, amount_usd
-      )
-      VALUES (?, 'ic', ?, ?, ?, ?, ?, ?, ?, ?::TIMESTAMP, ?::TIMESTAMP, ?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT DO NOTHING
-      `,
-				[
-					safe(correlationId),
-					chain,
-					chain,
-					protocol,
-					protocol,
-					blockHeight,
-					safe(event.blockHash),
-					safe(event.txHash),
-					timestamp,
-					timestamp,
-					timestamp,
-					safe(p.from),
-					safe(p.to),
-					safe(p.asset?.id),
-					safe(p.asset?.symbol),
-					decimals,
-					amount,
-					amountUsd,
-				],
-			);
+			for (const asset of p.assets ?? []) {
+				const decimals = asset.decimals ?? 0;
+
+				const rawAmount = asset.amount;
+				const amount =
+					typeof rawAmount === "bigint"
+						? Number(rawAmount) / 10 ** decimals
+						: Number(rawAmount) / 10 ** decimals;
+
+				const amountUsd = safeNumber(asset.amountUsd, 0);
+
+				await this.conn.run(
+					`
+        INSERT INTO transfers (
+          correlation_id, transfer_type,
+          origin_domain, destination_domain,
+          origin_protocol, destination_protocol,
+          block_height, block_hash, tx_hash,
+          ts, sent_at, recv_at,
+          from_address, to_address,
+          asset_id, asset_symbol, asset_decimals,
+          amount, amount_usd
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::TIMESTAMP, ?::TIMESTAMP, ?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT DO NOTHING
+        `,
+					[
+						safe(correlationId),
+						isXC ? "xc" : "ic",
+						originDomain,
+						destinationDomain,
+						originProtocol,
+						destinationProtocol,
+						blockHeight,
+						blockHash,
+						txHash,
+						sentAt,
+						sentAt,
+						recvAt,
+						fromAddress,
+						toAddress,
+						safe(asset.id),
+						safe(asset.symbol),
+						decimals,
+						amount,
+						amountUsd,
+					],
+				);
+			}
 
 			const insertBulk = async (
 				table: string,
@@ -147,41 +171,43 @@ export class AnalyticsDB {
 				rows: (string | number)[][],
 			) => {
 				if (!rows.length) return;
+
 				const placeholders = rows
 					.map((r) => `(${r.map(() => "?").join(",")})`)
 					.join(",");
+
 				await this.conn.run(
 					`INSERT INTO ${table} (${columns.join(",")}) VALUES ${placeholders} ON CONFLICT DO NOTHING`,
 					rows.flat(),
 				);
 			};
 
-			if (Array.isArray(p.fromTags) && p.fromTags.length)
+			if (Array.isArray(p.from.tags) && p.from.tags.length)
 				await insertBulk(
 					"address_tag",
 					["address", "tag"],
-					p.fromTags.map((tag) => [safe(p.from), safe(tag)]),
+					p.from.tags.map((tag) => [fromAddress, safe(tag)]),
 				);
 
-			if (Array.isArray(p.toTags) && p.toTags.length)
+			if (Array.isArray(p.to.tags) && p.to.tags.length)
 				await insertBulk(
 					"address_tag",
 					["address", "tag"],
-					p.toTags.map((tag) => [safe(p.to), safe(tag)]),
+					p.to.tags.map((tag) => [toAddress, safe(tag)]),
 				);
 
-			if (Array.isArray(p.fromCategories) && p.fromCategories.length)
+			if (Array.isArray(p.from.categories) && p.from.categories.length)
 				await insertBulk(
 					"address_category",
 					["address", "category"],
-					p.fromCategories.map((c) => [safe(p.from), Number(c)]),
+					p.from.categories.map((c) => [fromAddress, Number(c)]),
 				);
 
-			if (Array.isArray(p.toCategories) && p.toCategories.length)
+			if (Array.isArray(p.to.categories) && p.to.categories.length)
 				await insertBulk(
 					"address_category",
 					["address", "category"],
-					p.toCategories.map((c) => [safe(p.to), Number(c)]),
+					p.to.categories.map((c) => [toAddress, Number(c)]),
 				);
 		} catch (error) {
 			console.error("Error during ingestTransfer:", event, error);

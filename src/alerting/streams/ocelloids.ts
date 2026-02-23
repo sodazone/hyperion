@@ -49,15 +49,18 @@ export async function createOcelloidsClient({
 		subscribeStorage: (_params, _emit) => {
 			throw new Error("Not implemented");
 		},
-		subscribeXc: async (_emit) => {
+		subscribeXc: async (emit) => {
 			const lastSeenId = await pointers.load("x");
 
 			const xcSub = await crosschain.subscribeWithReplay(
 				subIds.xc,
 				{
 					onMessage: ({ payload }) => {
-						//emit(mapJourney(payload));
-						mapJourney(payload);
+						const event = mapJourney(payload);
+						if (event !== null) {
+							console.log("EMIT", event);
+							emit(event);
+						}
 					},
 					onError: (error) => console.log(error),
 					onClose: (event) => console.log(event.reason),

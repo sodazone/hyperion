@@ -47,8 +47,8 @@ export function generateCEXFlowsQuery({
 WITH filtered AS (
   SELECT
     ${castExpr} AS timestamp,
-    SUM(CASE WHEN t.to_address = tag.address THEN t.amount_usd ELSE 0 END) AS inflow_usd,
-    SUM(CASE WHEN t.from_address = tag.address THEN t.amount_usd ELSE 0 END) AS outflow_usd
+    SUM(CASE WHEN t.to_address = tag.address THEN t.amount_usd ELSE 0 END) AS outflow_usd,
+    SUM(CASE WHEN t.from_address = tag.address THEN t.amount_usd ELSE 0 END) AS inflow_usd
   FROM transfers t
   JOIN address_tag tag
     ON t.to_address = tag.address OR t.from_address = tag.address
@@ -95,8 +95,8 @@ export function generateTopExchangesQuery({
 WITH aggregated AS (
   SELECT
     tag.tag AS exchange,
-    SUM(CASE WHEN t.to_address = tag.address THEN t.amount_usd ELSE 0 END) AS inflow_usd,
-    SUM(CASE WHEN t.from_address = tag.address THEN t.amount_usd ELSE 0 END) AS outflow_usd
+    SUM(CASE WHEN t.to_address = tag.address THEN t.amount_usd ELSE 0 END) AS outflow_usd,
+    SUM(CASE WHEN t.from_address = tag.address THEN t.amount_usd ELSE 0 END) AS inflow_usd
   FROM transfers t
   JOIN address_tag tag
     ON t.to_address = tag.address OR t.from_address = tag.address
