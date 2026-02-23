@@ -12,7 +12,7 @@ import { b, parseJSON } from "../util";
 
 type AlertQuery = {
 	owner: Uint8Array | string;
-	ruleId?: string;
+	name?: string;
 	levelMin?: number;
 	levelMax?: number;
 	network?: number;
@@ -30,9 +30,9 @@ function buildAlertQuery(opts: AlertQuery) {
 	let joinActor = false;
 	let joinNetwork = false;
 
-	if (opts.ruleId) {
-		clauses.push("a.rule_id = ?");
-		params.push(opts.ruleId);
+	if (opts.name) {
+		clauses.push("a.name = ?");
+		params.push(opts.name);
 	}
 
 	if (opts.levelMin !== undefined) {
@@ -98,7 +98,7 @@ export function createAlertsDB(db: Database) {
 
           timestamp INTEGER NOT NULL,
 
-          rule_id TEXT NOT NULL,
+          name TEXT NOT NULL,
           level  INTEGER NOT NULL,
           remark TEXT,
 
@@ -146,13 +146,13 @@ export function createAlertsDB(db: Database) {
 			const res = db.run(
 				`
         INSERT INTO alert
-        (owner, timestamp, rule_id, level, remark, message, payload)
+        (owner, timestamp, name, level, remark, message, payload)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         `,
 				[
 					b(a.owner),
 					ts,
-					a.rule_id,
+					a.name,
 					a.level,
 					a.remark ?? null,
 					safeStringify(a.message),
@@ -232,7 +232,7 @@ export function createAlertsDB(db: Database) {
 				id: r.id,
 				owner: r.owner,
 				timestamp: r.timestamp,
-				rule_id: r.rule_id,
+				name: r.name,
 				level: r.level,
 				remark: r.remark ?? undefined,
 				message: parseJSON<AlertMessagePart[]>(r.message) ?? [],

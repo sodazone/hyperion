@@ -7,7 +7,8 @@ import type {
 } from "./types";
 
 type CompiledInstance = {
-	id: string;
+	id: number;
+	ruleKey: string;
 	owner: Uint8Array;
 	def: RuleDefinition<any, any, any>;
 	config: any;
@@ -19,7 +20,7 @@ type CompiledInstance = {
 
 export class RuleEngine extends EventEmitter {
 	#instances: CompiledInstance[] = [];
-	#byId = new Map<string, CompiledInstance>();
+	#byId = new Map<number, CompiledInstance>();
 	#registry = new Map<string, RuleDefinition<any, any, any>>();
 	#lastAlertTimes: Record<string, number> = {};
 
@@ -46,6 +47,7 @@ export class RuleEngine extends EventEmitter {
 		const compiled: CompiledInstance = {
 			id: instance.id,
 			owner: instance.owner,
+			ruleKey: instance.ruleKey,
 			def,
 			config,
 			enabled: instance.enabled ?? true,
@@ -101,6 +103,7 @@ export class RuleEngine extends EventEmitter {
 					"alert",
 					Object.freeze({
 						...alert,
+						id: inst.id,
 						owner: inst.owner,
 					}),
 				);
@@ -110,7 +113,7 @@ export class RuleEngine extends EventEmitter {
 		}
 	}
 
-	setEnabled(id: string, enabled: boolean): boolean {
+	setEnabled(id: number, enabled: boolean): boolean {
 		const inst = this.#byId.get(id);
 		if (!inst) return false;
 
@@ -118,7 +121,7 @@ export class RuleEngine extends EventEmitter {
 		return true;
 	}
 
-	remove(id: string): boolean {
+	remove(id: number): boolean {
 		const inst = this.#byId.get(id);
 		if (!inst) return false;
 

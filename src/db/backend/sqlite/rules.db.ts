@@ -1,5 +1,5 @@
 import type { Database, SQLQueryBindings } from "bun:sqlite";
-import type { RuleInstance } from "@/alerting";
+import type { RuleChannel, RuleInstance } from "@/alerting";
 import { safeStringify } from "@/utils/strings";
 import { b, parseJSON } from "../util";
 
@@ -18,6 +18,7 @@ function asRuleInstance(row: any): RuleInstance {
 		priority: row.priority,
 		enabled: !!row.enabled,
 		config: parseJSON(row.config) ?? {},
+		channels: parseJSON(row.channels) ?? [],
 	};
 }
 
@@ -41,6 +42,7 @@ export function createRulesDB(db: Database) {
           cooldown_ms INTEGER,
 
           config TEXT,
+          channels TEXT NOT NULL DEFAULT '[]',
 
           created_at INTEGER NOT NULL,
           updated_at INTEGER NOT NULL
@@ -62,15 +64,16 @@ export function createRulesDB(db: Database) {
 			priority?: number;
 			cooldownMs?: number;
 			config?: Record<string, any>;
+			channels?: RuleChannel[];
 		}) {
 			const now = Date.now();
 
 			const res = db.run(
 				`
-          INSERT INTO rule_instance
-          (owner, rule_key, title, enabled, priority, cooldown_ms, config, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `,
+        INSERT INTO rule_instance
+        (owner, rule_key, title, enabled, priority, cooldown_ms, config, channels, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
 				[
 					instance.owner,
 					instance.ruleKey,
@@ -79,6 +82,7 @@ export function createRulesDB(db: Database) {
 					instance.priority ?? null,
 					instance.cooldownMs ?? null,
 					instance.config ? safeStringify(instance.config) : null,
+					safeStringify(instance.channels ?? []),
 					now,
 					now,
 				],
@@ -109,6 +113,11 @@ export function createRulesDB(db: Database) {
 			if (patch.config !== undefined) {
 				fields.push("config = ?");
 				params.push(safeStringify(patch.config));
+			}
+
+			if (patch.channels !== undefined) {
+				fields.push("channels = ?");
+				params.push(safeStringify(patch.channels));
 			}
 
 			if (!fields.length) return;

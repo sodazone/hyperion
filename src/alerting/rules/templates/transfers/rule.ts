@@ -10,7 +10,7 @@ import { toOwners } from "../common/owner";
 import { mapTransferAlert } from "./mapper";
 import { type Config, type LocalData, schema } from "./schema";
 
-const ruleId = "transfer";
+const ruleName = "transfer";
 
 const defaults = {
 	minUsd: 10_000,
@@ -46,7 +46,7 @@ function matchesNetwork(event: TransferEvent, config: Config): boolean {
 }
 
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
-	id: ruleId,
+	id: ruleName,
 	dependencies: [{ kind: "transfer" }, { kind: "xc" }],
 	title: "Asset Movement",
 	description:
@@ -111,8 +111,8 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 
 		return {
 			timestamp: Date.now(),
-			rule_id: ruleId,
 			level: config.level,
+			name: ruleName,
 			remark,
 			networks: makeNetworks(event),
 			message,

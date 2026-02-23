@@ -12,8 +12,8 @@ import { createOcelloidsClient } from "./streams/ocelloids";
 
 export interface Monitor {
 	rules: {
-		setEnabled: (ruleId: string, enabled: boolean) => void;
-		remove: (ruleId: string) => void;
+		setEnabled: (ruleId: number, enabled: boolean) => void;
+		remove: (ruleId: number) => void;
 	};
 	start: () => void;
 	stop: () => void;
@@ -53,8 +53,46 @@ export function createMonitor({
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
-		db.alerting.alerts.insertAlert(alert);
-		// console.log("Alert triggered:", safeStringify(alert, 2));
+		if (alert.id === undefined) {
+			console.warn("alert without id", alert.name, alert.owner.toHex());
+			return;
+		}
+
+		const rule = db.alerting.rules.getRuleInstance({
+			id: alert.id,
+			owner: alert.owner,
+		});
+
+		if (rule === null) {
+			console.warn(
+				"rule not found for alert",
+				alert.id,
+				alert.name,
+				alert.owner.toHex(),
+			);
+			return;
+		}
+
+		if (rule.channels === undefined || rule.channels.length === 0) {
+			db.alerting.alerts.insertAlert(alert);
+			return;
+		}
+
+		for (const channel of rule.channels) {
+			if (channel.enabled === false) continue;
+
+			switch (channel.type) {
+				case "web":
+					if (channel.enabled) {
+						db.alerting.alerts.insertAlert(alert);
+					}
+					break;
+
+				case "telegram":
+					//telegramSender.sendTo(channel.chatId, formatted);
+					break;
+			}
+		}
 	});
 
 	for (const rule of rules) {
@@ -69,11 +107,11 @@ export function createMonitor({
 			engine.start();
 		},
 		rules: {
-			setEnabled: (ruleId: string, enabled: boolean) => {
+			setEnabled: (ruleId: number, enabled: boolean) => {
 				engine.setEnabled(ruleId, enabled);
 				// TODO: close unused subscriptions
 			},
-			remove: (ruleId: string) => {
+			remove: (ruleId: number) => {
 				engine.remove(ruleId);
 				// TODO
 			},

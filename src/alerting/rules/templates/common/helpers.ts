@@ -36,7 +36,7 @@ export function makeNetworks(event: BaseEvent) {
 	const networks = [
 		{
 			role: "origin",
-			network: NetworkMap.fromURN(event.origin.chainURN),
+			network: NetworkMap.fromURN(event.origin.chainURN) ?? 0,
 			tx_hash: event.origin.txHash,
 			block_number: event.origin.blockHeight,
 			block_hash: event.origin.blockHash,
@@ -46,7 +46,7 @@ export function makeNetworks(event: BaseEvent) {
 	if (event.destination !== undefined) {
 		networks.push({
 			role: "destination",
-			network: NetworkMap.fromURN(event.destination.chainURN),
+			network: NetworkMap.fromURN(event.destination.chainURN) ?? 0,
 			tx_hash: event.destination.txHash,
 			block_number: event.destination.blockHeight,
 			block_hash: event.destination.blockHash,

@@ -11,7 +11,7 @@ import {
 	schema,
 } from "./schema";
 
-const ruleId = "watched";
+const ruleName = "watched";
 
 function makeLabels(entity: LocalEntityData) {
 	const labels: string[] = [];
@@ -52,7 +52,7 @@ interface WatchedAlertPayload extends AlertPayload {
 }
 
 export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
-	id: ruleId,
+	id: ruleName,
 	title: "Watched Entities",
 	description: "Watches entities that match configured categories and tags.",
 	schema,
@@ -123,8 +123,8 @@ export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 
 		const alert: Alert<WatchedAlertPayload> = {
 			timestamp: Date.now(),
-			rule_id: ruleId,
 			level: config.level,
+			name: ruleName,
 			networks: makeNetworks(event),
 			message: [
 				["t", `${capFirst(event.type)} involving`],

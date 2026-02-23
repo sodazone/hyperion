@@ -66,12 +66,15 @@ function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 				const urn = n.network ? NetworkMap.toURN(n.network) : "unknown";
 
 				return (
-					<div key={`${n.role}-${i}`} className="flex flex-col gap-2 my-2">
+					<div
+						key={`${n.role}-${i}`}
+						className="flex flex-col gap-2 my-1 bg-zinc-800/20 rounded-sm p-1.5"
+					>
 						<div className="flex items-center gap-2 text-sm">
 							<NetworkIcon urn={urn} size={16} showName />{" "}
 						</div>
 
-						<div className="flex flex-col gap-2 pl-3">
+						<div className="flex flex-col gap-2">
 							{n.block_hash && (
 								<div className="flex items-center gap-2 text-sm">
 									<span className="text-zinc-500 w-16">Block</span>
@@ -202,10 +205,8 @@ export function AlertCard({ alert }: { alert: Alert }) {
 				)}
 				<div className="inline-flex items-center overflow-hidden text-xs leading-none gap-2">
 					<span className="text-zinc-700 pr-4">#{alert.id}</span>
-					<span className="w-4 h-4 text-zinc-700">
-						{RuleIcons[alert.rule_id]}
-					</span>
-					<span className="font-mono text-zinc-500">{alert.rule_id}</span>
+					<span className="w-4 h-4 text-zinc-700">{RuleIcons[alert.name]}</span>
+					<span className="font-mono text-zinc-500">{alert.name}</span>
 				</div>
 			</div>
 		</div>

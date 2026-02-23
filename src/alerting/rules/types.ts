@@ -146,7 +146,7 @@ export type RuleDefinition<
 	priority?: number;
 	description?: string;
 	title?: string;
-	schema: z.ZodType<Config>;
+	schema: z.ZodObject;
 	defaults: Config;
 	matcher: RuleMatcher<Event, Data, Config>;
 	dependencies?: RuleDependency[];
@@ -170,13 +170,18 @@ export const AlertLevelLabel: Record<AlertLevel, string> = {
 	[AlertLevel.Critical]: "critical",
 };
 
+export type RuleChannel =
+	| { type: "web"; enabled?: boolean }
+	| { type: "telegram"; chatId: string; enabled?: boolean };
+
 export type RuleInstance = {
-	id: string;
+	id: number;
 	title: string;
 	owner: Uint8Array;
 	ruleKey: string;
 	enabled: boolean;
 	config: any;
+	channels: RuleChannel[];
 	cooldownMs?: number;
 	priority?: number;
 };

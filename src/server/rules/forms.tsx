@@ -25,7 +25,7 @@ export const RuleDeleteHandler = withAuth<"/console/rules/:id">(
 
 			db.alerting.rules.deleteRuleInstance(ownedId);
 
-			monitor.rules.remove(id.toString());
+			monitor.rules.remove(id);
 
 			return Ok;
 		} catch (error) {

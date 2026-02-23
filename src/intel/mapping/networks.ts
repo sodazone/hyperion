@@ -65,6 +65,7 @@ const NetworkURNMap: Record<string, number> = {
 	"urn:ocn:ripple:0": 0x0701,
 	"urn:ocn:solana:101": 0x0702,
 	"urn:ocn:monero:0": 0x0703,
+	"urn:ocn:sui:0x35834a8a": 0x0704,
 } as const;
 
 const NetworkURNMapReverse: Record<number, string> = Object.fromEntries(
