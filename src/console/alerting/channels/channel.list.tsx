@@ -27,13 +27,13 @@ export function ChannelList({ channels }: { channels: RuleChannel[] }) {
 				}
 			/>
 
-			<div className="space-y-2 mt-4">
-				{channels.length === 0 && (
-					<div className="px-4 py-16 text-center text-zinc-500 text-sm">
-						No channels configured yet
-					</div>
-				)}
+			{channels.length === 0 && (
+				<div className="px-4 py-16 text-center text-zinc-500 text-sm">
+					No channels configured yet
+				</div>
+			)}
 
+			<div className="divide-y divide-zinc-900">
 				{channels.map((c) => (
 					<div
 						key={c.id}
