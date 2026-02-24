@@ -39,7 +39,6 @@ export function mapTransferAlert(event: TransferEvent, local: LocalData) {
 				],
 			);
 		} else {
-			console.log(fromName, toName);
 			if (fromName)
 				message.push(
 					["t", "from"],
