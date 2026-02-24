@@ -15,6 +15,8 @@ export interface Monitor {
 	rules: {
 		setEnabled: (ruleId: number, enabled: boolean) => void;
 		remove: (ruleId: number) => void;
+		update: (rule: RuleInstance) => void;
+		add: (rule: RuleInstance) => void;
 	};
 	start: () => void;
 	stop: () => void;
@@ -106,6 +108,12 @@ export function createMonitor({
 			setEnabled: (ruleId: number, enabled: boolean) => {
 				engine.setEnabled(ruleId, enabled);
 				// TODO: close unused subscriptions
+			},
+			update: (rule: RuleInstance) => {
+				engine.update(rule);
+			},
+			add: (rule: RuleInstance) => {
+				engine.addInstance(rule);
 			},
 			remove: (ruleId: number) => {
 				engine.remove(ruleId);

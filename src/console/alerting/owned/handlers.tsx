@@ -79,7 +79,7 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 
 				const parsed = template.schema?.parse(data) ?? {};
 
-				db.alerting.rules.insertRuleInstance({
+				const id = db.alerting.rules.insertRuleInstance({
 					owner: ownerHash,
 					ruleKey: template.id,
 					title: safeString(title),
@@ -87,6 +87,14 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 					enabled,
 					channelIds,
 				});
+
+				const inserted = db.alerting.rules.getRuleInstance({
+					id,
+					owner: ownerHash,
+				});
+				if (!inserted) return InternalServerError;
+
+				monitor.rules.add(inserted);
 
 				return RedirectToRules();
 			} else {
@@ -117,7 +125,7 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 					db.alerting.rules.attachChannelsToRule(ownedId, channelIds);
 				}
 
-				monitor.rules.setEnabled(updated.id, updated.enabled);
+				monitor.rules.update(updated);
 
 				return RedirectToRules();
 			}

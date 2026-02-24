@@ -121,6 +121,11 @@ export class RuleEngine extends EventEmitter {
 		return true;
 	}
 
+	update(rule: RuleInstance) {
+		this.remove(rule.id);
+		this.addInstance(rule);
+	}
+
 	remove(id: number): boolean {
 		const inst = this.#byId.get(id);
 		if (!inst) return false;
