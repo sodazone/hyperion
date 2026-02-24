@@ -22,13 +22,12 @@ export function RuleForm({
 
 	const isEdit = !!rule;
 	const method = isEdit ? "hx-put" : "hx-post";
+	const backLink = isEdit ? "/console/rules" : "/console/rules/form/__new__";
 
 	return (
 		<section className="h-full min-h-screen flex flex-col max-w-full md:w-4xl lg:w-5xl md:mx-auto space-y-8">
 			<div className="flex gap-6 items-center">
-				<BackButton
-					href={isEdit ? "/console/rules" : "/console/rules/form/__new__"}
-				/>
+				<BackButton href={backLink} />
 
 				<div className="flex flex-col space-y-1">
 					<h1 className="text-lg font-semibold text-zinc-300">
@@ -138,7 +137,7 @@ export function RuleForm({
 				<div className="flex justify-end gap-2 pt-2">
 					<button
 						type="button"
-						hx-get="/console/rules/form/__new__"
+						hx-get={backLink}
 						hx-target="#main-content"
 						hx-push-url="true"
 						className="px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-200"
