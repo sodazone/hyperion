@@ -1,8 +1,8 @@
 import { withAuth } from "@/console/authenticated";
 import { Multiselect } from "@/console/components/select.multi";
-import { render } from "../render";
+import { render } from "@/server/render";
 
-export const TagsFragment = withAuth<"/console/rules/fragments/tags">(
+export const TagsFragment = withAuth<"/console/entities/tags/options">(
 	async ({ db, ownerHash }) => {
 		const tags = db.entities.findAllTags({
 			owner: ownerHash,
@@ -12,7 +12,7 @@ export const TagsFragment = withAuth<"/console/rules/fragments/tags">(
 			<div id="tags-multiselect">
 				<Multiselect
 					name="tags"
-					placeholder="Search tags…"
+					placeholder="Select tags…"
 					options={tags.map((t) => ({
 						label: t,
 						value: t,

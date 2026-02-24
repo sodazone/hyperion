@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { FieldMeta } from "@/alerting";
+import { Checkbox } from "@/console/components/checkbox";
 import { ChevronUpDownIcon } from "@/console/components/icons";
 import { Multiselect } from "@/console/components/select.multi";
 import { NetworkCache } from "@/console/network.cache";
@@ -86,7 +87,7 @@ export function ConfigField({
 				</span>
 				<Multiselect
 					name={name}
-					placeholder="Search networks…"
+					placeholder="Select networks…"
 					options={NetworkCache.all().map((n) => ({
 						label: n.name,
 						value: n.urn,
@@ -107,7 +108,7 @@ export function ConfigField({
 
 				<div
 					id={`tags-${name}`}
-					hx-get="/console/rules/fragments/tags"
+					hx-get="/console/entities/tags/options"
 					hx-trigger="load"
 					hx-swap="outerHTML"
 					hx-target={`#tags-${name}`}
@@ -124,31 +125,7 @@ export function ConfigField({
 	if (unwrapped instanceof z.ZodBoolean) {
 		return (
 			<div className="flex flex-col gap-2 text-sm text-zinc-300">
-				<label htmlFor={name} className="ui-checkbox">
-					<input
-						id={name}
-						name={name}
-						defaultChecked={defaultValue ?? false}
-						className="peer"
-						type="checkbox"
-					/>
-					<svg
-						className="pointer-events-none absolute ml-0.5 hidden h-3 w-3 text-zinc-900 peer-checked:block"
-						viewBox="0 0 20 20"
-						fill="currentColor"
-						role="img"
-						aria-label="true"
-					>
-						<path
-							fillRule="evenodd"
-							d="M16.704 5.29a1 1 0 010 1.42l-7.2 7.2a1 1 0 01-1.42 0l-3.2-3.2a1 1 0 111.42-1.42l2.49 2.49 6.49-6.49a1 1 0 011.42 0z"
-							clipRule="evenodd"
-						/>
-					</svg>
-
-					<span>{label}</span>
-				</label>
-
+				<Checkbox name={name} label={label} defaultValue={defaultValue} />
 				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>
 		);

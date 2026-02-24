@@ -1,1 +1,1 @@
-export { TelegramSender } from "./telegram/sender";
+export { notifyTelegram } from "./telegram/notify";

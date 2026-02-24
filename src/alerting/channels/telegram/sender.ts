@@ -1,4 +1,4 @@
-type TelegramOptions = {
+export type TelegramOptions = {
 	token: string;
 	chatId: string;
 	apiBase?: string;
@@ -9,131 +9,125 @@ type TelegramOptions = {
 	rateLimitDelayMs?: number;
 };
 
-type SendOptions = {
+export type SendOptions = {
 	disablePreview?: boolean;
+	retryAttemps?: number;
 };
 
-type QueueItem = {
-	text: string;
-	opts?: SendOptions;
-	attempt: number;
+const DEFAULTS = {
+	apiBase: "https://api.telegram.org",
+	retryAttempts: 5,
+	baseDelayMs: 500,
+	maxDelayMs: 10_000,
+	rateLimitDelayMs: 50,
 };
 
-export class TelegramSender {
-	private token: string;
-	private chatId: string;
-	private apiBase: string;
+function endpoint(apiBase: string, token: string, method: string) {
+	return `${apiBase}/bot${token}/${method}`;
+}
 
-	private retryAttempts: number;
-	private baseDelayMs: number;
-	private maxDelayMs: number;
-	private rateLimitDelayMs: number;
+function computeBackoff(
+	attempt: number,
+	baseDelayMs: number,
+	maxDelayMs: number,
+) {
+	const delay = baseDelayMs * 2 ** (attempt - 1);
+	return Math.min(delay, maxDelayMs);
+}
 
-	private queue: QueueItem[] = [];
-	private processing = false;
+async function sleep(ms: number) {
+	return Bun.sleep(ms);
+}
 
-	constructor(opts: TelegramOptions) {
-		this.token = opts.token;
-		this.chatId = opts.chatId;
-		this.apiBase = opts.apiBase ?? "https://api.telegram.org";
+export async function sendTelegramMessage(
+	opts: TelegramOptions,
+	text: string,
+	sendOpts?: SendOptions,
+): Promise<void> {
+	const {
+		token,
+		chatId,
+		apiBase = DEFAULTS.apiBase,
+		retryAttempts = sendOpts?.retryAttemps ?? DEFAULTS.retryAttempts,
+		baseDelayMs = DEFAULTS.baseDelayMs,
+		maxDelayMs = DEFAULTS.maxDelayMs,
+		rateLimitDelayMs = DEFAULTS.rateLimitDelayMs,
+	} = opts;
 
-		this.retryAttempts = opts.retryAttempts ?? 5;
-		this.baseDelayMs = opts.baseDelayMs ?? 500;
-		this.maxDelayMs = opts.maxDelayMs ?? 10_000;
-		this.rateLimitDelayMs = opts.rateLimitDelayMs ?? 50;
+	if (!token || !chatId) {
+		throw new Error("Missing Telegram token or chatId");
 	}
 
-	private endpoint(method: string) {
-		return `${this.apiBase}/bot${this.token}/${method}`;
-	}
+	let attempt = 0;
 
-	async send(text: string, opts?: SendOptions) {
-		this.queue.push({
-			text,
-			opts,
-			attempt: 0,
-		});
-
-		if (!this.processing) {
-			this.processQueue();
-		}
-	}
-
-	private async processQueue() {
-		this.processing = true;
-
-		while (this.queue.length > 0) {
-			const item = this.queue.shift();
-			try {
-				if (item !== undefined) {
-					await this.executeSend(item);
-					await Bun.sleep(this.rateLimitDelayMs);
-				}
-			} catch (err) {
-				console.error("Telegram send failed permanently:", err);
-			}
-		}
-
-		this.processing = false;
-	}
-
-	private async executeSend(item: QueueItem): Promise<void> {
+	while (true) {
 		try {
-			await this.rawSend(item.text, item.opts);
+			await rawSend({
+				apiBase,
+				token,
+				chatId,
+				text,
+				sendOpts,
+			});
+
+			if (rateLimitDelayMs > 0) {
+				await sleep(rateLimitDelayMs);
+			}
+
+			return;
 		} catch (err: any) {
-			if (item.attempt >= this.retryAttempts) {
+			if (attempt >= retryAttempts) {
 				throw err;
 			}
 
-			item.attempt++;
+			attempt++;
 
-			const delay = this.computeBackoff(item.attempt);
+			const delay = computeBackoff(attempt, baseDelayMs, maxDelayMs);
 
 			console.warn(
-				`Telegram retry ${item.attempt}/${this.retryAttempts} in ${delay}ms`,
-				err,
-				item.text,
+				`Telegram retry ${attempt}/${retryAttempts} in ${delay}ms`,
+				err?.message,
 			);
 
-			await Bun.sleep(delay);
-
-			return this.executeSend(item);
+			await sleep(delay);
 		}
 	}
+}
 
-	private async rawSend(text: string, opts?: SendOptions) {
-		const body = {
-			chat_id: this.chatId,
-			text,
-			parse_mode: "MarkdownV2",
-			disable_web_page_preview: opts?.disablePreview ?? true,
-		};
+async function rawSend(params: {
+	apiBase: string;
+	token: string;
+	chatId: string;
+	text: string;
+	sendOpts?: SendOptions;
+}) {
+	const { apiBase, token, chatId, text, sendOpts } = params;
 
-		const res = await fetch(this.endpoint("sendMessage"), {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body),
-		});
+	const body = {
+		chat_id: chatId,
+		text,
+		parse_mode: "MarkdownV2",
+		disable_web_page_preview: sendOpts?.disablePreview ?? true,
+	};
 
-		if (res.status === 429) {
-			const data = await res.json().catch(() => null);
-			const retryAfter = data?.parameters?.retry_after
-				? data.parameters.retry_after * 1000
-				: 1000;
+	const res = await fetch(endpoint(apiBase, token, "sendMessage"), {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
 
-			console.warn(`Telegram rate limited. Retry after ${retryAfter}ms`);
-			await Bun.sleep(retryAfter);
-			throw new Error("Rate limited");
-		}
+	if (res.status === 429) {
+		const data = await res.json().catch(() => null);
+		const retryAfter = data?.parameters?.retry_after
+			? data.parameters.retry_after * 1000
+			: 1000;
 
-		if (!res.ok) {
-			const errText = await res.text();
-			throw new Error(`Telegram ${res.status}: ${errText}`);
-		}
+		await sleep(retryAfter);
+		throw new Error("Rate limited");
 	}
 
-	private computeBackoff(attempt: number) {
-		const delay = this.baseDelayMs * 2 ** (attempt - 1);
-		return Math.min(delay, this.maxDelayMs);
+	if (!res.ok) {
+		const errText = await res.text();
+		throw new Error(`Telegram ${res.status}: ${errText}`);
 	}
 }

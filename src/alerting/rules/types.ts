@@ -170,9 +170,14 @@ export const AlertLevelLabel: Record<AlertLevel, string> = {
 	[AlertLevel.Critical]: "critical",
 };
 
-export type RuleChannel =
-	| { type: "web"; enabled?: boolean }
-	| { type: "telegram"; chatId: string; enabled?: boolean };
+export type RuleChannel = {
+	id: number;
+	owner: Uint8Array | string;
+	name: string;
+	type: string;
+	enabled: boolean;
+	config: Record<string, any>;
+};
 
 export type RuleInstance = {
 	id: number;

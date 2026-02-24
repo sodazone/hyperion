@@ -1,5 +1,14 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
 import {
+	ChannelsConfigFragment,
+	ChannelsFragment,
+} from "@/console/alerting/channels/fragments";
+import {
+	ChannelFormPage,
+	ChannelListPage,
+} from "@/console/alerting/channels/pages";
+import { ChannelTestHandler } from "@/console/alerting/channels/test-message.handler";
+import {
 	MyAlertListPage,
 	MyAlertListPoller,
 	RuleFormPage,
@@ -28,21 +37,25 @@ import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
 import apiDocs from "@/static/scalar.html";
 import { VERSION } from "@/version";
-import { CexSeriesHandler } from "./analytics/cex";
+import {
+	ChannelDeleteHandler,
+	ChannelPostHandler,
+	ChannelPutHandler,
+} from "../console/alerting/channels/handlers";
+import { TagsFragment } from "../console/alerting/owned/fragments";
+import {
+	RuleDeleteHandler,
+	RuleUpsertHandler,
+} from "../console/alerting/owned/handlers";
+import { CexSeriesHandler } from "../console/analytics/cex.handler";
+import {
+	WatchlistDeleteHandler,
+	WatchlistPostHandler,
+} from "../console/entities/owned/forms";
 import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
-import {
-	RuleDeleteHandler,
-	RulePostHandler,
-	RulePutHandler,
-} from "./rules/forms";
-import { TagsFragment } from "./rules/fragments";
-import {
-	WatchlistDeleteHandler,
-	WatchlistPostHandler,
-} from "./watchlist/forms";
 
 export type Serve = {
 	shutdown: (signal: string) => Promise<void>;
@@ -113,16 +126,29 @@ export async function serve({
 			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),
 			"/console/my/alerts/$": async (req) => MyAlertListPoller(ctx, req),
+			"/console/channels": {
+				GET: async (req) => ChannelListPage(ctx, req),
+				PUT: async (req) => ChannelPutHandler(ctx, req),
+				POST: async (req) => ChannelPostHandler(ctx, req),
+			},
+			"/console/channels/:id": {
+				DELETE: async (req) => ChannelDeleteHandler(ctx, req),
+			},
+			"/console/channels/form/:id": async (req) => ChannelFormPage(ctx, req),
+			"/console/channels/config": async (req) =>
+				ChannelsConfigFragment(ctx, req),
+			"/console/channels/options": async (req) => ChannelsFragment(ctx, req),
+			"/console/channels/test": async (req) => ChannelTestHandler(ctx, req),
 			"/console/rules": {
 				GET: async (req) => RuleListPage(ctx, req),
-				POST: async (req) => RulePostHandler(ctx, req),
+				POST: async (req) => RuleUpsertHandler(ctx, req),
+				PUT: async (req) => RuleUpsertHandler(ctx, req),
 			},
 			"/console/rules/:id": {
-				PUT: async (req) => RulePutHandler(ctx, req),
 				DELETE: async (req) => RuleDeleteHandler(ctx, req),
 			},
 			"/console/rules/form/:id": async (req) => RuleFormPage(ctx, req),
-			"/console/rules/fragments/tags": async (req) => TagsFragment(ctx, req),
+			"/console/entities/tags/options": async (req) => TagsFragment(ctx, req),
 			"/console/entities": async (req) => EntityListPage(ctx, req),
 			"/console/entities/:id": async (req) => EntityDetailPage(ctx, req),
 			"/console/watchlist": {

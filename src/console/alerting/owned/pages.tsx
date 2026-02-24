@@ -11,8 +11,10 @@ import { RulesList } from "./rule.list";
 import { TemplateWizard } from "./rule.template";
 
 export const RuleFormPage = withAuth<"/console/rules/form/:id">(
-	async ({ req, user }) => {
-		if (req.params.id === "__new__") {
+	async ({ db, req, ownerHash, user }) => {
+		const ruleId = req.params.id;
+
+		if (ruleId === "__new__") {
 			let component: React.ReactElement | undefined;
 			const q = new URL(req.url).searchParams;
 			if (q.has("template")) {
@@ -37,7 +39,26 @@ export const RuleFormPage = withAuth<"/console/rules/form/:id">(
 				</ConsoleApp>,
 			);
 		}
-		return InvalidParameters;
+
+		const existingRule = db.alerting.rules.getRuleInstance({
+			id: Number(ruleId),
+			owner: ownerHash,
+		});
+		if (!existingRule) return InvalidParameters;
+
+		const template = RulesRegistry.find((t) => t.id === existingRule.ruleKey);
+		if (!template) return InvalidParameters;
+
+		const component = <RuleForm template={template} rule={existingRule} />;
+
+		if (req.headers.get("HX-Request")) {
+			return render(component);
+		}
+		return render(
+			<ConsoleApp member={user} path="/console/rules">
+				{component}
+			</ConsoleApp>,
+		);
 	},
 );
 

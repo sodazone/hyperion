@@ -130,17 +130,15 @@ export function Sidebar({ member }: Props) {
 									>
 										Rules
 									</li>
-									{/*
 									<li
 										className="nav-link flex items-center gap-3 rounded-md px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-zinc-100 cursor-pointer"
-										data-href="/console/destinations"
-										hx-get="/console/destinations"
+										data-href="/console/channels"
+										hx-get="/console/channels"
 										hx-target="#main-content"
 										hx-push-url="true"
 									>
-										Destinations
+										Channels
 									</li>
-									*/}
 								</>
 							)}
 						</ul>

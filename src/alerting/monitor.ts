@@ -6,6 +6,7 @@ import {
 } from "@/alerting";
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
+import { notifyTelegram } from "./channels";
 import { InMemoryStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
 import { createOcelloidsClient } from "./streams/ocelloids";
@@ -73,23 +74,18 @@ export function createMonitor({
 			return;
 		}
 
-		if (rule.channels === undefined || rule.channels.length === 0) {
-			db.alerting.alerts.insertAlert(alert);
-			return;
-		}
+		// Web is always enabled
+		db.alerting.alerts.insertAlert(alert);
 
 		for (const channel of rule.channels) {
 			if (channel.enabled === false) continue;
 
 			switch (channel.type) {
-				case "web":
-					if (channel.enabled) {
-						db.alerting.alerts.insertAlert(alert);
-					}
-					break;
-
 				case "telegram":
-					//telegramSender.sendTo(channel.chatId, formatted);
+					notifyTelegram(
+						{ token: channel.config.token, chatId: channel.config.chatId },
+						alert,
+					);
 					break;
 			}
 		}

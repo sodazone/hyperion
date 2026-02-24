@@ -1,6 +1,6 @@
 import { withAuth } from "@/console/authenticated";
 import { normalizeAddress } from "@/intel/mapping";
-import { InternalServerError } from "../response";
+import { InternalServerError } from "@/server/response";
 import { validateAddress } from "./validation";
 
 export const WatchlistDeleteHandler = withAuth<"/console/watchlist/:address">(

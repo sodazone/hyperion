@@ -111,7 +111,7 @@ export function WatchlistForm({ entity }: { entity?: Entity }) {
 						Cancel
 					</button>
 					<button type="submit" className="ui-btn">
-						{isEdit ? "Save" : "Add"}
+						{isEdit ? "Save" : "Create"}
 					</button>
 				</div>
 			</form>
