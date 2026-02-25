@@ -6,7 +6,7 @@ import {
 	sendDiscordMessage,
 } from "./sender";
 
-export async function notifyTelegram(
+export async function notifyDiscord(
 	opts: DiscordOptions,
 	alert: Alert,
 	sendOpts?: DiscordSendOptions,
