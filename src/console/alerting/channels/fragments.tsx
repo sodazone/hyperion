@@ -41,10 +41,6 @@ function ChannelOptions({
 				}))}
 				selected={defaultValue ? defaultValue.split(",") : undefined}
 			/>
-			<script>
-				document.querySelectorAll("#channels-selector
-				.multiselect").forEach(initMultiselect);
-			</script>
 		</div>
 	);
 }

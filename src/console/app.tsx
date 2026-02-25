@@ -17,12 +17,7 @@ export function ConsoleApp({ member, children }: Props) {
 				<link rel="icon" type="image/svg+xml" href="/img/favicon.svg" />
 				<link rel="icon" type="image/png" href="/img/favicon.png" />
 				<title>Hyperion Console</title>
-				<link rel="stylesheet" href="/styles.css" />
-				<script
-					src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
-					integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
-					crossOrigin="anonymous"
-				></script>
+				<link rel="stylesheet" href="/assets/styles.css" />
 			</head>
 			<body className="h-full bg-zinc-950 text-zinc-100">
 				<div className="flex h-full flex-col">
@@ -40,6 +35,7 @@ export function ConsoleApp({ member, children }: Props) {
 						</main>
 					</div>
 				</div>
+				<script type="module" src="/assets/main.js"></script>
 			</body>
 		</html>
 	);

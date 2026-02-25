@@ -2,7 +2,6 @@ import { z } from "zod";
 import type { RuleDefinition, RuleInstance } from "@/alerting";
 import { BackButton } from "@/console/components/btn.back";
 import { Checkbox } from "@/console/components/checkbox";
-import { MultiselectScript } from "@/console/components/select.multi";
 import { ConfigField } from "./rule.config";
 
 export function RuleForm({
@@ -53,8 +52,6 @@ export function RuleForm({
 					</button>
 				)}
 			</div>
-
-			<MultiselectScript />
 
 			<form
 				{...{ [method]: "/console/rules" }}
@@ -149,8 +146,6 @@ export function RuleForm({
 					</button>
 				</div>
 			</form>
-
-			<script>{`document.querySelectorAll(".multiselect").forEach(initMultiselect);`}</script>
 		</section>
 	);
 }

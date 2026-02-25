@@ -35,7 +35,7 @@ const icons: Record<string, Bun.BunFile> = {};
 
 export async function loadNetworkIconFiles(infos: NetworkInfo[]) {
 	const fromHere = here(import.meta);
-	const baseDir = fromHere("../static/img/networks");
+	const baseDir = fromHere("../../public/img/networks");
 
 	for (const info of infos) {
 		if (!info.icon) continue;

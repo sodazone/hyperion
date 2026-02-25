@@ -18,7 +18,6 @@ export const TagsFragment = withAuth<"/console/entities/tags/options">(
 						value: t,
 					}))}
 				/>
-				<script>{`document.querySelectorAll("#tags-multiselect .multiselect").forEach(initMultiselect);`}</script>
 			</div>,
 		);
 	},

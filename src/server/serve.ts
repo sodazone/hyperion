@@ -35,8 +35,8 @@ import { LoginPage } from "@/console/login.page";
 import { initNetworkCache } from "@/console/network.cache";
 import { createHyperionDB, type HyperionDB } from "@/db";
 import { openapi } from "@/openapi/gen.openapi";
-import apiDocs from "@/static/scalar.html";
 import { VERSION } from "@/version";
+import apiDocs from "../../public/scalar.html";
 import {
 	ChannelDeleteHandler,
 	ChannelPostHandler,
@@ -111,7 +111,8 @@ export async function serve({
 					},
 				});
 			},
-			"/styles.css": Bun.file("./src/static/styles.min.css"),
+			"/assets/styles.css": Bun.file("./public/styles.min.css"),
+			"/assets/main.js": Bun.file("./public/js/main.js"),
 			"/login": {
 				GET: LoginPage,
 				POST: authApi.login,
