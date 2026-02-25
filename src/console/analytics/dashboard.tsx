@@ -94,7 +94,7 @@ export function Dashboard({
 					<div
 						id="top-exchanges-table"
 						hx-get="/console/dashboard/fragments/top-exchanges"
-						hx-trigger="load, refresh from:body"
+						hx-trigger="refresh"
 						hx-target="#top-exchanges-table"
 						hx-include="#dashboard-filters"
 						className="flex-1 overflow-x-auto"
