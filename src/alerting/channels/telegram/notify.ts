@@ -1,15 +1,15 @@
 import type { Alert } from "@/db";
 import { formatTelegramAlert } from "./message";
 import {
-	type SendOptions,
 	sendTelegramMessage,
 	type TelegramOptions,
+	type TelegramSendOptions,
 } from "./sender";
 
 export async function notifyTelegram(
 	opts: TelegramOptions,
 	alert: Alert,
-	sendOpts?: SendOptions,
+	sendOpts?: TelegramSendOptions,
 ) {
 	const message = formatTelegramAlert(alert);
 	await sendTelegramMessage(opts, message, sendOpts);
