@@ -43,9 +43,15 @@ export function dashboard(initialNetwork, initialBucket) {
 		},
 
 		async loadChart() {
-			if (!this.$refs.cexCanvas) return;
+			await this.$nextTick();
 
-			const ctx = this.$refs.cexCanvas.getContext("2d");
+			const canvas = this.$refs.cexCanvas;
+			if (!canvas || !canvas.offsetWidth || !canvas.offsetHeight) {
+				requestAnimationFrame(() => this.loadChart());
+				return;
+			}
+
+			const ctx = canvas.getContext("2d");
 			if (!ctx) return;
 
 			if (this.loadChartInProgress) return;
@@ -72,6 +78,7 @@ export function dashboard(initialNetwork, initialBucket) {
 
 				if (this.chartInstance) {
 					this.chartInstance.destroy();
+					this.chartInstance = null;
 				}
 
 				this.chartInstance = new Chart(ctx, {
