@@ -51,9 +51,44 @@ const cexMap: Record<string, { name: string; icon?: string }> = {
 		name: "MEXC",
 		icon: "https://assets.coingecko.com/markets/images/409/large/logo_new.png",
 	},
-	"huobi.com": { name: "Huobi" },
-	"okx.com": { name: "OKX" },
-	"ftx.com": { name: "FTX" },
+	btcturk: {
+		name: "BtcTurk",
+		icon: "https://assets.coingecko.com/markets/images/223/large/btctrurk_kripto.png",
+	},
+	bitpanda: {
+		name: "Bitpanda",
+	},
+	bitvavo: {
+		name: "Bitvavo",
+		icon: "https://assets.coingecko.com/markets/images/714/large/bitvavo-mark-square-black.png",
+	},
+	upbit: {
+		name: "upbit",
+		icon: "https://assets.coingecko.com/markets/images/117/large/upbit.png",
+	},
+	"huobi.com": {
+		name: "Huobi",
+		icon: "https://assets.coingecko.com/coins/images/2822/standard/huobi-token-logo.png",
+	},
+	"okx.com": {
+		name: "OKX",
+		icon: "https://assets.coingecko.com/markets/images/96/large/WeChat_Image_20220117220452.png",
+	},
+	"ftx.com": {
+		name: "FTX",
+		icon: "https://assets.coingecko.com/coins/images/9026/standard/F.png",
+	},
+	coinspot: {
+		name: "Coinspot",
+	},
+	korbit: {
+		name: "Korbit",
+		icon: "https://assets.coingecko.com/markets/images/28/large/korbit-logo.png",
+	},
+	swissborg: {
+		name: "SwissBorg",
+		icon: "https://assets.coingecko.com/coins/images/2117/standard/YJUrRy7r_400x400.png",
+	},
 };
 
 const fallback = (name: string) => ({ name, icon: "" });
