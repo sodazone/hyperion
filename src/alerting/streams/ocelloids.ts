@@ -36,52 +36,97 @@ const subIds = {
 function withReconnect({
 	start,
 	maxDelay = 30_000,
+	minDelay = 1_000,
 }: {
-	start: () => Promise<WebSocket>;
+	start: (hooks: {
+		onOpen: () => void;
+		onMessage: () => void;
+		onClose: (err?: any) => void;
+		onError: (err?: any) => void;
+	}) => Promise<{ close: () => void }>;
 	maxDelay?: number;
+	minDelay?: number;
 }) {
 	let stopped = false;
-	let socket: WebSocket | null = null;
-	let retryDelay = 1_000;
+	let current: { close: () => void } | null = null;
+	let retryDelay = minDelay;
+	let reconnectTimer: Timer | null = null;
+	let connecting = false;
+	let hasReceivedMessage = false;
 
-	const connect = async () => {
-		if (stopped) return;
-
-		try {
-			socket = await start();
-			retryDelay = 1_000;
-		} catch (err) {
-			console.error("Subscription failed, retrying...", err);
-			scheduleReconnect();
+	const clearReconnectTimer = () => {
+		if (reconnectTimer) {
+			clearTimeout(reconnectTimer);
+			reconnectTimer = null;
 		}
 	};
 
 	const scheduleReconnect = () => {
 		if (stopped) return;
+		if (reconnectTimer) return;
+		if (connecting) return;
 
-		setTimeout(() => {
+		const jitter = Math.random() * 0.3 + 0.85;
+		const delay = Math.min(retryDelay * jitter, maxDelay);
+
+		console.warn(`Reconnecting in ${Math.round(delay)}ms`);
+
+		reconnectTimer = setTimeout(() => {
+			reconnectTimer = null;
 			retryDelay = Math.min(retryDelay * 2, maxDelay);
 			connect();
-		}, retryDelay);
+		}, delay);
 	};
 
-	const handleCloseOrError = () => {
+	const handleCloseOrError = (err?: any) => {
 		if (stopped) return;
-		console.warn("Socket closed. Reconnecting...");
+
+		console.warn("Connection lost", err ?? "");
+
+		current?.close();
+		current = null;
+
 		scheduleReconnect();
+	};
+
+	const connect = async () => {
+		if (stopped) return;
+		if (connecting) return;
+
+		connecting = true;
+		hasReceivedMessage = false;
+
+		try {
+			current = await start({
+				onOpen: () => {
+					console.log("Connected");
+				},
+				onMessage: () => {
+					if (!hasReceivedMessage) {
+						hasReceivedMessage = true;
+						retryDelay = minDelay;
+					}
+				},
+				onClose: handleCloseOrError,
+				onError: handleCloseOrError,
+			});
+		} catch (err) {
+			console.error("Initial connection failed", err);
+			scheduleReconnect();
+		} finally {
+			connecting = false;
+		}
 	};
 
 	const startWrapper = async () => {
 		await connect();
-		if (!socket) return;
-
-		socket.addEventListener("close", handleCloseOrError);
-		socket.addEventListener("error", handleCloseOrError);
 	};
 
 	const stop = () => {
 		stopped = true;
-		socket?.terminate();
+		clearReconnectTimer();
+		current?.close();
+		current = null;
 	};
 
 	return { start: startWrapper, stop };
@@ -105,22 +150,19 @@ export async function createOcelloidsClient({
 
 		subscribeXc: async (emit) => {
 			const reconnectable = withReconnect({
-				start: async () => {
+				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("x");
 
 					return crosschain.subscribeWithReplay(
 						subIds.xc,
 						{
 							onMessage: ({ payload }) => {
+								onMessage();
 								const event = mapJourney(payload);
 								if (event) emit(event);
 							},
-							onError: (error) => {
-								console.error("XC error:", error);
-							},
-							onClose: () => {
-								console.warn("XC closed");
-							},
+							onError,
+							onClose,
 						},
 						{
 							onPersist: async (id: number) => {
@@ -140,21 +182,18 @@ export async function createOcelloidsClient({
 
 		subscribeTransfers: async (emit) => {
 			const reconnectable = withReconnect({
-				start: async () => {
+				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("t");
 
 					return transfers.subscribeWithReplay(
 						subIds.transfers,
 						{
 							onMessage: ({ payload }) => {
+								onMessage();
 								emit(mapTransfer(payload));
 							},
-							onError: (error) => {
-								console.error("Transfers error:", error);
-							},
-							onClose: () => {
-								console.warn("Transfers closed");
-							},
+							onError,
+							onClose,
 						},
 						{
 							onPersist: async (id: number) => {
