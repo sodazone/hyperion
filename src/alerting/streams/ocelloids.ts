@@ -9,6 +9,7 @@ import { createPointerStorage } from "./pointers";
 const OC_CONFIG = {
 	httpUrl: Bun.env.OC_HTTP_URL || "http://127.0.0.1:3000",
 	wsUrl: Bun.env.OC_WS_URL || "ws://127.0.0.1:3000",
+	apiKey: Bun.env.OC_API_KEY,
 };
 
 export type OcelloidsClient = {
