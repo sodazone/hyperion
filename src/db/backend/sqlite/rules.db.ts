@@ -8,6 +8,17 @@ type OwnedId = {
 	owner: Uint8Array | string;
 };
 
+export type NewRuleInstance = {
+	owner: Uint8Array | string;
+	ruleKey: string;
+	title: string;
+	enabled?: boolean;
+	priority?: number;
+	cooldownMs?: number;
+	config?: Record<string, any>;
+	channelIds?: number[] | null;
+};
+
 function asChannel(row: any): RuleChannel {
 	return {
 		id: row.id,
@@ -137,16 +148,7 @@ export function createRulesDB(db: Database) {
       `);
 		},
 
-		insertRuleInstance(instance: {
-			owner: Uint8Array | string;
-			ruleKey: string;
-			title: string;
-			enabled?: boolean;
-			priority?: number;
-			cooldownMs?: number;
-			config?: Record<string, any>;
-			channelIds?: number[] | null;
-		}) {
+		insertRuleInstance(instance: NewRuleInstance) {
 			const now = Date.now();
 
 			const res = db.run(
