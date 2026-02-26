@@ -1,13 +1,22 @@
 import { hashOwner } from "@/auth";
-import { type Alert, PUBLIC_OWNER } from "@/db";
+import { type OwnedAlert, PUBLIC_OWNER } from "@/db";
 import { render } from "@/server/render";
+import { equals } from "@/utils/bytes";
 import { dateFormatter } from "@/utils/dates";
 import { AlertMessage } from "../components/alert.message";
 import { SeverityBadge } from "../components/badge.severity";
+import { GlobeIcon } from "../components/icons";
 import { NetworkGroup } from "../components/network.group";
 import type { PageContext } from "../types";
 
-function AlertSmallCard({ alert }: { alert: Alert }) {
+const PublicBadge = (
+	<span className="flex items-center text-xs gap-1 text-zinc-200">
+		<GlobeIcon size={12} />
+	</span>
+);
+
+function AlertSmallCard({ alert }: { alert: OwnedAlert }) {
+	const isPublic = equals(alert.owner, PUBLIC_OWNER);
 	return (
 		<div
 			key={alert.id}
@@ -23,7 +32,10 @@ function AlertSmallCard({ alert }: { alert: Alert }) {
 				<span className="text-xs text-zinc-500 tracking-wide font-mono">
 					{dateFormatter.format(new Date(alert.timestamp))}
 				</span>
-				<SeverityBadge level={alert.level} />
+				<div className="flex gap-2">
+					{isPublic && PublicBadge}
+					<SeverityBadge level={alert.level} />
+				</div>
 			</div>
 			<AlertMessage parts={alert.message} />
 			<div className="text-xs mt-1">
