@@ -10,7 +10,7 @@
 		"lint": "biome check --write",
 		"import:subscan": "bun run src/intel/providers/subscan/import.ts",
 		"build:all": "bun build:css && bun build:client",
-		"build:css": "tailwindcss -i ./src/console/styles.css -o ./src/static/styles.min.css --minify --watch",
+		"build:css": "tailwindcss -i ./src/console/styles.css -o ./public/styles.min.css --minify",
 		"build:client": "vite build"
 	},
 	"devDependencies": {
