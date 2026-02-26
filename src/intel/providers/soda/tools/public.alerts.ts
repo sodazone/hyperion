@@ -1,5 +1,5 @@
 import { AlertLevel } from "@/alerting";
-import { createHyperionDB, PUBLIC_OWNER } from "@/db";
+import { createAlertingDB, PUBLIC_OWNER } from "@/db";
 import type { NewRuleInstance } from "@/db/backend/sqlite/rules.db";
 import { CAT } from "@/intel/mapping";
 
@@ -35,9 +35,9 @@ if (dataPath === undefined) {
 
 console.log("Using DB path:", dataPath);
 
-const db = await createHyperionDB(dataPath);
+const db = await createAlertingDB(dataPath);
 
-const id = db.alerting.rules.insertChannel({
+const id = db.rules.insertChannel({
 	owner: PUBLIC_OWNER,
 	name: "Public Alerts",
 	type: "telegram",
@@ -95,7 +95,7 @@ const RULES: NewRuleInstance[] = [
 ];
 
 for (const rule of RULES) {
-	db.alerting.rules.insertRuleInstance(rule);
+	db.rules.insertRuleInstance(rule);
 }
 
 console.log("Rules inserted successfully.");
