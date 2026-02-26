@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "../components/icons";
 import { RichSelect } from "../components/select";
 import { TopBar } from "../components/top.bar";
 import { type BucketString, NETWORK_OPTIONS } from "./params";
@@ -112,8 +113,25 @@ export function Dashboard({
 			</div>
 
 			<div className="flex flex-col p-4 space-y-4">
-				<h3 className="text-zinc-200 text-sm font-semibold">Latest Alerts</h3>
-				<div>TBD</div>
+				<h3 className="text-zinc-200 text-sm font-semibold">
+					<a
+						href="/console/public/alerts"
+						hx-get="/console/public/alerts"
+						hx-target="#main-content"
+						hx-push-url="true"
+						className="flex gap-1 items-center hover:text-zinc-100"
+					>
+						<span>Latest Alerts</span>{" "}
+						<span className="text-zinc-500">
+							<ArrowUpRight size={20} />
+						</span>
+					</a>
+				</h3>
+				<div
+					hx-get="/console/dashboard/fragments/latest-alerts"
+					hx-trigger="load"
+					hx-target="this"
+				></div>
 			</div>
 		</section>
 	);

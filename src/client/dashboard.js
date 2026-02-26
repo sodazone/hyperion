@@ -63,7 +63,7 @@ export function dashboard(initialNetwork, initialBucket) {
 					network: this.network,
 				});
 
-				let flows = await fetch("/v1/analytics/cex_flows?" + params).then((r) =>
+				let flows = await fetch(`/v1/analytics/cex_flows?${params}`).then((r) =>
 					r.json(),
 				);
 
@@ -143,7 +143,7 @@ export function dashboard(initialNetwork, initialBucket) {
 								intersect: false,
 								callbacks: {
 									label: (ctx) =>
-										ctx.dataset.label + ": " + this.formatShortNumber(ctx.raw),
+										`${ctx.dataset.label}: ${this.formatShortNumber(ctx.raw)}`,
 								},
 							},
 						},
@@ -198,9 +198,9 @@ export function dashboard(initialNetwork, initialBucket) {
 		},
 
 		formatShortNumber(v) {
-			if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + "B";
-			if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(2) + "M";
-			if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(2) + "K";
+			if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(2)}B`;
+			if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(2)}M`;
+			if (Math.abs(v) >= 1e3) return `${(v / 1e3).toFixed(2)}K`;
 			return v.toFixed(2);
 		},
 

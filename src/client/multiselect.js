@@ -43,7 +43,7 @@ export function multiselect({ name, options, selected = [] }) {
 				this.selectedItems.forEach((s) => {
 					const input = document.createElement("input");
 					input.type = "hidden";
-					input.name = this.name + "[]";
+					input.name = `${this.name}[]`;
 					input.value = s.value;
 					this.$refs.selectedWrap.appendChild(input);
 				});

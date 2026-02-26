@@ -1,61 +1,13 @@
-import type { Alert, AlertActor, AlertMessagePart } from "@/db";
+import type { Alert, AlertActor } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { dateFormatter } from "@/utils/dates";
-import { resolveExchange } from "../analytics/cex.names";
 import { trunc, truncMid } from "../util";
+import { AlertMessage } from "./alert.message";
 import { SeverityBadge } from "./badge.severity";
 import { CopyButton } from "./btn.copy";
-import { ArrowRightStroke } from "./icons";
+import { NetworkGroup } from "./network.group";
 import { NetworkIcon } from "./network.icon";
 import { RuleIcons } from "./rule.icons";
-
-function Part({ part: [type, value] }: { part: AlertMessagePart }) {
-	switch (type) {
-		case "t":
-			return <span>{value}</span>;
-		case "a":
-			return (
-				<span className="truncate font-mono font-semibold leading-none align-baseline">
-					{value}
-				</span>
-			);
-		case "addr":
-			return (
-				<span className="truncate font-mono font-semibold leading-none align-baseline">
-					{truncMid(value)}
-				</span>
-			);
-		case "cex": {
-			const { icon, name } = resolveExchange(value);
-			return (
-				<span className="inline-flex items-baseline gap-1">
-					{icon && (
-						<img
-							src={icon}
-							alt={name}
-							className="w-3 h-3 rounded-full align-baseline"
-						/>
-					)}
-					<span className="truncate font-semibold">{name}</span>
-				</span>
-			);
-		}
-		case "e":
-			return <span className="truncate font-semibold capitalize">{value}</span>;
-		default:
-			return <span className="text-zinc-400">{value}</span>;
-	}
-}
-
-function renderMessage(parts: AlertMessagePart[]) {
-	return (
-		<div className="flex flex-wrap items-baseline gap-1 text-zinc-200">
-			{parts.map((p) => (
-				<Part key={p[0] + p[1]} part={p} />
-			))}
-		</div>
-	);
-}
 
 function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 	if (!networks || networks.length === 0) return null;
@@ -130,7 +82,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 
 			<details>
 				<summary className="text-sm leading-snug truncate">
-					{renderMessage(alert.message)}
+					<AlertMessage parts={alert.message} />
 				</summary>
 
 				<div className="flex flex-col gap-2 text-sm mt-2 text-zinc-400">
@@ -161,48 +113,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 				</div>
 			</details>
 			<div className="flex justify-between items-center text-xs">
-				{alert.networks && alert.networks.length > 0 && (
-					<div className="flex items-center gap-2">
-						{alert.networks.length === 1 ? (
-							<NetworkIcon
-								urn={
-									alert.networks[0]?.network
-										? NetworkMap.toURN(alert.networks[0].network)
-										: "unknown"
-								}
-								size={16}
-								showName
-							/>
-						) : (
-							<>
-								<NetworkIcon
-									urn={
-										alert.networks[0]?.network
-											? NetworkMap.toURN(alert.networks[0].network)
-											: "unknown"
-									}
-									size={16}
-									showName
-								/>
-								<span className="text-zinc-600 text-xs">
-									<ArrowRightStroke size={14} />
-								</span>
-								<NetworkIcon
-									urn={
-										alert.networks[alert.networks.length - 1]?.network
-											? NetworkMap.toURN(
-													alert.networks[alert.networks?.length - 1]?.network ??
-														0,
-												)
-											: "unknown"
-									}
-									size={16}
-									showName
-								/>
-							</>
-						)}
-					</div>
-				)}
+				<NetworkGroup networks={alert.networks} />
 				<div className="inline-flex items-center overflow-hidden text-xs leading-none gap-2">
 					<span className="text-zinc-700 pr-4">#{alert.id}</span>
 					<span className="w-4 h-4 text-zinc-700">{RuleIcons[alert.name]}</span>

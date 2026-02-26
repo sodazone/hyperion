@@ -18,6 +18,7 @@ import {
 	AlertListPage,
 	AlertListPoller,
 } from "@/console/alerting/public/pages";
+import { LatestAlertsFragment } from "@/console/analytics/alerts.latest";
 import { TopExchangesFragment } from "@/console/analytics/cex.top";
 import { DashboardPage } from "@/console/analytics/pages";
 import {
@@ -123,6 +124,8 @@ export async function serve({
 			"/console/dashboard": async (req) => DashboardPage(ctx, req),
 			"/console/dashboard/fragments/top-exchanges": async (req) =>
 				TopExchangesFragment(ctx, req),
+			"/console/dashboard/fragments/latest-alerts": async (req) =>
+				LatestAlertsFragment(ctx, req),
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),

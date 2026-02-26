@@ -1,0 +1,62 @@
+import { hashOwner } from "@/auth";
+import { type Alert, PUBLIC_OWNER } from "@/db";
+import { render } from "@/server/render";
+import { dateFormatter } from "@/utils/dates";
+import { AlertMessage } from "../components/alert.message";
+import { SeverityBadge } from "../components/badge.severity";
+import { NetworkGroup } from "../components/network.group";
+import type { PageContext } from "../types";
+
+function AlertSmallCard({ alert }: { alert: Alert }) {
+	return (
+		<div
+			key={alert.id}
+			className="
+            flex flex-col gap-1
+            text-sm
+            max-w-full
+            px-2
+            py-2
+          "
+		>
+			<div className="flex justify-between items-baseline">
+				<span className="text-xs text-zinc-500 tracking-wide font-mono">
+					{dateFormatter.format(new Date(alert.timestamp))}
+				</span>
+				<SeverityBadge level={alert.level} />
+			</div>
+			<AlertMessage parts={alert.message} />
+			<div className="text-xs mt-1">
+				<NetworkGroup networks={alert.networks} />
+			</div>
+		</div>
+	);
+}
+
+export async function LatestAlertsFragment(
+	ctx: PageContext,
+	req: Bun.BunRequest<"/console/dashboard/fragments/latest-alerts">,
+) {
+	const owners = [PUBLIC_OWNER];
+	const user = await ctx.authApi.getAuthenticatedUser(req);
+	if (user) {
+		owners.push(hashOwner(user.email));
+	}
+
+	const rows = ctx.db.alerting.alerts.getTopAlerts({
+		owners,
+		limit: 4,
+	});
+
+	if (rows.length === 0) {
+		return render(<div>No alerts yet</div>);
+	}
+
+	return render(
+		<div className="flex flex-col divide-y divide-zinc-900">
+			{rows.map((r) => (
+				<AlertSmallCard key={r.id} alert={r} />
+			))}
+		</div>,
+	);
+}

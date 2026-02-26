@@ -287,6 +287,69 @@ export function createAlertsDB(db: Database) {
 				]).changes ?? 0
 			);
 		},
+
+		getTopAlerts({
+			owners,
+			limit = 5,
+		}: {
+			owners: Array<Uint8Array>;
+			limit: number;
+		}) {
+			if (!owners?.length) return [];
+
+			const ownerParams = owners.map(b);
+			const placeholders = ownerParams.map(() => "?").join(",");
+
+			const sql = `
+    SELECT
+      a.*,
+      an.role as net_role,
+      an.network as net_network,
+      an.tx_hash as net_tx_hash,
+      an.block_number as net_block_number,
+      an.block_hash as net_block_hash
+    FROM (
+      SELECT *
+      FROM alert
+      WHERE owner IN (${placeholders})
+      ORDER BY timestamp DESC, id DESC
+      LIMIT ?
+    ) a
+    LEFT JOIN alert_network an ON an.alert_id = a.id
+    ORDER BY a.timestamp DESC, a.id DESC
+  `;
+
+			const params: SQLQueryBindings[] = [...ownerParams, limit];
+			const rowsRaw = db.query(sql).all(...params) as any[];
+			const map = new Map<number, OwnedAlert>();
+
+			for (const r of rowsRaw) {
+				if (!map.has(r.id)) {
+					map.set(r.id, {
+						id: r.id,
+						owner: r.owner,
+						timestamp: r.timestamp,
+						name: r.name,
+						level: r.level,
+						remark: r.remark ?? undefined,
+						message: parseJSON<AlertMessagePart[]>(r.message) ?? [],
+						networks: [],
+					});
+				}
+
+				if (r.net_network !== null) {
+					map.get(r.id)?.networks?.push({
+						role: r.net_role,
+						network: r.net_network,
+						tx_hash: r.net_tx_hash,
+						block_number: r.net_block_number,
+						block_hash: r.net_block_hash,
+					});
+				}
+			}
+
+			return Array.from(map.values());
+		},
 	};
 }
 
