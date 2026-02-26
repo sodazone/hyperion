@@ -9,6 +9,7 @@
 		"serve": "bun run src/server/main.ts",
 		"lint": "biome check --write",
 		"import:subscan": "bun run src/intel/providers/subscan/import.ts",
+		"build:all": "bun build:css && bun build:client",
 		"build:css": "tailwindcss -i ./src/console/styles.css -o ./src/static/styles.min.css --minify --watch",
 		"build:client": "vite build"
 	},
