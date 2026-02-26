@@ -30,8 +30,8 @@ export type OcelloidsClient = {
 };
 
 const subIds = {
-	transfers: "transfers-all-networks",
-	xc: "xc-all-networks",
+	transfers: Bun.env.OC_TRANSFERS_SUB_ID || "transfers-all-networks",
+	xc: Bun.env.OC_XC_SUB_ID || "xc-all-networks",
 };
 
 function withReconnect({
