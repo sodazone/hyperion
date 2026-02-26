@@ -3,19 +3,17 @@ import { createHyperionDB, PUBLIC_OWNER } from "@/db";
 import type { NewRuleInstance } from "@/db/backend/sqlite/rules.db";
 import { CAT } from "@/intel/mapping";
 
-function resolveDataPath(): string {
+function resolveDataPath(): string | undefined {
 	const args = process.argv.slice(2);
 
 	const dataFlagIndex = args.indexOf("--data");
 	if (dataFlagIndex !== -1 && args[dataFlagIndex + 1]) {
-		return args[dataFlagIndex + 1] ?? "./.db/current";
+		return args[dataFlagIndex + 1];
 	}
 
 	if (args[0] && !args[0].startsWith("-")) {
 		return args[0];
 	}
-
-	return "./.db/current";
 }
 
 if (Bun.env.TG_TOKEN === undefined || Bun.env.TG_CHAT_ID === undefined) {
@@ -29,6 +27,11 @@ const telegramConfig = {
 };
 
 const dataPath = resolveDataPath();
+
+if (dataPath === undefined) {
+	console.log("provide data path");
+	process.exit(-1);
+}
 
 console.log("Using DB path:", dataPath);
 
