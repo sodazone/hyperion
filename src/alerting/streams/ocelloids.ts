@@ -33,6 +33,60 @@ const subIds = {
 	xc: "xc-all-networks",
 };
 
+function withReconnect({
+	start,
+	maxDelay = 30_000,
+}: {
+	start: () => Promise<WebSocket>;
+	maxDelay?: number;
+}) {
+	let stopped = false;
+	let socket: WebSocket | null = null;
+	let retryDelay = 1_000;
+
+	const connect = async () => {
+		if (stopped) return;
+
+		try {
+			socket = await start();
+			retryDelay = 1_000;
+		} catch (err) {
+			console.error("Subscription failed, retrying...", err);
+			scheduleReconnect();
+		}
+	};
+
+	const scheduleReconnect = () => {
+		if (stopped) return;
+
+		setTimeout(() => {
+			retryDelay = Math.min(retryDelay * 2, maxDelay);
+			connect();
+		}, retryDelay);
+	};
+
+	const handleCloseOrError = () => {
+		if (stopped) return;
+		console.warn("Socket closed. Reconnecting...");
+		scheduleReconnect();
+	};
+
+	const startWrapper = async () => {
+		await connect();
+		if (!socket) return;
+
+		socket.addEventListener("close", handleCloseOrError);
+		socket.addEventListener("error", handleCloseOrError);
+	};
+
+	const stop = () => {
+		stopped = true;
+		socket?.terminate();
+	};
+
+	return { start: startWrapper, stop };
+}
+
 export async function createOcelloidsClient({
 	storagePath,
 }: {
@@ -40,73 +94,87 @@ export async function createOcelloidsClient({
 }): Promise<OcelloidsClient> {
 	const transfers = createTransfersAgent(OC_CONFIG);
 	const crosschain = createCrosschainAgent(OC_CONFIG);
-
 	const pointers = createPointerStorage(storagePath);
 
-	const subs: WebSocket[] = [];
+	const subscriptions: (() => void)[] = [];
 
 	return {
-		subscribeStorage: (_params, _emit) => {
+		subscribeStorage: () => {
 			throw new Error("Not implemented");
 		},
+
 		subscribeXc: async (emit) => {
-			const lastSeenId = await pointers.load("x");
+			const reconnectable = withReconnect({
+				start: async () => {
+					const lastSeenId = await pointers.load("x");
 
-			const xcSub = await crosschain.subscribeWithReplay(
-				subIds.xc,
-				{
-					onMessage: ({ payload }) => {
-						const event = mapJourney(payload);
-						if (event !== null) {
-							emit(event);
-						}
-					},
-					onError: (error) => console.log(error),
-					onClose: (event) => console.log(event.reason),
+					return crosschain.subscribeWithReplay(
+						subIds.xc,
+						{
+							onMessage: ({ payload }) => {
+								const event = mapJourney(payload);
+								if (event) emit(event);
+							},
+							onError: (error) => {
+								console.error("XC error:", error);
+							},
+							onClose: () => {
+								console.warn("XC closed");
+							},
+						},
+						{
+							onPersist: async (id: number) => {
+								pointers.save("x", id);
+							},
+							lastSeenId,
+						},
+					);
 				},
-				{
-					onPersist: async (id: number) => {
-						pointers.save("x", id);
-					},
-					lastSeenId,
-				},
-			);
+			});
 
-			subs.push(xcSub);
+			await reconnectable.start();
+			subscriptions.push(reconnectable.stop);
 
-			return () => {
-				xcSub.close();
-			};
+			return reconnectable.stop;
 		},
+
 		subscribeTransfers: async (emit) => {
-			const lastSeenId = await pointers.load("t");
+			const reconnectable = withReconnect({
+				start: async () => {
+					const lastSeenId = await pointers.load("t");
 
-			const transfersSub = await transfers.subscribeWithReplay(
-				subIds.transfers,
-				{
-					onMessage: ({ payload }) => {
-						emit(mapTransfer(payload));
-					},
-					onError: (error) => console.log(error),
-					onClose: (event) => console.log(event.reason),
+					return transfers.subscribeWithReplay(
+						subIds.transfers,
+						{
+							onMessage: ({ payload }) => {
+								emit(mapTransfer(payload));
+							},
+							onError: (error) => {
+								console.error("Transfers error:", error);
+							},
+							onClose: () => {
+								console.warn("Transfers closed");
+							},
+						},
+						{
+							onPersist: async (id: number) => {
+								pointers.save("t", id);
+							},
+							lastSeenId,
+						},
+					);
 				},
-				{
-					onPersist: async (id: number) => {
-						pointers.save("t", id);
-					},
-					lastSeenId,
-				},
-			);
+			});
 
-			subs.push(transfersSub);
+			await reconnectable.start();
+			subscriptions.push(reconnectable.stop);
 
-			return () => {
-				transfersSub.close();
-			};
+			return reconnectable.stop;
 		},
+
 		close: async () => {
-			for (const sub of subs) {
-				sub.close();
+			for (const stop of subscriptions) {
+				stop();
 			}
 		},
 	};
