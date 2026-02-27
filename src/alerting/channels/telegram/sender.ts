@@ -13,7 +13,7 @@ export type TelegramOptions = {
 
 export type TelegramSendOptions = {
 	disablePreview?: boolean;
-	retryAttemps?: number;
+	retryAttempts?: number;
 };
 
 export async function sendTelegramMessage(

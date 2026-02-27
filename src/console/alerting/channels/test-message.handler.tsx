@@ -1,3 +1,4 @@
+import { sendDiscordMessage } from "@/alerting/channels/discord/sender";
 import { sendTelegramMessage } from "@/alerting/channels/telegram/sender";
 import { withAuth } from "@/console/authenticated";
 import { InvalidParameters } from "@/server/response";
@@ -39,7 +40,25 @@ export const ChannelTestHandler = withAuth(async ({ req }) => {
 			await sendTelegramMessage(
 				{ token, chatId },
 				"✅ Test message from Hyperion",
-				{ retryAttemps: 0 },
+				{ retryAttempts: 0 },
+			);
+		} else if (type === "discord") {
+			const webhookUrl = config.webhookUrl?.toString();
+			const username = config.username?.toString();
+			const avatarUrl = config.avatarUrl?.toString();
+
+			if (!webhookUrl) {
+				return htmlError("Missing Discord webhook URL");
+			}
+
+			await sendDiscordMessage(
+				{ webhookUrl },
+				"✅ Test message from Hyperion",
+				{
+					username,
+					avatarUrl,
+					retryAttempts: 0,
+				},
 			);
 		}
 

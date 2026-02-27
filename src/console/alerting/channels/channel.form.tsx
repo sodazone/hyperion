@@ -2,7 +2,7 @@ import type { RuleChannel } from "@/alerting";
 import { BackButton } from "@/console/components/btn.back";
 import { Checkbox } from "@/console/components/checkbox";
 import { ChevronUpDownIcon } from "@/console/components/icons";
-import { TelegramChannelConfig } from "./channel.config";
+import { DiscordChannelConfig, TelegramChannelConfig } from "./channel.config";
 
 function ChannelConfigPartial({
 	type,
@@ -14,6 +14,8 @@ function ChannelConfigPartial({
 	switch (type) {
 		case "telegram":
 			return <TelegramChannelConfig config={config} />;
+		case "discord":
+			return <DiscordChannelConfig config={config} />;
 
 		default:
 			return null;
@@ -97,6 +99,7 @@ export function ChannelForm({ channel }: { channel?: RuleChannel }) {
 						>
 							<option value="">Select type...</option>
 							<option value="telegram">Telegram</option>
+							<option value="discord">Discord</option>
 						</select>
 						<div className="ui-select-btn">
 							<ChevronUpDownIcon />

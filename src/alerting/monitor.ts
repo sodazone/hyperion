@@ -7,6 +7,7 @@ import {
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
 import { notifyTelegram } from "./channels";
+import { notifyDiscord } from "./channels/discord/notify";
 import { InMemoryStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
 import { createOcelloidsClient } from "./streams/ocelloids";
@@ -88,6 +89,12 @@ export function createMonitor({
 						{ token: channel.config.token, chatId: channel.config.chatId },
 						alert,
 					);
+					break;
+				case "discord":
+					notifyDiscord({ webhookUrl: channel.config.webhookUrl }, alert, {
+						username: channel.config.username ?? "Hyperion",
+						avatarUrl: channel.config.avatarUrl,
+					});
 					break;
 			}
 		}
