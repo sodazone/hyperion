@@ -108,6 +108,9 @@
 	#sidebar .collapsible span {
 		transition: opacity 150ms ease;
 	}
+	[x-cloak] {
+		display: none !important;
+	}
 }
 
 @layer components {

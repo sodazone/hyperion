@@ -14,6 +14,23 @@ export function DashboardIcon() {
 	);
 }
 
+export function ArrowInLeftCircleHalf({ size = 16 }: { size?: number }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width={size}
+			height={size}
+			role="img"
+			aria-hidden="true"
+			fill="currentColor"
+			viewBox="0 0 24 24"
+		>
+			<path d="m9 17 6-5-6-5v4H2v2h7z"></path>
+			<path d="M13 3v2c3.86 0 7 3.14 7 7s-3.14 7-7 7v2c4.96 0 9-4.04 9-9s-4.04-9-9-9"></path>
+		</svg>
+	);
+}
+
 export function GlobeIcon({ size = 16 }: { size?: number }) {
 	return (
 		<svg
