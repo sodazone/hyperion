@@ -16,12 +16,17 @@ export function Multiselect({
         options: ${JSON.stringify(options)},
         selected: ${JSON.stringify(selected)},
       })`}
+			x-init="init()"
+			x-cloak=""
 			className="multiselect relative flex flex-col gap-1 text-sm"
 			x-bind="{ 'x-on:click.outside': 'closeDropdown()' }"
 		>
 			{/* Selected items / chips */}
 			<div className="selected flex flex-wrap gap-1" x-ref="selectedWrap">
-				<template x-for="item in selectedItems" x-bind:key="item.value">
+				<template
+					x-for="(item, index) in selectedItems"
+					x-bind:key="item.value ?? index"
+				>
 					<span className="inline-flex items-center gap-2 px-2 py-1 bg-zinc-900 rounded-md text-sm text-zinc-200">
 						<span x-text="item.label"></span>
 						<button
@@ -70,8 +75,12 @@ export function Multiselect({
 					</template>
 				</div>
 			</template>
+
 			{/* Form Data */}
-			<template x-for="item in selectedItems" x-bind:key="item.value">
+			<template
+				x-for="(item, index) in selectedItems"
+				x-bind:key="item.value ?? index"
+			>
 				<input
 					type="hidden"
 					x-bind:name="name + '[]'"

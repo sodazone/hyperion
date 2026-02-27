@@ -222,32 +222,50 @@ export function createRulesDB(db: Database) {
 			);
 		},
 
+		dettachChannelsFromRule(owid: OwnedId) {
+			this.attachChannelsToRule(owid, []);
+		},
+
 		attachChannelsToRule({ id: ruleId, owner }: OwnedId, channelIds: number[]) {
 			if (!this.isRuleOwned({ id: ruleId, owner })) {
 				throw new Error("Rule not owned");
 			}
 
+			const uniqueIds = [...new Set(channelIds)];
+			if (!uniqueIds.length) {
+				db.run(`DELETE FROM rule_channel WHERE rule_id = ?`, [ruleId]);
+				return;
+			}
+
 			const rows = db
 				.query(
 					`
-          SELECT id FROM channel
-          WHERE owner = ? AND id IN (${channelIds.map(() => "?").join(",")})
-        `,
+      SELECT id FROM channel
+      WHERE owner = ? AND id IN (${uniqueIds.map(() => "?").join(",")})
+      `,
 				)
-				.all(b(owner), ...channelIds) as { id: number }[];
+				.all(b(owner), ...uniqueIds) as { id: number }[];
 
-			if (rows.length !== channelIds.length) {
+			if (rows.length !== uniqueIds.length) {
 				throw new Error("One or more channels not owned");
 			}
 
 			db.transaction(() => {
-				db.run(`DELETE FROM rule_channel WHERE rule_id = ?`, [ruleId]);
-
-				const stmt = db.prepare(
-					`INSERT INTO rule_channel (rule_id, channel_id) VALUES (?, ?)`,
+				db.run(
+					`
+      DELETE FROM rule_channel
+      WHERE rule_id = ?
+      AND channel_id NOT IN (${uniqueIds.map(() => "?").join(",")})
+      `,
+					[ruleId, ...uniqueIds],
 				);
 
-				for (const channelId of channelIds) {
+				const stmt = db.prepare(
+					`INSERT OR IGNORE INTO rule_channel (rule_id, channel_id)
+       VALUES (?, ?)`,
+				);
+
+				for (const channelId of uniqueIds) {
 					stmt.run(ruleId, channelId);
 				}
 			})();

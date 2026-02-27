@@ -52,14 +52,16 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 				return InvalidParameters;
 
 			const data: Record<string, any> = Object.create(null);
-			let channelIds: number[] | null = null;
+			const channelIdsSet: Set<number> = new Set();
 
 			for (const key of formData.keys()) {
 				const allValues = formData.getAll(key);
 				if (key.endsWith("[]")) {
 					const dataKey = key.slice(0, -2);
 					if (dataKey === "channelIds") {
-						channelIds = allValues.map((v) => Number(v));
+						allValues.forEach((v) => {
+							channelIdsSet.add(Number(v));
+						});
 					} else {
 						data[dataKey] = allValues.map(strNumOrBool);
 					}
@@ -69,6 +71,8 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 					data[key] = allValues.map(strNumOrBool);
 				}
 			}
+
+			const channelIds = Array.from(channelIdsSet);
 
 			if (ruleId === "__new__") {
 				const templateId = formData.get("ruleKey")?.toString();
@@ -121,8 +125,10 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 				const updated = db.alerting.rules.getRuleInstance(ownedId);
 				if (!updated) throw InternalServerError;
 
-				if (channelIds && channelIds.length > 0) {
+				if (channelIds.length > 0) {
 					db.alerting.rules.attachChannelsToRule(ownedId, channelIds);
+				} else {
+					db.alerting.rules.dettachChannelsFromRule(ownedId);
 				}
 
 				monitor.rules.update(updated);

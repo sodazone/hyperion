@@ -112,6 +112,7 @@ export function ConfigField({
 					hx-trigger="load"
 					hx-swap="outerHTML"
 					hx-target={`#tags-${name}`}
+					hx-vals={JSON.stringify({ selected: defaultValue })}
 					className="px-2 py-1 w-full min-h-8 animate-pulse bg-zinc-900/60 ui-input"
 				></div>
 

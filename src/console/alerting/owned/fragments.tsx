@@ -3,7 +3,11 @@ import { Multiselect } from "@/console/components/select.multi";
 import { render } from "@/server/render";
 
 export const TagsFragment = withAuth<"/console/entities/tags/options">(
-	async ({ db, ownerHash }) => {
+	async ({ db, req, ownerHash }) => {
+		const params = new URL(req.url).searchParams;
+		const selectedRaw = params.getAll("selected");
+		const selected = selectedRaw.length ? selectedRaw : [];
+
 		const tags = db.entities.findAllTags({
 			owner: ownerHash,
 		});
@@ -17,6 +21,7 @@ export const TagsFragment = withAuth<"/console/entities/tags/options">(
 						label: t,
 						value: t,
 					}))}
+					selected={selected}
 				/>
 			</div>,
 		);

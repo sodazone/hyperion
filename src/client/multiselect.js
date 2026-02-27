@@ -4,12 +4,25 @@ export function multiselect({ name, options, selected = [] }) {
 		options,
 		query: "",
 		open: false,
-		selectedItems: selected
-			.map((v) => options.find((o) => o.value.toString() === v.toString()))
-			.filter(Boolean),
+		selectedItems: [],
 
 		init() {
-			this.dispatchChange();
+			// populate selectedItems from selected values
+			this.selectedItems = Array.from(
+				new Map(
+					(selected ?? [])
+						.map((v) =>
+							options.find((o) => o.value.toString() === v.toString()),
+						)
+						.filter(Boolean)
+						.map((s) => [s.value.toString(), s]),
+				).values(),
+			);
+
+			// generate hidden inputs
+			this.$nextTick(() => {
+				this.dispatchChange();
+			});
 		},
 
 		get filteredOptions() {
@@ -37,21 +50,6 @@ export function multiselect({ name, options, selected = [] }) {
 
 		dispatchChange() {
 			this.$nextTick(() => {
-				// Remove old hidden inputs
-				this.$refs.selectedWrap
-					.querySelectorAll('input[type="hidden"]')
-					.forEach((i) => {
-						i.remove();
-					});
-				// Add hidden inputs
-				this.selectedItems.forEach((s) => {
-					const input = document.createElement("input");
-					input.type = "hidden";
-					input.name = `${this.name}[]`;
-					input.value = s.value;
-					this.$refs.selectedWrap.appendChild(input);
-				});
-
 				this.$refs.input.dispatchEvent(new Event("change", { bubbles: true }));
 			});
 		},
@@ -67,7 +65,7 @@ export function multiselect({ name, options, selected = [] }) {
 		highlightIndex: -1,
 
 		keyDown(e) {
-			const items = this.$refs.results.querySelectorAll("button");
+			const items = this.$refs.results?.querySelectorAll("button") || [];
 			switch (e.key) {
 				case "Escape":
 					this.closeDropdown();
