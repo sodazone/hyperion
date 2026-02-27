@@ -45,7 +45,7 @@ export function Sidebar({ member }: Props) {
 			{/* Sidebar */}
 			<aside
 				x-cloak=""
-				className="h-screen border-r border-zinc-800 bg-zinc-950 flex flex-col overflow-y-auto transition-all duration-200 ease-in-out"
+				className="h-screen border-r border-zinc-800 bg-zinc-950 flex flex-col overflow-y-auto overflow-x-hidden transition-all duration-200 ease-in-out"
 				x-bind:class="{
           'fixed top-0 left-0 w-full max-w-xs z-50': isMobile,
           'md:w-14': collapsed && !isMobile,
@@ -202,6 +202,7 @@ export function Sidebar({ member }: Props) {
 				{/* Account */}
 				<div
 					x-show="!collapsed || isMobile"
+					x-transition=""
 					className="collapsible border-t border-zinc-800 p-4 shrink-0 overflow-hidden"
 				>
 					{!authenticated ? (
@@ -210,7 +211,7 @@ export function Sidebar({ member }: Props) {
 						</a>
 					) : (
 						<div>
-							<div className="flex items-center gap-3 overflow-x-hidden">
+							<div className="flex items-center gap-3 overflow-hidden">
 								<div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold">
 									{member.name?.[0] ?? member.email?.[0] ?? "?"}
 								</div>
