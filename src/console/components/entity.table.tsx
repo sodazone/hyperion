@@ -23,7 +23,7 @@ export function EntityTable({
 					<col className="w-20" />
 				</colgroup>
 
-				<thead className="sticky top-0 bg-zinc-900 text-xs uppercase tracking-wide text-zinc-400 z-10">
+				<thead className="bg-zinc-900 text-xs uppercase tracking-wide text-zinc-400">
 					<tr>
 						<th className="px-4 py-2 text-left">Address</th>
 						<th className="px-4 py-2 text-left">Networks</th>
