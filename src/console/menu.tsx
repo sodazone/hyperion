@@ -45,7 +45,7 @@ export function Sidebar({ member }: Props) {
 			{/* Sidebar */}
 			<aside
 				x-cloak=""
-				className="h-screen border-r border-zinc-800 bg-zinc-950 flex flex-col overflow-y-auto overflow-x-hidden transition-all duration-200 ease-in-out"
+				className="h-dvh border-r border-zinc-800 bg-zinc-950 flex flex-col overflow-y-auto overflow-x-hidden transition-all duration-200 ease-in-out pb-safe"
 				x-bind:class="{
           'fixed top-0 left-0 w-full max-w-xs z-50': isMobile,
           'md:w-14': collapsed && !isMobile,

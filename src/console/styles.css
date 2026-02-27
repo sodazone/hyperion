@@ -108,8 +108,13 @@
 	#sidebar .collapsible span {
 		transition: opacity 150ms ease;
 	}
+
 	[x-cloak] {
 		display: none !important;
+	}
+
+	.pb-safe {
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 }
 
