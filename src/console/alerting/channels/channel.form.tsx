@@ -4,7 +4,14 @@ import { Checkbox } from "@/console/components/checkbox";
 import { ChevronUpDownIcon } from "@/console/components/icons";
 import { DiscordChannelConfig, TelegramChannelConfig } from "./channel.config";
 
-function ChannelConfigPartial({
+export const CHANNELS = [
+	{ id: "telegram", name: "Telegram" },
+	{ id: "discord", name: "Discord" },
+] as const;
+
+export const CHANNEL_TYPES: string[] = CHANNELS.map((c) => c.id);
+
+export function ChannelConfigPartial({
 	type,
 	config,
 }: {
@@ -16,7 +23,6 @@ function ChannelConfigPartial({
 			return <TelegramChannelConfig config={config} />;
 		case "discord":
 			return <DiscordChannelConfig config={config} />;
-
 		default:
 			return null;
 	}
@@ -91,15 +97,18 @@ export function ChannelForm({ channel }: { channel?: RuleChannel }) {
 							name="type"
 							defaultValue={channel?.type}
 							className="ui-input"
+							required
 							hx-get="/console/channels/config"
 							hx-trigger="change"
 							hx-target="#channel-config"
 							hx-include="closest form"
-							required
 						>
 							<option value="">Select type...</option>
-							<option value="telegram">Telegram</option>
-							<option value="discord">Discord</option>
+							{CHANNELS.map((c) => (
+								<option key={c.id} value={c.id}>
+									{c.name}
+								</option>
+							))}
 						</select>
 						<div className="ui-select-btn">
 							<ChevronUpDownIcon />
@@ -108,13 +117,7 @@ export function ChannelForm({ channel }: { channel?: RuleChannel }) {
 				</div>
 
 				{/* Dynamic config */}
-				<div
-					id="channel-config"
-					hx-get="/console/channels/config"
-					hx-trigger="change from:#type"
-					hx-target="#channel-config"
-					hx-include="closest form"
-				>
+				<div id="channel-config">
 					{channel?.type ? (
 						<ChannelConfigPartial type={channel.type} config={channel.config} />
 					) : (

@@ -2,7 +2,7 @@ import type { RuleChannel } from "@/alerting";
 import { withAuth } from "@/console/authenticated";
 import { Multiselect } from "@/console/components/select.multi";
 import { render } from "../../../server/render";
-import { TelegramChannelConfig } from "./channel.config";
+import { CHANNEL_TYPES, ChannelConfigPartial } from "./channel.form";
 
 function ChannelOptions({
 	channels,
@@ -56,17 +56,19 @@ export const ChannelsFragment = withAuth<"/console/channels/options">(
 	},
 );
 
-const CHANNEL_TYPES: string[] = ["telegram"] as const;
-
 export const ChannelsConfigFragment = withAuth<"/console/channels/config">(
 	async ({ req }) => {
 		const url = new URL(req.url);
 		const type = url.searchParams.get("type");
 
 		if (type && CHANNEL_TYPES.includes(type)) {
-			return render(<TelegramChannelConfig />);
+			return render(<ChannelConfigPartial type={type} />);
 		}
 
-		return render(<div>Select a channel type to configure it</div>);
+		return render(
+			<div className="text-sm text-zinc-500">
+				Select a channel type to configure it
+			</div>,
+		);
 	},
 );
