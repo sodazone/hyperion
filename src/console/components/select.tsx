@@ -20,7 +20,7 @@ export function RichSelect({
     selected: '${selected}',
     options: ${JSON.stringify(options)}
   })`}
-			className="relative w-56 text-sm"
+			className="relative w-56 text-sm z-0"
 			x-bind="{ 'x-on:click.outside': 'close()' }"
 		>
 			<input type="hidden" x-bind:name="name" x-model="value" x-ref="hidden" />
