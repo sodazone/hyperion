@@ -56,7 +56,7 @@ export const NETWORK_INFOS: NetworkInfo[] = [
 	{ runtimeChain: "Polkadot Relay", urn: "urn:ocn:polkadot:0" },
 	{ runtimeChain: "Polkadot Asset Hub", urn: "urn:ocn:polkadot:1000" },
 	{ runtimeChain: "Polkadot Bridge Hub", urn: "urn:ocn:polkadot:1002" },
-	{ runtimeChain: "Polkadot People Chain", urn: "urn:ocn:polkadot:1005" },
+	{ runtimeChain: "Polkadot People Chain", urn: "urn:ocn:polkadot:1004" },
 	{ runtimeChain: "Polkadot Coretime", urn: "urn:ocn:polkadot:1005" },
 	{ runtimeChain: "Acala", urn: "urn:ocn:polkadot:2000" },
 	{ runtimeChain: "Moonbeam", urn: "urn:ocn:polkadot:2004" },
@@ -70,7 +70,8 @@ export const NETWORK_INFOS: NetworkInfo[] = [
 	{ runtimeChain: "Kusama Relay", urn: "urn:ocn:kusama:0" },
 	{ runtimeChain: "Kusama Asset Hub", urn: "urn:ocn:kusama:1000" },
 	{ runtimeChain: "Kusama Bridge Hub", urn: "urn:ocn:kusama:1002" },
-	{ runtimeChain: "Kusama People Chain", urn: "urn:ocn:kusama:1005" },
+	{ runtimeChain: "Kusama People Chain", urn: "urn:ocn:kusama:1004" },
+	{ runtimeChain: "Kusama Coretime", urn: "urn:ocn:kusama:1005" },
 	{ runtimeChain: "Paseo Relay", urn: "urn:ocn:paseo:0" },
 	{ runtimeChain: "Paseo Asset Hub", urn: "urn:ocn:paseo:1000" },
 ];
