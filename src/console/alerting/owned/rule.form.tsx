@@ -95,7 +95,7 @@ export function RuleForm({
 								key={f.key}
 								name={f.key}
 								schema={f.schema}
-								defaultValue={f.defaultValue}
+								defaultValue={rule?.config?.[f.key] ?? f.defaultValue}
 							/>
 						))}
 					</div>

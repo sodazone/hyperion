@@ -48,26 +48,36 @@ export function Multiselect({
 			/>
 
 			{/* Dropdown results */}
-			<div
-				className="results absolute top-full mt-1 w-full max-h-48 overflow-auto bg-zinc-900 border border-zinc-700 shadow-lg z-10"
-				x-show="open"
-				x-transition=""
-				x-ref="results"
-			>
-				<template x-for="opt in filteredOptions" x-bind:key="opt.value">
-					<button
-						type="button"
-						className="block w-full text-left px-2 py-1 hover:bg-zinc-800"
-						x-on:click="select(opt)"
-					>
-						<span x-text="opt.label"></span>
-					</button>
-				</template>
+			<template x-if="open">
+				<div
+					className="results absolute top-full mt-1 w-full max-h-48 overflow-auto bg-zinc-900 border border-zinc-700 shadow-lg z-10"
+					x-transition=""
+					x-cloak=""
+					x-ref="results"
+				>
+					<template x-for="opt in filteredOptions" x-bind:key="opt.value">
+						<button
+							type="button"
+							className="block w-full text-left px-2 py-1 hover:bg-zinc-800"
+							x-on:click="select(opt)"
+						>
+							<span x-text="opt.label"></span>
+						</button>
+					</template>
 
-				<template x-if="filteredOptions.length === 0">
-					<div className="px-2 py-1 text-zinc-500">No results</div>
-				</template>
-			</div>
+					<template x-if="filteredOptions.length === 0">
+						<div className="px-2 py-1 text-zinc-500">No results</div>
+					</template>
+				</div>
+			</template>
+			{/* Form Data */}
+			<template x-for="item in selectedItems" x-bind:key="item.value">
+				<input
+					type="hidden"
+					x-bind:name="name + '[]'"
+					x-bind:value="item.value"
+				/>
+			</template>
 		</div>
 	);
 }

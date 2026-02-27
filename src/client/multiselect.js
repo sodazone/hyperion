@@ -5,8 +5,12 @@ export function multiselect({ name, options, selected = [] }) {
 		query: "",
 		open: false,
 		selectedItems: selected
-			.map((v) => options.find((o) => o.value === v))
+			.map((v) => options.find((o) => o.value.toString() === v.toString()))
 			.filter(Boolean),
+
+		init() {
+			this.dispatchChange();
+		},
 
 		get filteredOptions() {
 			const q = this.query.toLowerCase();
