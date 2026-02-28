@@ -2,7 +2,7 @@ export function withReconnect({
 	start,
 	maxDelay = 30_000,
 	minDelay = 1_000,
-	maxIdle = 60_000 * 5,
+	maxIdle = 60_000 * 15,
 }: {
 	start: (hooks: {
 		onOpen: () => void;
