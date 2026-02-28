@@ -1,3 +1,4 @@
+import type { AnyEvent } from "@/alerting";
 import { serve } from "@/server/serve";
 import { TEST_JWKS } from "./auth";
 
@@ -37,5 +38,18 @@ export async function runTestServer() {
 		hostname: "localhost",
 		jwks: TEST_JWKS,
 		dbPath: ":memory:",
+		createStreamsClient: async () => {
+			return {
+				subscribeStorage:
+					(
+						_params: { chain: string; key: string },
+						_emit: (msg: AnyEvent) => void,
+					) =>
+					() => {},
+				subscribeTransfers: (_emit: (msg: AnyEvent) => void) => () => {},
+				subscribeXc: (_emit: (msg: AnyEvent) => void) => () => {},
+				close: async () => {},
+			};
+		},
 	});
 }

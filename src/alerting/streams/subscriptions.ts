@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import type { RuleDefinition } from "@/alerting";
-import type { OcelloidsClient } from "./ocelloids";
+import type { StreamsClient } from "./ocelloids";
 
 type ActiveSubscription = {
 	key: string;
@@ -21,7 +21,7 @@ export class SubscriptionManager extends EventEmitter {
 	#active = new Map<string, ActiveSubscription>();
 	#started = false;
 
-	constructor(private readonly ocelloids: OcelloidsClient) {
+	constructor(private readonly ocelloids: StreamsClient) {
 		super();
 	}
 

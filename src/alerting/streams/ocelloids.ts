@@ -13,7 +13,7 @@ const OC_CONFIG = {
 	apiKey: Bun.env.OC_API_KEY,
 };
 
-export type OcelloidsClient = {
+export type StreamsClient = {
 	subscribeStorage: (
 		params: { chain: string; key: string },
 		emit: (msg: AnyEvent) => void,
@@ -39,7 +39,7 @@ export async function createOcelloidsClient({
 	storagePath,
 }: {
 	storagePath: string;
-}): Promise<OcelloidsClient> {
+}): Promise<StreamsClient> {
 	const transfers = createTransfersAgent(OC_CONFIG);
 	const crosschain = createCrosschainAgent(OC_CONFIG);
 	const pointers = createPointerStorage(storagePath);
@@ -127,3 +127,5 @@ export async function createOcelloidsClient({
 		},
 	};
 }
+
+export type CreateStreamsClient = typeof createOcelloidsClient;

@@ -1,4 +1,5 @@
 import { createMonitorFromDB } from "@/alerting/monitor";
+import type { CreateStreamsClient } from "@/alerting/streams/ocelloids";
 import {
 	ChannelsConfigFragment,
 	ChannelsFragment,
@@ -66,12 +67,14 @@ export type Serve = {
 export async function serve({
 	dbPath,
 	jwks,
+	createStreamsClient,
 	port = 8080,
 	hostname = "localhost",
 	reusePort = true,
 }: Bun.Serve.HostnamePortServeOptions<unknown> & {
 	dbPath?: string;
 	jwks?: JWKSSource;
+	createStreamsClient?: CreateStreamsClient;
 }): Promise<Serve> {
 	const db = await createHyperionDB(dbPath ?? "./db");
 
@@ -81,7 +84,7 @@ export async function serve({
 
 	const authApi = createAuthApi();
 
-	const monitor = await createMonitorFromDB(db);
+	const monitor = await createMonitorFromDB(db, createStreamsClient);
 	monitor.start();
 
 	const ctx = Object.freeze({ db, authApi, monitor });

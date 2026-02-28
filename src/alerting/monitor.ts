@@ -10,7 +10,10 @@ import { notifyTelegram } from "./channels";
 import { notifyDiscord } from "./channels/discord/notify";
 import { InMemoryStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
-import { createOcelloidsClient } from "./streams/ocelloids";
+import {
+	type CreateStreamsClient,
+	createOcelloidsClient,
+} from "./streams/ocelloids";
 
 export interface Monitor {
 	rules: {
@@ -134,8 +137,12 @@ export function createMonitor({
 	};
 }
 
-export async function createMonitorFromDB(db: HyperionDB): Promise<Monitor> {
-	const client = await createOcelloidsClient({ storagePath: db.path });
+export async function createMonitorFromDB(
+	db: HyperionDB,
+	createStreamsClient?: CreateStreamsClient,
+): Promise<Monitor> {
+	const factory = createStreamsClient ?? createOcelloidsClient;
+	const client = await factory({ storagePath: db.path });
 	const rules = RulesRegistry;
 
 	return createMonitor(
