@@ -15,7 +15,7 @@
 		"build:client": "vite build",
 		"watch:css": "tailwindcss -i ./src/console/styles.css -o ./public/styles.min.css --watch",
 		"watch:client": "vite build --watch",
-		"clean": "rm -rf dist public/styles.min.css"
+		"clean": "rm public/styles.min.css public/js/main.js"
 	},
 	"dependencies": {
 		"@duckdb/node-api": "^1.4.4-r.1",
