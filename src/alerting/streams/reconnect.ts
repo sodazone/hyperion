@@ -2,7 +2,7 @@ export function withReconnect({
 	start,
 	maxDelay = 30_000,
 	minDelay = 1_000,
-	maxIdle = 60_000 * 15,
+	maxIdle,
 }: {
 	start: (hooks: {
 		onOpen: () => void;
@@ -34,7 +34,7 @@ export function withReconnect({
 
 	const resetIdleTimer = () => {
 		clearIdleTimer();
-		if (!maxIdle) return;
+		if (!maxIdle) return; // only start idle timer if maxIdle is provided
 		idleTimer = setTimeout(() => {
 			console.info("Idle timeout reached, reconnecting...");
 			handleCloseOrError(new Error("Idle timeout"));
