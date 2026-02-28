@@ -53,6 +53,7 @@ export async function createOcelloidsClient({
 
 		subscribeXc: async (emit) => {
 			const reconnectable = withReconnect({
+				maxIdle: 60_000 * 60,
 				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("x");
 
@@ -88,6 +89,7 @@ export async function createOcelloidsClient({
 
 		subscribeTransfers: async (emit) => {
 			const reconnectable = withReconnect({
+				maxIdle: 60_000 * 5,
 				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("t");
 
