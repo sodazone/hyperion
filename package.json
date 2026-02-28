@@ -1,27 +1,21 @@
 {
 	"name": "hyperion",
 	"version": "0.0.1",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
+	"main": "src/server/main.ts",
 	"scripts": {
 		"dev": "bun run --hot src/server/main.ts",
 		"serve": "bun run src/server/main.ts",
 		"lint": "biome check --write",
 		"import:subscan": "bun run src/intel/providers/subscan/import.ts",
-		"build:all": "bun build:css && bun build:client",
+		"build": "bun run build:css && bun run build:client",
+		"build:all": "bun run build",
 		"build:css": "tailwindcss -i ./src/console/styles.css -o ./public/styles.min.css --minify",
-		"build:client": "vite build"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.11",
-		"@types/bun": "latest",
-		"@types/react-dom": "^19.2.3",
-		"@types/sax": "^1.2.7",
-		"vite": "^7.3.1"
-	},
-	"peerDependencies": {
-		"typescript": "^5"
+		"build:client": "vite build",
+		"watch:css": "tailwindcss -i ./src/console/styles.css -o ./public/styles.min.css --watch",
+		"watch:client": "vite build --watch",
+		"clean": "rm -rf dist public/styles.min.css"
 	},
 	"dependencies": {
 		"@duckdb/node-api": "^1.4.4-r.1",
@@ -38,5 +32,15 @@
 		"stytch": "^13.1.0",
 		"tailwindcss": "^4.1.18",
 		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
+		"@types/bun": "latest",
+		"@types/react-dom": "^19.2.3",
+		"@types/sax": "^1.2.7",
+		"vite": "^7.3.1"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
 	}
 }
