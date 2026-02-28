@@ -89,6 +89,10 @@ const cexMap: Record<string, { name: string; icon?: string }> = {
 		name: "SwissBorg",
 		icon: "https://assets.coingecko.com/coins/images/2117/standard/YJUrRy7r_400x400.png",
 	},
+	bitbank: {
+		name: "Bitbank",
+		icon: "https://assets.coingecko.com/markets/images/122/large/bitbank.jpg",
+	},
 };
 
 const fallback = (name: string) => ({ name, icon: "" });
