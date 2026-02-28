@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import { createMonitorFromDB } from "@/alerting/monitor";
 import type { CreateStreamsClient } from "@/alerting/streams/ocelloids";
 import {
@@ -58,6 +60,7 @@ import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
+import { Forbidden, NotFound } from "./response";
 
 export type Serve = {
 	shutdown: (signal: string) => Promise<void>;
@@ -89,6 +92,8 @@ export async function serve({
 
 	const ctx = Object.freeze({ db, authApi, monitor });
 
+	const jsPath = path.resolve("./public/js");
+
 	const listener = Bun.serve({
 		hostname,
 		port,
@@ -116,7 +121,23 @@ export async function serve({
 				});
 			},
 			"/assets/styles.css": Bun.file("./public/styles.min.css"),
-			"/assets/main.js": Bun.file("./public/js/main.js"),
+			"/assets/js/*": (req) => {
+				const url = new URL(req.url);
+				const safePath = path.normalize(url.pathname.replace("/assets/js", ""));
+				const filePath = path.resolve(path.join("./public/js", safePath));
+				if (!filePath.startsWith(jsPath)) {
+					return Forbidden;
+				}
+				try {
+					return new Response(Bun.file(filePath), {
+						headers: {
+							"Content-Type": "application/javascript",
+						},
+					});
+				} catch {
+					return NotFound;
+				}
+			},
 			"/login": {
 				GET: LoginPage,
 				POST: authApi.login,
