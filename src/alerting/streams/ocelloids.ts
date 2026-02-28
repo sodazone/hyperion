@@ -164,6 +164,7 @@ export async function createOcelloidsClient({
 							},
 							onError,
 							onClose,
+							onAuthError: onError,
 						},
 						{
 							onPersist: async (id: number) => {
@@ -195,6 +196,7 @@ export async function createOcelloidsClient({
 							},
 							onError,
 							onClose,
+							onAuthError: onError,
 						},
 						{
 							onPersist: async (id: number) => {
