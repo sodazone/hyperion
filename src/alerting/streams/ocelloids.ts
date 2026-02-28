@@ -5,6 +5,7 @@ import {
 import type { AnyEvent } from "../rules";
 import { mapJourney, mapTransfer } from "./mapper";
 import { createPointerStorage } from "./pointers";
+import { withReconnect } from "./reconnect";
 
 const OC_CONFIG = {
 	httpUrl: Bun.env.OC_HTTP_URL || "http://127.0.0.1:3000",
@@ -34,105 +35,6 @@ const subIds = {
 	xc: Bun.env.OC_XC_SUB_ID || "xc-all-networks",
 };
 
-function withReconnect({
-	start,
-	maxDelay = 30_000,
-	minDelay = 1_000,
-}: {
-	start: (hooks: {
-		onOpen: () => void;
-		onMessage: () => void;
-		onClose: (err?: any) => void;
-		onError: (err?: any) => void;
-	}) => Promise<{ close: () => void }>;
-	maxDelay?: number;
-	minDelay?: number;
-}) {
-	let stopped = false;
-	let current: { close: () => void } | null = null;
-	let retryDelay = minDelay;
-	let reconnectTimer: Timer | null = null;
-	let connecting = false;
-	let hasReceivedMessage = false;
-
-	const clearReconnectTimer = () => {
-		if (reconnectTimer) {
-			clearTimeout(reconnectTimer);
-			reconnectTimer = null;
-		}
-	};
-
-	const scheduleReconnect = () => {
-		if (stopped) return;
-		if (reconnectTimer) return;
-		if (connecting) return;
-
-		const jitter = Math.random() * 0.3 + 0.85;
-		const delay = Math.min(retryDelay * jitter, maxDelay);
-
-		console.warn(`Reconnecting in ${Math.round(delay)}ms`);
-
-		reconnectTimer = setTimeout(() => {
-			reconnectTimer = null;
-			retryDelay = Math.min(retryDelay * 2, maxDelay);
-			connect();
-		}, delay);
-	};
-
-	const handleCloseOrError = (err?: any) => {
-		if (stopped) return;
-
-		console.warn("Connection lost", err ?? "");
-
-		current?.close();
-		current = null;
-
-		scheduleReconnect();
-	};
-
-	const connect = async () => {
-		if (stopped) return;
-		if (connecting) return;
-
-		connecting = true;
-		hasReceivedMessage = false;
-
-		try {
-			current = await start({
-				onOpen: () => {
-					console.log("Connected");
-				},
-				onMessage: () => {
-					if (!hasReceivedMessage) {
-						hasReceivedMessage = true;
-						retryDelay = minDelay;
-					}
-				},
-				onClose: handleCloseOrError,
-				onError: handleCloseOrError,
-			});
-		} catch (err) {
-			console.error("Initial connection failed", err);
-			scheduleReconnect();
-		} finally {
-			connecting = false;
-		}
-	};
-
-	const startWrapper = async () => {
-		await connect();
-	};
-
-	const stop = () => {
-		stopped = true;
-		clearReconnectTimer();
-		current?.close();
-		current = null;
-	};
-
-	return { start: startWrapper, stop };
-}
-
 export async function createOcelloidsClient({
 	storagePath,
 }: {
@@ -153,6 +55,8 @@ export async function createOcelloidsClient({
 			const reconnectable = withReconnect({
 				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("x");
+
+					console.log("[crosschain] lastSeenId", lastSeenId);
 
 					return crosschain.subscribeWithReplay(
 						subIds.xc,
@@ -186,6 +90,8 @@ export async function createOcelloidsClient({
 			const reconnectable = withReconnect({
 				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("t");
+
+					console.log("[transfers] lastSeenId", lastSeenId);
 
 					return transfers.subscribeWithReplay(
 						subIds.transfers,
