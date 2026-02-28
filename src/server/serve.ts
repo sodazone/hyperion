@@ -132,6 +132,7 @@ export async function serve({
 					return new Response(Bun.file(filePath), {
 						headers: {
 							"Content-Type": "application/javascript",
+							"Cache-Control": "public, max-age=31536000, immutable",
 						},
 					});
 				} catch {
