@@ -34,7 +34,7 @@ export function withReconnect({
 
 	const resetIdleTimer = () => {
 		clearIdleTimer();
-		if (!maxIdle) return; // only start idle timer if maxIdle is provided
+		if (!maxIdle) return;
 		idleTimer = setTimeout(() => {
 			console.info("Idle timeout reached, reconnecting...");
 			handleCloseOrError(new Error("Idle timeout"));
