@@ -2,10 +2,6 @@
 
 Hyperion is a blockchain intelligence platform for monitoring, analytics, and alerting across cryptocurrency networks.
 
-## Overview
-
-Hyperion aggregates blockchain intelligence from multiple sources, processes it for analysis, monitors network activity in real time, and triggers alerts based on user-defined rules. Data is available through HTTP APIs and a web console.
-
 ## Key Features
 
 - Cross-network data collection and analysis
