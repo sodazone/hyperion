@@ -47,8 +47,8 @@ export function generateCEXFlowsQuery({
 	return `WITH filtered AS (
   SELECT
     ${castExpr} AS timestamp,
-    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd,
-    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd
+    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd,
+    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd
   FROM transfers t
   LEFT JOIN address_tag tag_to
     ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
@@ -99,8 +99,8 @@ export function generateTopExchangesQuery({
 WITH aggregated AS (
   SELECT
     COALESCE(tag_to.tag, tag_from.tag) AS exchange,
-    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd,
-    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd
+    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd,
+    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd
   FROM transfers t
   LEFT JOIN address_tag tag_to
     ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
