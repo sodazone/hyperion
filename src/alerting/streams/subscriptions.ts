@@ -17,6 +17,12 @@ function serializeStorageSubKey(k: StorageSubscriptionKey): string {
 	return `${k.chain}:${k.key.toLowerCase()}`;
 }
 
+type SubscriptionFactory = (dep?: any) => Promise<() => void> | (() => void);
+type Dependency =
+	| { kind: "storage"; chain: string; key: string }
+	| { kind: "transfer" }
+	| { kind: "xc" };
+
 export class SubscriptionManager extends EventEmitter {
 	#active = new Map<string, ActiveSubscription>();
 	#started = false;
@@ -29,13 +35,11 @@ export class SubscriptionManager extends EventEmitter {
 		if (!rule.dependencies) return;
 
 		for (const dep of rule.dependencies) {
-			if (dep.kind === "storage") {
-				this.addStorageSubscription(dep);
-			} else if (dep.kind === "transfer") {
-				this.addTransferSubscription();
-			} else if (dep.kind === "xc") {
-				this.addXcSubscription();
-			}
+			if (!this.isSupportedKind(dep.kind)) continue;
+			const handler = this.handlers[dep.kind];
+			const key = handler.getKey(dep);
+
+			this.acquire(key, () => handler.factory(dep));
 		}
 	}
 
@@ -43,95 +47,78 @@ export class SubscriptionManager extends EventEmitter {
 		if (!rule.dependencies) return;
 
 		for (const dep of rule.dependencies) {
-			if (dep.kind === "storage") {
-				this.removeStorageSubscription(dep);
-			}
+			if (!this.isSupportedKind(dep.kind)) continue;
+			const handler = this.handlers[dep.kind];
+
+			if (!handler.releasable) continue;
+
+			const key = handler.getKey(dep);
+
+			this.release(key);
 		}
 	}
 
-	// TODO: generalize subscriptions :)
-	private async addTransferSubscription() {
-		const subKey = "transfers";
-		const existing = this.#active.get(subKey);
+	private async acquire(key: string, factory: SubscriptionFactory) {
+		const existing = this.#active.get(key);
+
 		if (existing) {
 			existing.refCount += 1;
 			return;
 		}
 
-		console.log("Subscribe:", subKey);
+		console.log("Subscribe:", key);
 
-		const unsubscribe = await this.ocelloids.subscribeTransfers((msg) => {
-			this.emit("data", msg);
-		});
+		const unsubscribe = await factory();
 
-		this.#active.set(subKey, {
-			key: subKey,
+		this.#active.set(key, {
+			key,
 			refCount: 1,
 			unsubscribe,
 		});
 	}
 
-	private async addXcSubscription() {
-		const subKey = "xc";
-		const existing = this.#active.get(subKey);
-		if (existing) {
-			existing.refCount += 1;
-			return;
-		}
-
-		console.log("Subscribe:", subKey);
-
-		const unsubscribe = await this.ocelloids.subscribeXc((msg) => {
-			this.emit("data", msg);
-		});
-
-		this.#active.set(subKey, {
-			key: subKey,
-			refCount: 1,
-			unsubscribe,
-		});
-	}
-
-	private async addStorageSubscription(dep: { chain: string; key: string }) {
-		const subKey = serializeStorageSubKey(dep);
-
-		const existing = this.#active.get(subKey);
-		if (existing) {
-			existing.refCount += 1;
-			return;
-		}
-
-		console.log("Subscribe:", subKey);
-
-		const unsubscribe = await this.ocelloids.subscribeStorage(
-			{
-				chain: dep.chain,
-				key: dep.key,
-			},
-			(msg) => {
-				this.emit("data", msg);
-			},
-		);
-
-		this.#active.set(subKey, {
-			key: subKey,
-			refCount: 1,
-			unsubscribe,
-		});
-	}
-
-	private removeStorageSubscription(dep: { chain: string; key: string }) {
-		const subKey = serializeStorageSubKey(dep);
-
-		const existing = this.#active.get(subKey);
+	private release(key: string) {
+		const existing = this.#active.get(key);
 		if (!existing) return;
 
 		existing.refCount -= 1;
 
 		if (existing.refCount === 0) {
 			existing.unsubscribe();
-			this.#active.delete(subKey);
+			this.#active.delete(key);
 		}
+	}
+
+	private readonly handlers: Record<
+		Dependency["kind"],
+		{
+			releasable: boolean;
+			getKey: (dep: any) => string;
+			factory: SubscriptionFactory;
+		}
+	> = {
+		storage: {
+			releasable: true,
+			getKey: (dep) => serializeStorageSubKey(dep),
+			factory: (dep) =>
+				this.ocelloids.subscribeStorage(dep, (msg) => this.emit("data", msg)),
+		},
+		transfer: {
+			releasable: false,
+			getKey: () => "transfers",
+			factory: () =>
+				this.ocelloids.subscribeTransfers((msg) => this.emit("data", msg)),
+		},
+		xc: {
+			releasable: false,
+			getKey: () => "xc",
+			factory: () =>
+				this.ocelloids.subscribeXc((msg) => this.emit("data", msg)),
+		},
+	} as const;
+
+	private isSupportedKind(kind: string): kind is keyof typeof this.handlers {
+		return kind in this.handlers;
 	}
 
 	async start() {
