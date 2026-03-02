@@ -232,34 +232,34 @@ export function dashboard(initialNetwork, initialBucket) {
 		},
 
 		fillMissingPoints(flows, bucket) {
-			if (!flows) return [];
-
-			const filled = [];
+			if (!Array.isArray(flows)) return [];
 			const now = new Date();
 			const lookback = bucket === "hour" ? 24 : 30;
+			const filled = [];
 			const flowMap = new Map();
 
 			flows.forEach((f) => {
 				const ts = new Date(f.timestamp);
-				let truncated;
-
+				let key;
 				if (bucket === "hour") {
-					truncated = new Date(
+					key = Date.UTC(
 						ts.getFullYear(),
 						ts.getMonth(),
 						ts.getDate(),
 						ts.getHours(),
-					).getTime();
+					);
 				} else {
-					truncated = new Date(
-						ts.getFullYear(),
-						ts.getMonth(),
-						ts.getDate(),
-					).getTime();
+					key = Date.UTC(ts.getFullYear(), ts.getMonth(), ts.getDate());
 				}
-
-				flowMap.set(truncated, f);
+				flowMap.set(key, f);
 			});
+
+			const base = new Date(now);
+			if (bucket === "hour") {
+				base.setUTCHours(base.getUTCHours(), 0, 0, 0);
+			} else {
+				base.setUTCHours(0, 0, 0, 0);
+			}
 
 			let lastCumulative = {
 				cumulative_inflow_usd: 0,
@@ -268,13 +268,10 @@ export function dashboard(initialNetwork, initialBucket) {
 			};
 
 			for (let i = lookback - 1; i >= 0; i--) {
+				const current = new Date(base);
 				let key;
-				const current = new Date(now);
-
 				if (bucket === "hour") {
-					current.setUTCMinutes(0, 0, 0);
 					current.setUTCHours(current.getUTCHours() - i);
-
 					key = Date.UTC(
 						current.getUTCFullYear(),
 						current.getUTCMonth(),
@@ -282,9 +279,7 @@ export function dashboard(initialNetwork, initialBucket) {
 						current.getUTCHours(),
 					);
 				} else {
-					current.setUTCHours(0, 0, 0, 0);
 					current.setUTCDate(current.getUTCDate() - i);
-
 					key = Date.UTC(
 						current.getUTCFullYear(),
 						current.getUTCMonth(),
