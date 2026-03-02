@@ -31,73 +31,50 @@ export function generateCEXFlowsQuery({
 	exchange,
 }: CEXFlowQueryParams) {
 	const isDay = bucket === "day";
-
 	const castExpr = isDay
 		? "CAST(t.sent_at AS DATE)"
 		: "date_trunc('hour', t.sent_at)";
-
 	const startExpr = isDay
 		? `CURRENT_DATE - INTERVAL '${lookback} days'`
 		: `NOW() - INTERVAL '${lookback} hours'`;
-
+	const exchangeFilter = exchange
+		? `AND (tag_to.tag = '${exchange}' OR tag_from.tag = '${exchange}')`
+		: "";
 	const networkFilter = network
 		? `(t.origin_domain = '${network}' OR t.destination_domain = '${network}') AND `
 		: "";
 
-	const exchangeFilter = exchange
-		? `AND (tag_to.tag = '${exchange}' OR tag_from.tag = '${exchange}')`
-		: "";
-
-	return `
-WITH tag_to_dedup AS (
-  SELECT address, MIN(tag) AS tag
-  FROM address_tag
-  WHERE tag LIKE 'exchange_name:%'
-  GROUP BY address
-),
-tag_from_dedup AS (
-  SELECT address, MIN(tag) AS tag
-  FROM address_tag
-  WHERE tag LIKE 'exchange_name:%'
-  GROUP BY address
-),
-base AS (
+	return `WITH filtered AS (
   SELECT
     ${castExpr} AS timestamp,
-    tag_to.tag AS tag_to,
-    tag_from.tag AS tag_from,
-    t.amount_usd
+    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd,
+    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd
   FROM transfers t
-  LEFT JOIN tag_to_dedup tag_to
-    ON t.to_address = tag_to.address
-  LEFT JOIN tag_from_dedup tag_from
-    ON t.from_address = tag_from.address
+  LEFT JOIN address_tag tag_to
+    ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
+  LEFT JOIN address_tag tag_from
+    ON t.from_address = tag_from.address AND tag_from.tag LIKE 'exchange_name:%'
   WHERE
     ${networkFilter}
     t.sent_at >= ${startExpr}
+    -- Ensure at least one side is a CEX, but NOT both
     AND (tag_to.tag IS NOT NULL OR tag_from.tag IS NOT NULL)
     AND NOT (tag_to.tag IS NOT NULL AND tag_from.tag IS NOT NULL)
     ${exchangeFilter}
+  GROUP BY 1
 )
 
 SELECT
   timestamp,
-  SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END) AS inflow_usd,
-  SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END) AS outflow_usd,
-  SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END)
-    - SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END) AS netflow_usd,
-  SUM(SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END))
-    OVER (ORDER BY timestamp) AS cumulative_inflow_usd,
-  SUM(SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END))
-    OVER (ORDER BY timestamp) AS cumulative_outflow_usd,
-  SUM(
-    SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END)
-    - SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END)
-  ) OVER (ORDER BY timestamp) AS cumulative_netflow_usd
-FROM base
-GROUP BY timestamp
+  inflow_usd,
+  outflow_usd,
+  inflow_usd - outflow_usd AS netflow_usd,
+  SUM(inflow_usd) OVER (ORDER BY timestamp) AS cumulative_inflow_usd,
+  SUM(outflow_usd) OVER (ORDER BY timestamp) AS cumulative_outflow_usd,
+  SUM(inflow_usd - outflow_usd) OVER (ORDER BY timestamp) AS cumulative_netflow_usd
+FROM filtered
 ORDER BY timestamp;
-`;
+;`;
 }
 
 export function generateTopExchangesQuery({
@@ -108,58 +85,42 @@ export function generateTopExchangesQuery({
 	limit = 10,
 }: TopExchangesQueryParams) {
 	const isDay = bucket === "day";
-
 	const startExpr = isDay
 		? `CURRENT_DATE - INTERVAL '${lookback} days'`
 		: `NOW() - INTERVAL '${lookback} hours'`;
-
+	const exchangeFilter = exchange
+		? `AND (tag_to.tag = '${exchange}' OR tag_from.tag = '${exchange}')`
+		: "";
 	const networkFilter = network
 		? `(t.origin_domain = '${network}' OR t.destination_domain = '${network}') AND `
 		: "";
 
-	const exchangeFilter = exchange
-		? `AND (tag_to.tag = '${exchange}' OR tag_from.tag = '${exchange}')`
-		: "";
-
 	return `
-WITH tag_to_dedup AS (
-  SELECT address, MIN(tag) AS tag
-  FROM address_tag
-  WHERE tag LIKE 'exchange_name:%'
-  GROUP BY address
-),
-tag_from_dedup AS (
-  SELECT address, MIN(tag) AS tag
-  FROM address_tag
-  WHERE tag LIKE 'exchange_name:%'
-  GROUP BY address
-),
-base AS (
+WITH aggregated AS (
   SELECT
-    tag_to.tag AS tag_to,
-    tag_from.tag AS tag_from,
-    t.amount_usd
+    COALESCE(tag_to.tag, tag_from.tag) AS exchange,
+    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd,
+    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd
   FROM transfers t
-  LEFT JOIN tag_to_dedup tag_to
-    ON t.to_address = tag_to.address
-  LEFT JOIN tag_from_dedup tag_from
-    ON t.from_address = tag_from.address
+  LEFT JOIN address_tag tag_to
+    ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
+  LEFT JOIN address_tag tag_from
+    ON t.from_address = tag_from.address AND tag_from.tag LIKE 'exchange_name:%'
   WHERE
     ${networkFilter}
     t.sent_at >= ${startExpr}
     AND (tag_to.tag IS NOT NULL OR tag_from.tag IS NOT NULL)
     AND NOT (tag_to.tag IS NOT NULL AND tag_from.tag IS NOT NULL)
     ${exchangeFilter}
+  GROUP BY 1
 )
 
 SELECT
-  COALESCE(tag_to, tag_from) AS exchange,
-  SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END) AS inflow_usd,
-  SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END) AS outflow_usd,
-  SUM(CASE WHEN tag_from IS NOT NULL THEN amount_usd ELSE 0 END)
-    - SUM(CASE WHEN tag_to IS NOT NULL THEN amount_usd ELSE 0 END) AS netflow_usd
-FROM base
-GROUP BY exchange
+  exchange,
+  inflow_usd,
+  outflow_usd,
+  inflow_usd - outflow_usd AS netflow_usd
+FROM aggregated
 ORDER BY (inflow_usd + outflow_usd) DESC
 LIMIT ${limit};
 `;
