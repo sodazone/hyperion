@@ -233,32 +233,35 @@ export function dashboard(initialNetwork, initialBucket) {
 
 		fillMissingPoints(flows, bucket) {
 			if (!Array.isArray(flows)) return [];
+
 			const now = new Date();
 			const lookback = bucket === "hour" ? 24 : 30;
 			const filled = [];
 			const flowMap = new Map();
 
+			// map existing flows
 			flows.forEach((f) => {
 				const ts = new Date(f.timestamp);
-				let key;
-				if (bucket === "hour") {
-					key = Date.UTC(
-						ts.getFullYear(),
-						ts.getMonth(),
-						ts.getDate(),
-						ts.getHours(),
-					);
-				} else {
-					key = Date.UTC(ts.getFullYear(), ts.getMonth(), ts.getDate());
-				}
+				const key =
+					bucket === "hour"
+						? Date.UTC(
+								ts.getUTCFullYear(),
+								ts.getUTCMonth(),
+								ts.getUTCDate(),
+								ts.getUTCHours(),
+							)
+						: Date.UTC(ts.getUTCFullYear(), ts.getUTCMonth(), ts.getUTCDate());
 				flowMap.set(key, f);
 			});
 
-			const base = new Date(now);
+			// compute start point (earliest point)
+			const start = new Date(now);
 			if (bucket === "hour") {
-				base.setUTCHours(base.getUTCHours(), 0, 0, 0);
+				start.setUTCHours(start.getUTCHours(), 0, 0, 0);
+				start.setUTCHours(start.getUTCHours() - (lookback - 1));
 			} else {
-				base.setUTCHours(0, 0, 0, 0);
+				start.setUTCHours(0, 0, 0, 0);
+				start.setUTCDate(start.getUTCDate() - (lookback - 1));
 			}
 
 			let lastCumulative = {
@@ -267,25 +270,27 @@ export function dashboard(initialNetwork, initialBucket) {
 				cumulative_netflow_usd: 0,
 			};
 
-			for (let i = lookback - 1; i >= 0; i--) {
-				const current = new Date(base);
-				let key;
+			for (let i = 0; i < lookback; i++) {
+				const current = new Date(start);
 				if (bucket === "hour") {
-					current.setUTCHours(current.getUTCHours() - i);
-					key = Date.UTC(
-						current.getUTCFullYear(),
-						current.getUTCMonth(),
-						current.getUTCDate(),
-						current.getUTCHours(),
-					);
+					current.setUTCHours(current.getUTCHours() + i);
 				} else {
-					current.setUTCDate(current.getUTCDate() - i);
-					key = Date.UTC(
-						current.getUTCFullYear(),
-						current.getUTCMonth(),
-						current.getUTCDate(),
-					);
+					current.setUTCDate(current.getUTCDate() + i);
 				}
+
+				const key =
+					bucket === "hour"
+						? Date.UTC(
+								current.getUTCFullYear(),
+								current.getUTCMonth(),
+								current.getUTCDate(),
+								current.getUTCHours(),
+							)
+						: Date.UTC(
+								current.getUTCFullYear(),
+								current.getUTCMonth(),
+								current.getUTCDate(),
+							);
 
 				if (flowMap.has(key)) {
 					const f = flowMap.get(key);
