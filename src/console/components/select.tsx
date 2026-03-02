@@ -31,12 +31,13 @@ export function RichSelect({
 				className="flex items-center justify-between w-full px-3 py-2 text-zinc-500 border border-zinc-800 rounded-md hover:bg-zinc-900 transition-colors"
 			>
 				<span className="flex items-center gap-2 text-zinc-200">
-					<img
-						alt=""
-						x-show="current?.icon"
-						x-bind:src="current?.icon"
-						className="bg-zinc-900 w-6 h-6 rounded-full"
-					/>
+					<template x-if="current?.icon">
+						<img
+							alt=""
+							x-bind:src="current.icon"
+							className="bg-zinc-900 w-6 h-6 rounded-full"
+						/>
+					</template>
 
 					<span x-text="current?.label"></span>
 				</span>
@@ -45,6 +46,7 @@ export function RichSelect({
 			</button>
 
 			<div
+				x-cloak=""
 				x-show="open"
 				x-transition=""
 				className="absolute top-full mt-1 w-full max-h-48 overflow-auto bg-zinc-900 border border-zinc-700 shadow-lg z-10"
