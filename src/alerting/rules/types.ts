@@ -3,8 +3,8 @@ import type { Alert, HyperionDB } from "@/db";
 
 export type Segment = {
 	chainURN: string;
-	blockHeight: string;
-	blockHash: string;
+	blockHeight?: string;
+	blockHash?: string;
 	txHash?: string;
 	timestamp?: number;
 	protocol?: string;
@@ -64,18 +64,31 @@ export type SwapEvent = BaseEvent<
 	}
 >;
 
-export type MetricUpdateEvent = BaseEvent<
-	"metric_update",
+export type IssuanceEvent = BaseEvent<
+	"issuance",
 	{
-		metricKey: string;
-		value: bigint;
+		subscriptionId: string;
+		inputs: {
+			reserveChain: string;
+			reserveAssetId: string;
+			reserveAddress: string;
+			reserveDecimals: number;
+
+			remoteChain: string;
+			remoteAssetId: string;
+			remoteDecimals: number;
+
+			assetSymbol: string;
+		};
+		reserve: string;
+		remote: string;
 	}
 >;
 
 export interface EventMap {
 	transfer: TransferEvent;
 	swap: SwapEvent;
-	metric: MetricUpdateEvent;
+	issuance: IssuanceEvent;
 }
 
 export type StateValue = unknown;
@@ -116,9 +129,8 @@ export type RuleMatcher<
 
 export type RuleDependency =
 	| {
-			kind: "storage";
-			chain: string;
-			key: string;
+			kind: "issuance";
+			subscriptionId: string;
 	  }
 	| {
 			kind: "balance";
@@ -147,9 +159,9 @@ export type RuleDefinition<
 	description?: string;
 	title?: string;
 	schema: z.ZodObject;
-	defaults: Config;
+	defaults: Partial<Config>;
 	matcher: RuleMatcher<Event, Data, Config>;
-	dependencies?: RuleDependency[];
+	resolveDependencies?: (instance: RuleInstance) => RuleDependency[];
 	alertTemplate?: (
 		event: Event,
 		ctx: RuleContext<Config>,

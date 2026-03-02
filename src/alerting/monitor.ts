@@ -17,8 +17,7 @@ import {
 
 export interface Monitor {
 	rules: {
-		setEnabled: (ruleId: number, enabled: boolean) => void;
-		remove: (ruleId: number) => void;
+		remove: (rule: RuleInstance) => void;
 		update: (rule: RuleInstance) => void;
 		add: (rule: RuleInstance) => void;
 	};
@@ -40,13 +39,53 @@ export function createMonitor({
 	const state = new InMemoryStateStore();
 	const engine = new RuleEngine(rules);
 
+	function addInstance(inst: RuleInstance) {
+		const rule = engine.findRuleDefinition(inst);
+		if (rule === undefined) {
+			console.warn(`Rule not found for instance: ${inst.id} ${inst.ruleKey}`);
+		} else {
+			console.log(`Adding rule instance: ${inst.id}`);
+			subManager.addInstance(rule, inst);
+			engine.addInstance(inst);
+		}
+	}
+
+	function removeInstance(inst: RuleInstance) {
+		const rule = engine.findRuleDefinition(inst);
+		if (rule === undefined) {
+			console.warn(`Rule not found for instance: ${inst.id} ${inst.ruleKey}`);
+		} else {
+			console.log(`Removing rule instance: ${inst.id}`);
+			subManager.removeInstance(rule, inst);
+			engine.removeInstanceById(inst.id);
+		}
+	}
+
+	function updateInstance(inst: RuleInstance) {
+		engine.updateInstance(inst);
+
+		const rule = engine.findRuleDefinition(inst);
+		if (rule === undefined) {
+			console.warn(`Rule not found for instance: ${inst.id} ${inst.ruleKey}`);
+			return;
+		}
+
+		console.log(`Updating rule instance: ${inst.id}`);
+
+		if (inst.enabled) {
+			subManager.addInstance(rule, inst);
+		} else {
+			subManager.removeInstance(rule, inst);
+		}
+	}
+
 	// TODO: handle too many rules... :D
 	const instances: RuleInstance[] = db.alerting.rules.findAllRuleInstances();
 
 	console.log("Rule instances:", instances.length);
 
 	for (const inst of instances) {
-		engine.addInstance(inst);
+		addInstance(inst);
 	}
 
 	subManager.on("data", async (data: AnyEvent) => {
@@ -103,11 +142,6 @@ export function createMonitor({
 		}
 	});
 
-	for (const rule of rules) {
-		console.log(`Adding rule: ${rule.id}`);
-		subManager.addRule(rule);
-	}
-
 	return {
 		start: () => {
 			console.log("Monitor started");
@@ -115,20 +149,9 @@ export function createMonitor({
 			engine.start();
 		},
 		rules: {
-			setEnabled: (ruleId: number, enabled: boolean) => {
-				engine.setEnabled(ruleId, enabled);
-				// TODO: close unused subscriptions
-			},
-			update: (rule: RuleInstance) => {
-				engine.update(rule);
-			},
-			add: (rule: RuleInstance) => {
-				engine.addInstance(rule);
-			},
-			remove: (ruleId: number) => {
-				engine.remove(ruleId);
-				// TODO
-			},
+			update: updateInstance,
+			add: addInstance,
+			remove: removeInstance,
 		},
 		stop: () => {
 			subManager.stop();

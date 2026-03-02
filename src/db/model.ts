@@ -34,7 +34,8 @@ export interface AlertActor {
 }
 
 export interface AlertPayload {
-	actors: Array<AlertActor>;
+	kind: string;
+	actors?: Array<AlertActor>;
 }
 
 export type AlertMessagePart = ["t" | "a" | "e" | "cex" | "addr", string];

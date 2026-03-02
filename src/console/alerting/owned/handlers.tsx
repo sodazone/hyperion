@@ -25,12 +25,13 @@ export const RuleDeleteHandler = withAuth<"/console/rules/:id">(
 
 			if (id === undefined || Number.isNaN(id)) return InvalidParameters;
 
-			db.alerting.rules.deleteRuleInstance({
-				id,
-				owner: ownerHash,
-			});
+			const ownedId = { id, owner: ownerHash };
+			const rule = db.alerting.rules.getRuleInstance(ownedId);
 
-			monitor.rules.remove(id);
+			if (rule !== null) {
+				db.alerting.rules.deleteRuleInstance(ownedId);
+				monitor.rules.remove(rule);
+			}
 
 			return RedirectToRules();
 		} catch (error) {

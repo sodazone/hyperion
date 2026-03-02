@@ -10,6 +10,17 @@ export const RuleIcons: Record<string, React.ReactNode> = {
 			<path d="M16 16H2v2h14v4l6-5-6-5zM8 1 2 6l6 5V7h14V5H8z"></path>
 		</svg>
 	),
+	"xc-invariant": (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="currentColor"
+			viewBox="0 0 24 24"
+			role="image"
+			aria-hidden="true"
+		>
+			<path d="M3 21h18c.35 0 .68-.18.86-.48s.19-.67.03-.98L12.88 2.53c-.35-.66-1.42-.66-1.77 0l-8.99 17c-.16.31-.15.68.03.98s.51.48.86.48Zm7.99-13.95L17.31 19H4.66l6.32-11.95Z"></path>
+		</svg>
+	),
 	watched: (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

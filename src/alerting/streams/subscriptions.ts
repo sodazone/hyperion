@@ -1,25 +1,29 @@
 import { EventEmitter } from "node:events";
-import type { RuleDefinition } from "@/alerting";
+import type { RuleDefinition, RuleDependency, RuleInstance } from "@/alerting";
 import type { StreamsClient } from "./ocelloids";
 
-type ActiveSubscription = {
-	key: string;
-	refCount: number;
-	unsubscribe: () => void;
-};
+type ActiveSubscription =
+	| {
+			key: string;
+			owners: Set<number>;
+			unsubscribe: () => void;
+	  }
+	| {
+			key: string;
+			owners: Set<number>;
+			promise: Promise<void>;
+	  };
 
-type StorageSubscriptionKey = {
-	chain: string;
-	key: string;
-};
-
-function serializeStorageSubKey(k: StorageSubscriptionKey): string {
-	return `${k.chain}:${k.key.toLowerCase()}`;
+function getDependencies(
+	def: RuleDefinition,
+	instance: RuleInstance,
+): RuleDependency[] {
+	return def.resolveDependencies ? def.resolveDependencies(instance) : [];
 }
 
 type SubscriptionFactory = (dep?: any) => Promise<() => void> | (() => void);
 type Dependency =
-	| { kind: "storage"; chain: string; key: string }
+	| { kind: "issuance"; subscriptionId: string }
 	| { kind: "transfer" }
 	| { kind: "xc" };
 
@@ -31,22 +35,22 @@ export class SubscriptionManager extends EventEmitter {
 		super();
 	}
 
-	addRule(rule: RuleDefinition) {
-		if (!rule.dependencies) return;
+	addInstance(def: RuleDefinition, instance: RuleInstance) {
+		const deps = getDependencies(def, instance);
 
-		for (const dep of rule.dependencies) {
+		for (const dep of deps) {
 			if (!this.isSupportedKind(dep.kind)) continue;
 			const handler = this.handlers[dep.kind];
 			const key = handler.getKey(dep);
 
-			this.acquire(key, () => handler.factory(dep));
+			this.acquire(key, instance.id, () => handler.factory(dep));
 		}
 	}
 
-	removeRule(rule: RuleDefinition) {
-		if (!rule.dependencies) return;
+	removeInstance(def: RuleDefinition, instance: RuleInstance) {
+		const deps = getDependencies(def, instance);
 
-		for (const dep of rule.dependencies) {
+		for (const dep of deps) {
 			if (!this.isSupportedKind(dep.kind)) continue;
 			const handler = this.handlers[dep.kind];
 
@@ -54,39 +58,71 @@ export class SubscriptionManager extends EventEmitter {
 
 			const key = handler.getKey(dep);
 
-			this.release(key);
+			this.release(key, instance.id);
 		}
 	}
 
-	private async acquire(key: string, factory: SubscriptionFactory) {
+	private async acquire(
+		key: string,
+		instanceId: number,
+		factory: SubscriptionFactory,
+	) {
 		const existing = this.#active.get(key);
 
-		if (existing) {
-			existing.refCount += 1;
+		if (existing && "unsubscribe" in existing) {
+			existing.owners.add(instanceId);
 			return;
 		}
 
-		console.log("Subscribe:", key);
+		if (existing && "promise" in existing) {
+			existing.owners.add(instanceId);
+			await existing.promise;
+			return;
+		}
 
-		const unsubscribe = await factory();
+		const owners = new Set<number>([instanceId]);
+
+		let resolveReady!: () => void;
+		const promise = new Promise<void>((resolve) => {
+			resolveReady = resolve;
+		});
 
 		this.#active.set(key, {
 			key,
-			refCount: 1,
-			unsubscribe,
+			owners,
+			promise,
 		});
+
+		try {
+			console.log("Subscribe:", key);
+
+			const unsubscribe = await factory();
+
+			this.#active.set(key, {
+				key,
+				owners,
+				unsubscribe,
+			});
+		} finally {
+			resolveReady();
+		}
 	}
 
-	private release(key: string) {
+	private async release(key: string, instanceId: number): Promise<void> {
 		const existing = this.#active.get(key);
 		if (!existing) return;
 
-		existing.refCount -= 1;
+		existing.owners.delete(instanceId);
 
-		if (existing.refCount === 0) {
-			existing.unsubscribe();
-			this.#active.delete(key);
+		if (existing.owners.size > 0) return;
+
+		if ("promise" in existing) {
+			await existing.promise;
+			return this.release(key, instanceId);
 		}
+
+		existing.unsubscribe();
+		this.#active.delete(key);
 	}
 
 	private readonly handlers: Record<
@@ -97,11 +133,11 @@ export class SubscriptionManager extends EventEmitter {
 			factory: SubscriptionFactory;
 		}
 	> = {
-		storage: {
+		issuance: {
 			releasable: true,
-			getKey: (dep) => serializeStorageSubKey(dep),
+			getKey: (dep) => dep.subscriptionId,
 			factory: (dep) =>
-				this.ocelloids.subscribeStorage(dep, (msg) => this.emit("data", msg)),
+				this.ocelloids.subscribeIssuance(dep, (msg) => this.emit("data", msg)),
 		},
 		transfer: {
 			releasable: false,
@@ -131,7 +167,9 @@ export class SubscriptionManager extends EventEmitter {
 		this.#started = false;
 
 		for (const sub of this.#active.values()) {
-			sub.unsubscribe();
+			if ("unsubscribe" in sub) {
+				sub.unsubscribe();
+			}
 		}
 		this.#active.clear();
 

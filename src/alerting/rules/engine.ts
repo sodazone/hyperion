@@ -113,20 +113,16 @@ export class RuleEngine extends EventEmitter {
 		}
 	}
 
-	setEnabled(id: number, enabled: boolean): boolean {
-		const inst = this.#byId.get(id);
-		if (!inst) return false;
-
-		inst.enabled = enabled;
-		return true;
+	findRuleDefinition(rule: RuleInstance) {
+		return this.#registry.get(rule.ruleKey);
 	}
 
-	update(rule: RuleInstance) {
-		this.remove(rule.id);
+	updateInstance(rule: RuleInstance) {
+		this.removeInstanceById(rule.id);
 		this.addInstance(rule);
 	}
 
-	remove(id: number): boolean {
+	removeInstanceById(id: number): boolean {
 		const inst = this.#byId.get(id);
 		if (!inst) return false;
 

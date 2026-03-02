@@ -1,4 +1,9 @@
-import { type TransferEvent, TransferStatus } from "../rules";
+import type { issuance, Message } from "@sodazone/ocelloids-client";
+import {
+	type IssuanceEvent,
+	type TransferEvent,
+	TransferStatus,
+} from "../rules";
 
 export function mapJourney({
 	type,
@@ -97,6 +102,23 @@ export function mapJourney({
 		}
 	}
 	return null;
+}
+
+export function mapIssuance({
+	metadata,
+	payload,
+}: Message<issuance.CrosschainIssuancePayload>): IssuanceEvent {
+	return {
+		type: "issuance",
+		payload: {
+			subscriptionId: metadata.subscriptionId,
+			...payload,
+		},
+		origin: {
+			chainURN: metadata.networkId,
+			timestamp: metadata.blockTimestamp ?? metadata.timestamp,
+		},
+	};
 }
 
 export function mapTransfer(tx: any): TransferEvent {

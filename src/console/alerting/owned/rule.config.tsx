@@ -139,19 +139,24 @@ export function ConfigField({
 					{label} {required && <span className="text-pink-500">*</span>}
 				</label>
 
-				<select
-					id={name}
-					name={name}
-					required={required}
-					defaultValue={defaultValue}
-					className={baseClass}
-				>
-					{unwrapped.options.map((opt) => (
-						<option key={opt} value={opt}>
-							{opt}
-						</option>
-					))}
-				</select>
+				<div className="ui-select w-fit">
+					<select
+						id={name}
+						name={name}
+						required={required}
+						defaultValue={defaultValue}
+						className="scrollbar-ui"
+					>
+						{unwrapped.options.map((opt) => (
+							<option key={opt} value={opt}>
+								{opt}
+							</option>
+						))}
+					</select>
+					<div className="ui-select-btn">
+						<ChevronUpDownIcon />
+					</div>
+				</div>
 
 				{help && <span className="text-xs text-zinc-400">{help}</span>}
 			</div>

@@ -1,4 +1,4 @@
-import type { AnyEvent } from "@/alerting";
+import type { IssuanceEvent, TransferEvent } from "@/alerting";
 import { serve } from "@/server/serve";
 import { TEST_JWKS } from "./auth";
 
@@ -40,14 +40,14 @@ export async function runTestServer() {
 		dbPath: ":memory:",
 		createStreamsClient: async () => {
 			return {
-				subscribeStorage:
+				subscribeIssuance:
 					(
-						_params: { chain: string; key: string },
-						_emit: (msg: AnyEvent) => void,
+						_params: { subscriptionId: string },
+						_emit: (msg: IssuanceEvent) => void,
 					) =>
 					() => {},
-				subscribeTransfers: (_emit: (msg: AnyEvent) => void) => () => {},
-				subscribeXc: (_emit: (msg: AnyEvent) => void) => () => {},
+				subscribeTransfers: (_emit: (msg: TransferEvent) => void) => () => {},
+				subscribeXc: (_emit: (msg: TransferEvent) => void) => () => {},
 				close: async () => {},
 			};
 		},

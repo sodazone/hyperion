@@ -239,7 +239,6 @@ export function dashboard(initialNetwork, initialBucket) {
 			const filled = [];
 			const flowMap = new Map();
 
-			// map existing flows
 			flows.forEach((f) => {
 				const ts = new Date(f.timestamp);
 				const key =
@@ -254,7 +253,6 @@ export function dashboard(initialNetwork, initialBucket) {
 				flowMap.set(key, f);
 			});
 
-			// compute start point (earliest point)
 			const start = new Date(now);
 			if (bucket === "hour") {
 				start.setUTCHours(start.getUTCHours(), 0, 0, 0);

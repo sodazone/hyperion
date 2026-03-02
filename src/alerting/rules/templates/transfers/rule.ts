@@ -47,7 +47,7 @@ function matchesNetwork(event: TransferEvent, config: Config): boolean {
 
 export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	id: ruleName,
-	dependencies: [{ kind: "transfer" }, { kind: "xc" }],
+	resolveDependencies: () => [{ kind: "transfer" }, { kind: "xc" }],
 	title: "Asset Movement",
 	description:
 		"Detects asset movements in USD using thresholds, tags and categories.",

@@ -1,9 +1,10 @@
 import {
 	createCrosschainAgent,
+	createCrosschainIssuanceAgent,
 	createTransfersAgent,
 } from "@sodazone/ocelloids-client";
-import type { AnyEvent } from "../rules";
-import { mapJourney, mapTransfer } from "./mapper";
+import type { IssuanceEvent, TransferEvent } from "../rules";
+import { mapIssuance, mapJourney, mapTransfer } from "./mapper";
 import { createPointerStorage } from "./pointers";
 import { withReconnect } from "./reconnect";
 
@@ -14,17 +15,17 @@ const OC_CONFIG = {
 };
 
 export type StreamsClient = {
-	subscribeStorage: (
-		params: { chain: string; key: string },
-		emit: (msg: AnyEvent) => void,
+	subscribeIssuance: (
+		params: { subscriptionId: string },
+		emit: (msg: IssuanceEvent) => void,
 	) => Promise<() => void> | (() => void);
 
 	subscribeTransfers: (
-		emit: (msg: AnyEvent) => void,
+		emit: (msg: TransferEvent) => void,
 	) => Promise<() => void> | (() => void);
 
 	subscribeXc: (
-		emit: (msg: AnyEvent) => void,
+		emit: (msg: TransferEvent) => void,
 	) => Promise<() => void> | (() => void);
 
 	close: () => Promise<void>;
@@ -42,13 +43,29 @@ export async function createOcelloidsClient({
 }): Promise<StreamsClient> {
 	const transfers = createTransfersAgent(OC_CONFIG);
 	const crosschain = createCrosschainAgent(OC_CONFIG);
+	const issuance = createCrosschainIssuanceAgent(OC_CONFIG);
 	const pointers = createPointerStorage(storagePath);
 
 	const subscriptions: (() => void)[] = [];
 
 	return {
-		subscribeStorage: () => {
-			throw new Error("Not implemented");
+		subscribeIssuance: async ({ subscriptionId }, emit) => {
+			const reconnectable = withReconnect({
+				start: async ({ onMessage, onClose, onError }) => {
+					return issuance.subscribe(subscriptionId, {
+						onMessage: (message) => {
+							onMessage();
+							const event = mapIssuance(message);
+							if (event) emit(event);
+						},
+						onClose,
+						onError,
+					});
+				},
+			});
+			await reconnectable.start();
+			subscriptions.push(reconnectable.stop);
+			return reconnectable.stop;
 		},
 
 		subscribeXc: async (emit) => {
