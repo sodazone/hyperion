@@ -93,6 +93,10 @@ const cexMap: Record<string, { name: string; icon?: string }> = {
 		name: "Bitbank",
 		icon: "https://assets.coingecko.com/markets/images/122/large/bitbank.jpg",
 	},
+	"altcoin trader": {
+		name: "AltcoinTrader",
+		icon: "https://assets.coingecko.com/markets/images/661/large/Altcoin.png",
+	},
 };
 
 const fallback = (name: string) => ({ name, icon: "" });
