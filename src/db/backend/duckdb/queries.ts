@@ -33,7 +33,7 @@ export function generateCEXFlowsQuery({
 	const isDay = bucket === "day";
 	const castExpr = isDay
 		? "CAST(t.sent_at AS DATE)"
-		: "date_trunc('hour', t.sent_at)";
+		: "DATE_TRUNC('hour', t.sent_at)";
 	const startExpr = isDay
 		? `CURRENT_DATE - INTERVAL '${lookback} days'`
 		: `NOW() - INTERVAL '${lookback} hours'`;
@@ -140,7 +140,7 @@ export const Queries = {
   LEFT JOIN address_tag tag_from ON t.from_address = tag_from.address AND tag_from.tag LIKE 'exchange_name:%'
   WHERE NOT (tag_to.tag IS NOT NULL AND tag_from.tag IS NOT NULL)
     AND (tag_to.tag IS NOT NULL OR tag_from.tag IS NOT NULL)
-    AND sent_at >= current_date - INTERVAL '29 days'
+    AND sent_at >= CURRENT_DATE - INTERVAL '29 days'
   GROUP BY 1
   ),
 
