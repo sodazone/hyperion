@@ -236,7 +236,6 @@ export function dashboard(initialNetwork, initialBucket) {
 
 			const filled = [];
 			const now = new Date();
-			const step = bucket === "hour" ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
 			const lookback = bucket === "hour" ? 24 : 30;
 			const flowMap = new Map();
 
@@ -269,15 +268,29 @@ export function dashboard(initialNetwork, initialBucket) {
 			};
 
 			for (let i = lookback - 1; i >= 0; i--) {
-				const current = new Date(now.getTime() - i * step);
+				let key;
+				const current = new Date(now);
 
 				if (bucket === "hour") {
-					current.setMinutes(0, 0, 0);
-				} else {
-					current.setHours(0, 0, 0, 0);
-				}
+					current.setUTCMinutes(0, 0, 0);
+					current.setUTCHours(current.getUTCHours() - i);
 
-				const key = current.getTime();
+					key = Date.UTC(
+						current.getUTCFullYear(),
+						current.getUTCMonth(),
+						current.getUTCDate(),
+						current.getUTCHours(),
+					);
+				} else {
+					current.setUTCHours(0, 0, 0, 0);
+					current.setUTCDate(current.getUTCDate() - i);
+
+					key = Date.UTC(
+						current.getUTCFullYear(),
+						current.getUTCMonth(),
+						current.getUTCDate(),
+					);
+				}
 
 				if (flowMap.has(key)) {
 					const f = flowMap.get(key);
