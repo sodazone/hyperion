@@ -5,7 +5,7 @@ import { CrosschainInvariantRule } from "./xc-invariant/rule";
 
 export const RulesRegistry = [
 	TransfersRule,
-	CrosschainInvariantRule,
+	//CrosschainInvariantRule,
 	WatchedRule,
-	OpenGovRule,
+	//OpenGovRule,
 ];
