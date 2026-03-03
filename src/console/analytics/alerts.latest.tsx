@@ -20,7 +20,7 @@ function AlertSmallCard({ alert }: { alert: OwnedAlert }) {
 	return (
 		<div
 			key={alert.id}
-			hx-get="/console/public/alerts"
+			hx-get={isPublic ? "/console/public/alerts" : "/console/my/alerts"}
 			hx-target="#main-content"
 			hx-push-url="true"
 			className="
