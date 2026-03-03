@@ -42,7 +42,7 @@ export function withReconnect({
 	};
 
 	const scheduleReconnect = () => {
-		if (stopped || reconnectTimer || connecting) return;
+		if (stopped || reconnectTimer) return;
 
 		const jitter = Math.random() * 0.3 + 0.85;
 		const delay = Math.min(retryDelay * jitter, maxDelay);
