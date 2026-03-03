@@ -1,7 +1,13 @@
-export function multiselect({ name, options, selected = [] }) {
+export function multiselect({
+	name,
+	options,
+	selected = [],
+	required = false,
+}) {
 	return {
 		name,
 		options,
+		required,
 		query: "",
 		open: false,
 		selectedItems: [],
@@ -50,6 +56,11 @@ export function multiselect({ name, options, selected = [] }) {
 
 		dispatchChange() {
 			this.$nextTick(() => {
+				const validator = this.$el.querySelector("[data-validator]");
+				if (validator) {
+					validator.setCustomValidity("");
+				}
+
 				this.$refs.input.dispatchEvent(new Event("change", { bubbles: true }));
 			});
 		},

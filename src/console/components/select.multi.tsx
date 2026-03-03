@@ -2,12 +2,14 @@ export function Multiselect({
 	name,
 	options,
 	selected = [],
+	required = false,
 	placeholder = "Search…",
 }: {
 	name: string;
 	selected?: Array<string | number>;
 	options: Array<{ label: string; value: string | number }>;
 	placeholder?: string;
+	required?: boolean;
 }) {
 	return (
 		<div
@@ -15,6 +17,7 @@ export function Multiselect({
         name: '${name}',
         options: ${JSON.stringify(options)},
         selected: ${JSON.stringify(selected)},
+        required: ${required},
       })`}
 			x-init="init()"
 			x-cloak=""
@@ -50,6 +53,18 @@ export function Multiselect({
 				x-on:focus="openDropdown()"
 				x-on:input="openDropdown()"
 				x-on:keydown="keyDown($event)"
+			/>
+
+			{/* Validation input */}
+			<input
+				type="text"
+				tabIndex={-1}
+				hidden
+				aria-hidden="true"
+				className="hidden"
+				x-bind:required="required"
+				x-bind:value="selectedItems.length ? '1' : ''"
+				x-on:invalid="$refs.input.focus()"
 			/>
 
 			{/* Dropdown results */}
