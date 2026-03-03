@@ -22,10 +22,6 @@ function getDependencies(
 }
 
 type SubscriptionFactory = (dep?: any) => Promise<() => void> | (() => void);
-type Dependency =
-	| { kind: "issuance"; subscriptionId: string }
-	| { kind: "transfer" }
-	| { kind: "xc" };
 
 export class SubscriptionManager extends EventEmitter {
 	#active = new Map<string, ActiveSubscription>();
@@ -126,7 +122,7 @@ export class SubscriptionManager extends EventEmitter {
 	}
 
 	private readonly handlers: Record<
-		Dependency["kind"],
+		RuleDependency["kind"],
 		{
 			releasable: boolean;
 			getKey: (dep: any) => string;
@@ -150,6 +146,12 @@ export class SubscriptionManager extends EventEmitter {
 			getKey: () => "xc",
 			factory: () =>
 				this.ocelloids.subscribeXc((msg) => this.emit("data", msg)),
+		},
+		opengov: {
+			releasable: false,
+			getKey: () => "opengov",
+			factory: () =>
+				this.ocelloids.subscribeOpenGov((msg) => this.emit("data", msg)),
 		},
 	} as const;
 

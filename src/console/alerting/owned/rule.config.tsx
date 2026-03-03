@@ -45,6 +45,7 @@ export function ConfigField({
 						name={name}
 						options={meta.options}
 						selected={defaultValue}
+						required={required}
 					/>
 					{meta.help && <p className="text-xs text-zinc-400">{meta.help}</p>}
 				</div>

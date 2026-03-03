@@ -20,7 +20,7 @@ export const networks = z.array(z.string()).optional().meta({
 	label: "Networks",
 	input: "select-networks",
 	multiple: true,
-	help: "By default applies to all networks. If specified, only transfers on the selected networks will be monitored.",
+	help: "Applies to all networks by default. If specified, only selected networks will be monitored.",
 });
 
 export const categoriesMeta = {

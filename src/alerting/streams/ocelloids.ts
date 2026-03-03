@@ -1,11 +1,12 @@
 import {
 	createCrosschainAgent,
 	createCrosschainIssuanceAgent,
+	createOpenGovAgent,
 	createTransfersAgent,
 	type OcelloidsClientApi,
 } from "@sodazone/ocelloids-client";
-import type { IssuanceEvent, TransferEvent } from "../rules";
-import { mapIssuance, mapJourney, mapTransfer } from "./mapper";
+import type { IssuanceEvent, OpenGovEvent, TransferEvent } from "../rules";
+import { mapIssuance, mapJourney, mapOpenGov, mapTransfer } from "./mapper";
 import { createPointerStorage } from "./pointers";
 import { withReconnect } from "./reconnect";
 
@@ -27,12 +28,15 @@ export type StreamsClient = {
 
 	subscribeXc: (emit: (msg: TransferEvent) => void) => Promise<() => void>;
 
+	subscribeOpenGov: (emit: (msg: OpenGovEvent) => void) => Promise<() => void>;
+
 	close: () => Promise<void>;
 };
 
 const subIds = {
 	transfers: Bun.env.OC_TRANSFERS_SUB_ID || "transfers-all-networks",
 	xc: Bun.env.OC_XC_SUB_ID || "xc-all-networks",
+	og: Bun.env.OC_OG_SUB_ID || "opengov-all-networks",
 };
 
 function sleep(ms: number, signal: AbortSignal) {
@@ -77,7 +81,8 @@ async function waitForHealthy(client: OcelloidsClientApi, signal: AbortSignal) {
 				throw err;
 			}
 			console.error("[health] failed, retrying...", err);
-			await sleep(2000, signal);
+			// TODO: add jitter
+			await sleep(4_000, signal);
 		}
 	}
 }
@@ -90,6 +95,7 @@ export async function createOcelloidsClient({
 	const transfers = createTransfersAgent(OC_CONFIG);
 	const crosschain = createCrosschainAgent(OC_CONFIG);
 	const issuance = createCrosschainIssuanceAgent(OC_CONFIG);
+	const opengov = createOpenGovAgent(OC_CONFIG);
 
 	const pointers = createPointerStorage(storagePath);
 
@@ -214,6 +220,26 @@ export async function createOcelloidsClient({
 							lastSeenId,
 						},
 					);
+				},
+			});
+
+			return sub.start();
+		},
+
+		subscribeOpenGov: async (emit) => {
+			const sub = createManagedSubscription({
+				client: opengov,
+				start: async ({ onMessage, onClose, onError }) => {
+					return opengov.subscribe(subIds.og, {
+						onMessage: (message) => {
+							onMessage();
+							const event = mapOpenGov(message);
+							if (event) emit(event);
+						},
+						onError,
+						onClose,
+						onAuthError: onError,
+					});
 				},
 			});
 

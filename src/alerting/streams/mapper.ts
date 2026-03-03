@@ -1,9 +1,15 @@
 import type { issuance, Message } from "@sodazone/ocelloids-client";
 import {
 	type IssuanceEvent,
+	type OpenGovEvent,
 	type TransferEvent,
 	TransferStatus,
 } from "../rules";
+import {
+	humanizeStatus,
+	mapEventType,
+} from "../rules/templates/opengov/support/helpers";
+import type { OpenGovPayload } from "../rules/templates/opengov/support/types";
 
 export function mapJourney({
 	type,
@@ -155,6 +161,41 @@ export function mapTransfer(tx: any): TransferEvent {
 					amountUsd: tx.usd,
 				},
 			],
+		},
+	};
+}
+
+export function mapOpenGov(message: Message): OpenGovEvent | null {
+	const payload = message.payload as OpenGovPayload;
+
+	const eventType = mapEventType(payload.triggeredBy.name);
+	if (!eventType) return null;
+
+	const status = humanizeStatus(eventType);
+
+	return {
+		type: "opengov",
+		origin: {
+			chainURN: message.metadata.networkId,
+			timestamp:
+				message.metadata.blockTimestamp ??
+				message.metadata.timestamp ??
+				Date.now(),
+		},
+		payload: {
+			id: payload.id,
+			chainId: payload.chainId,
+			eventType,
+			humanized: {
+				status,
+			},
+			triggeredBy: payload.triggeredBy,
+			info: payload.info,
+			decodedCall: payload.decodedCall,
+			content: payload.content,
+			timeline: {
+				// ...
+			},
 		},
 	};
 }

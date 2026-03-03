@@ -1,5 +1,6 @@
 import type z from "zod";
 import type { Alert, HyperionDB } from "@/db";
+import type { OpenGovPayload } from "./templates/opengov/support/types";
 
 export type Segment = {
 	chainURN: string;
@@ -52,17 +53,31 @@ export type TransferPayload = {
 
 export type TransferEvent = BaseEvent<"transfer", TransferPayload>;
 
-export type SwapEvent = BaseEvent<
-	"swap",
-	{
-		trader: string;
-		poolId: string;
-		inAsset: string;
-		outAsset: string;
-		inAmount: bigint;
-		outAmount: bigint;
-	}
->;
+export type OpenGovEventPayload = {
+	id: number;
+	chainId: string;
+	eventType: OpenGovEventType;
+	humanized: {
+		status: string;
+	};
+	triggeredBy: OpenGovPayload["triggeredBy"];
+	info: OpenGovPayload["info"];
+	decodedCall: OpenGovPayload["decodedCall"];
+	content: OpenGovPayload["content"];
+	timeline?: {
+		willExecuteAtUtc?: string;
+	};
+};
+
+export const OpenGovEventTypes = [
+	"deciding",
+	"approved",
+	"rejected",
+	"execution_failed",
+] as const;
+
+export type OpenGovEventType = (typeof OpenGovEventTypes)[number];
+export type OpenGovEvent = BaseEvent<"opengov", OpenGovEventPayload>;
 
 export type IssuanceEvent = BaseEvent<
 	"issuance",
@@ -87,8 +102,8 @@ export type IssuanceEvent = BaseEvent<
 
 export interface EventMap {
 	transfer: TransferEvent;
-	swap: SwapEvent;
 	issuance: IssuanceEvent;
+	opengov: OpenGovEvent;
 }
 
 export type StateValue = unknown;
@@ -136,20 +151,12 @@ export type RuleDependency =
 			subscriptionId: string;
 	  }
 	| {
-			kind: "balance";
-			chain: string;
-			address: string;
-			asset: string;
+			kind: "opengov";
 	  }
 	| {
 			kind: "transfer";
 	  }
-	| { kind: "xc"; fromChain?: string; toChain?: string; protocol?: string }
-	| {
-			kind: "custom";
-			stream: string;
-			filter: unknown;
-	  };
+	| { kind: "xc" };
 
 export type RuleDefinition<
 	Event extends BaseEvent = AnyEvent,
