@@ -20,12 +20,16 @@ function AlertSmallCard({ alert }: { alert: OwnedAlert }) {
 	return (
 		<div
 			key={alert.id}
+			hx-get="/console/public/alerts"
+			hx-target="#main-content"
+			hx-push-url="true"
 			className="
             flex flex-col gap-1
             text-sm
             max-w-full
             px-2
             py-2
+            cursor-pointer
           "
 		>
 			<div className="flex justify-between items-baseline">
