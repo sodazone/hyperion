@@ -88,7 +88,7 @@ export async function serve({
 	const authApi = createAuthApi();
 
 	const monitor = await createMonitorFromDB(db, createStreamsClient);
-	monitor.start();
+	await monitor.start();
 
 	const ctx = Object.freeze({ db, authApi, monitor });
 
@@ -251,7 +251,7 @@ export async function serve({
 			listener.stop();
 			console.log("HTTP server stopped");
 
-			monitor.stop();
+			await monitor.stop();
 			console.log("Monitor stopped");
 
 			db.close();

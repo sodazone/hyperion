@@ -1,4 +1,4 @@
-import type { StateStore, StateValue } from "./types";
+import type { StateStore, StateValue } from "../types";
 
 export class InMemoryStateStore implements StateStore {
 	#data = new Map<string, Map<string, StateValue>>();
@@ -18,5 +18,12 @@ export class InMemoryStateStore implements StateStore {
 
 	delete(scope: string, key: string): void {
 		this.#data.get(scope)?.delete(key);
+	}
+
+	async load() {
+		//
+	}
+	async stop() {
+		//
 	}
 }

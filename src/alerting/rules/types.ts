@@ -97,6 +97,8 @@ export interface StateStore {
 	get(scope: string, key: string): StateValue | undefined;
 	set(scope: string, key: string, value: StateValue): void;
 	delete(scope: string, key: string): void;
+	load(): Promise<void>;
+	stop(): Promise<void>;
 }
 
 export interface GlobalRuleContext {

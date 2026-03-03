@@ -8,7 +8,7 @@ import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
 import { notifyTelegram } from "./channels";
 import { notifyDiscord } from "./channels/discord/notify";
-import { InMemoryStateStore } from "./rules/state";
+import { createStateStore } from "./rules/state";
 import { RulesRegistry } from "./rules/templates/registry";
 import {
 	type CreateStreamsClient,
@@ -21,8 +21,8 @@ export interface Monitor {
 		update: (rule: RuleInstance) => void;
 		add: (rule: RuleInstance) => void;
 	};
-	start: () => void;
-	stop: () => void;
+	start: () => Promise<void>;
+	stop: () => Promise<void>;
 }
 
 interface MonitorOptions {
@@ -36,7 +36,7 @@ export function createMonitor({
 	subManager,
 	db,
 }: MonitorOptions): Monitor {
-	const state = new InMemoryStateStore();
+	const state = createStateStore(db.path);
 	const engine = new RuleEngine(rules);
 
 	function addInstance(inst: RuleInstance) {
@@ -143,8 +143,8 @@ export function createMonitor({
 	});
 
 	return {
-		start: () => {
-			console.log("Monitor started");
+		start: async () => {
+			await state.load();
 			subManager.start();
 			engine.start();
 		},
@@ -153,9 +153,10 @@ export function createMonitor({
 			add: addInstance,
 			remove: removeInstance,
 		},
-		stop: () => {
+		stop: async () => {
 			subManager.stop();
 			engine.stop();
+			await state.stop();
 		},
 	};
 }
