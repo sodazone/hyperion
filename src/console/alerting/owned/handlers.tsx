@@ -5,11 +5,10 @@ import { InternalServerError, InvalidParameters } from "@/server/response";
 import { safeString } from "@/utils/strings";
 
 function strNumOrBool(v: any) {
-	return !Number.isNaN(Number(v)) && v !== ""
-		? Number(v)
-		: v === "on"
-			? true
-			: v;
+	if (v === "") return undefined;
+	if (!Number.isNaN(Number(v))) return Number(v);
+	if (v === "on") return true;
+	return v;
 }
 
 const RedirectToRules = () =>

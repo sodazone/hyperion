@@ -2,8 +2,21 @@ import z from "zod";
 import { level } from "../common/schema";
 
 const IssuanceSubscriptions = [
-	{ id: "hyperion:assethub-DOT-hydration", name: "", description: "" },
-	{ id: "hyperion:assethub-tBTC-hydration", name: "", description: "" },
+	{
+		id: "hyperion:assethub-DOT-hydration",
+		name: "DOT AssetHub Hydration",
+		description: "Tracks DOT crosschain reserve and remote balance events.",
+	},
+	{
+		id: "hyperion:assethub-tBTC-hydration",
+		name: "tBTC AssetHub Hydration",
+		description: "Tracks tBTC crosschain reserve and remote balance events.",
+	},
+	{
+		id: "hyperion:assethub-DOT-bifrost",
+		name: "DOT AssetHub Bifrost",
+		description: "Tracks DOT crosschain reserve and remote balance events.",
+	},
 ] as const;
 
 const subscriptionIds = IssuanceSubscriptions.map(
@@ -14,15 +27,23 @@ export const schema = z.object({
 	level,
 	subscriptionId: z.enum(subscriptionIds).meta({
 		label: "Subscription",
-		help: "Ocelloids data source.",
+		help: "Select the subscription to monitor crosschain balances.",
 	}),
-	deficitThreshold: z.number().min(0).optional().meta({
+	kSlack: z.number().min(0).meta({
+		label: "Slack per tick",
+		help: "Small allowance to ignore minor fluctuations when computing the cumulative deficit.",
+	}),
+	hThreshold: z.number().min(0).meta({
 		label: "Deficit Threshold",
-		help: "Threshold for deficit between remote and reserve.",
+		help: "Total cumulative deficit between reserve and remote that triggers an alert.",
 	}),
-	surplusThreshold: z.number().min(0).optional().meta({
-		label: "Surplus Threshold",
-		help: "Threshold for surplus between remote and reserve.",
+	minConsecutive: z.number().min(0).meta({
+		label: "Minimum Consecutive Deficit Ticks",
+		help: "Number of consecutive ticks with deficit before accumulating towards an alert.",
+	}),
+	maxStep: z.number().min(1).optional().meta({
+		label: "Maximum Step (Spike Tolerance)",
+		help: "Caps the impact of a single large transfer to avoid false alerts on one-off spikes.",
 	}),
 });
 

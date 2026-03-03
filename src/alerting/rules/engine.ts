@@ -79,6 +79,7 @@ export class RuleEngine extends EventEmitter {
 					global,
 					config: inst.config,
 					owner: inst.owner,
+					id: inst.id,
 				});
 				if (!result.matched) continue;
 
@@ -89,7 +90,7 @@ export class RuleEngine extends EventEmitter {
 				const alert = inst.def.alertTemplate
 					? await inst.def.alertTemplate(
 							event,
-							{ global, config: inst.config, owner: inst.owner },
+							{ global, config: inst.config, owner: inst.owner, id: inst.id },
 							result.data,
 						)
 					: {

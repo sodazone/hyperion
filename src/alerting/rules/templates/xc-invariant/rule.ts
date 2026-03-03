@@ -5,9 +5,12 @@ import type { IssuanceEvent, RuleDefinition } from "../../types";
 import { type Config, schema } from "./schema";
 
 const ruleName = "xc-invariant";
+const SO_STATE_VAR = "so";
 
 const defaults = {
 	level: 1,
+	kSlack: 50,
+	minConsecutive: 1,
 };
 
 export interface CrosschainInvariantPayload extends AlertPayload {
@@ -30,8 +33,9 @@ export interface CrosschainInvariantPayload extends AlertPayload {
 export const CrosschainInvariantRule: RuleDefinition<
 	IssuanceEvent,
 	{
-		type: "deficit" | "surplus";
 		difference: number;
+		reserveAmount: number;
+		remoteAmount: number;
 	},
 	Config
 > = {
@@ -51,7 +55,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 		];
 	},
 
-	matcher: async (event, { config }) => {
+	matcher: async (event, { config, global: { state }, id }) => {
 		if (
 			event.type !== "issuance" ||
 			event.payload.subscriptionId !== config.subscriptionId
@@ -59,35 +63,56 @@ export const CrosschainInvariantRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const reserveDecimals = event.payload.inputs.reserveDecimals;
-		const remoteDecimals = event.payload.inputs.remoteDecimals;
-		const remoteAmount = toDecimal({
-			amount: event.payload.remote,
-			decimals: remoteDecimals,
-		});
 		const reserveAmount = toDecimal({
 			amount: event.payload.reserve,
-			decimals: reserveDecimals,
+			decimals: event.payload.inputs.reserveDecimals,
+		});
+		const remoteAmount = toDecimal({
+			amount: event.payload.remote,
+			decimals: event.payload.inputs.remoteDecimals,
 		});
 
-		if (config.deficitThreshold !== undefined) {
-			const deficit = remoteAmount - reserveAmount;
-			if (deficit > config.deficitThreshold) {
-				return {
-					matched: true,
-					data: { type: "deficit", difference: deficit },
-				};
-			}
+		const maxStep = config.maxStep ?? Infinity;
+		const ns = `${ruleName}:${id}`;
+		const so = (state.get(ns, SO_STATE_VAR) ?? {
+			sMinus: 0,
+			consecutiveDeficit: 0,
+		}) as {
+			sMinus: number;
+			consecutiveDeficit: number;
+		};
+
+		const rawDiff = reserveAmount - remoteAmount;
+
+		if (rawDiff < 0) {
+			so.consecutiveDeficit++;
+		} else {
+			so.consecutiveDeficit = 0;
+			so.sMinus = 0;
 		}
 
-		if (config.surplusThreshold !== undefined) {
-			const surplus = reserveAmount - remoteAmount;
-			if (surplus > config.surplusThreshold) {
-				return {
-					matched: true,
-					data: { type: "surplus", difference: surplus },
-				};
-			}
+		if (so.consecutiveDeficit >= (config.minConsecutive ?? 1)) {
+			const step = Math.max(rawDiff, -maxStep);
+			so.sMinus += step + config.kSlack;
+			if (so.sMinus > 0) so.sMinus = 0;
+		}
+
+		state.set(ns, SO_STATE_VAR, so);
+
+		if (so.sMinus < -config.hThreshold) {
+			so.sMinus = 0;
+			so.consecutiveDeficit = 0;
+
+			state.set(ns, SO_STATE_VAR, so);
+
+			return {
+				matched: true,
+				data: {
+					difference: remoteAmount - reserveAmount,
+					reserveAmount,
+					remoteAmount,
+				},
+			};
 		}
 
 		return { matched: false };
@@ -98,16 +123,6 @@ export const CrosschainInvariantRule: RuleDefinition<
 		{ config },
 		data,
 	): Alert<CrosschainInvariantPayload> => {
-		const isDeficit = data.type === "deficit";
-		const direction = isDeficit ? "Deficit" : "Surplus";
-		const reserveAmount = toDecimal({
-			amount: event.payload.reserve,
-			decimals: event.payload.inputs.reserveDecimals,
-		});
-		const remoteAmount = toDecimal({
-			amount: event.payload.remote,
-			decimals: event.payload.inputs.remoteDecimals,
-		});
 		const reserveChain =
 			NetworkMap.fromURN(event.payload.inputs.reserveChain) ?? 0;
 		const remoteChain =
@@ -129,28 +144,26 @@ export const CrosschainInvariantRule: RuleDefinition<
 				},
 			],
 			message: [
-				["t", `${direction} detected Δ`],
+				["t", "Deficit detected Δ"],
 				[
 					"a",
-					((isDeficit ? -1 : 1) * data.difference).toLocaleString(undefined, {
+					data.difference.toLocaleString(undefined, {
 						maximumFractionDigits: 4,
 					}),
 				],
 				["t", symbol],
 			],
-			remark: isDeficit
-				? `Deficit > ${config.deficitThreshold?.toFixed(4)}`
-				: `Surplus > ${config.surplusThreshold?.toFixed(4)}`,
+			remark: `Deficit > ${config.hThreshold?.toFixed(4)}`,
 			payload: {
 				kind: "xc-invariant",
 				reserve: {
 					address: event.payload.inputs.reserveAddress,
 					network: event.payload.inputs.reserveChain,
-					balance: reserveAmount,
+					balance: data.reserveAmount,
 				},
 				remote: {
 					network: event.payload.inputs.remoteChain,
-					balance: remoteAmount,
+					balance: data.remoteAmount,
 				},
 				asset: {
 					id: event.payload.inputs.reserveAssetId,

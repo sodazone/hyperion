@@ -5,5 +5,5 @@ import { CrosschainInvariantRule } from "./xc-invariant/rule";
 export const RulesRegistry = [
 	TransfersRule,
 	WatchedRule,
-	// CrosschainInvariantRule,
+	CrosschainInvariantRule,
 ];

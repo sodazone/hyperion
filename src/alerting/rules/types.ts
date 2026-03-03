@@ -109,6 +109,7 @@ export interface RuleContext<Config> {
 	global: GlobalRuleContext;
 	config: Config;
 	owner: Uint8Array;
+	id: number;
 }
 
 export type AnyEvent = EventMap[keyof EventMap];
