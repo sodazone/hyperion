@@ -6,6 +6,7 @@ import {
 } from "@/alerting";
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
+import type { Metrics } from "@/server/metrics";
 import { notifyTelegram } from "./channels";
 import { notifyDiscord } from "./channels/discord/notify";
 import { createStateStore } from "./rules/state";
@@ -29,12 +30,14 @@ interface MonitorOptions {
 	rules: RuleDefinition<any, any, any>[]; // any ok
 	subManager: SubscriptionManager;
 	db: HyperionDB;
+	metrics: Metrics;
 }
 
 export function createMonitor({
 	rules,
 	subManager,
 	db,
+	metrics,
 }: MonitorOptions): Monitor {
 	const state = createStateStore(db.path);
 	const engine = new RuleEngine(rules);
@@ -47,6 +50,8 @@ export function createMonitor({
 			console.log(`Adding rule instance: ${inst.id}`);
 			subManager.addInstance(rule, inst);
 			engine.addInstance(inst);
+
+			metrics.rulesLoaded.inc();
 		}
 	}
 
@@ -58,6 +63,8 @@ export function createMonitor({
 			console.log(`Removing rule instance: ${inst.id}`);
 			subManager.removeInstance(rule, inst);
 			engine.removeInstanceById(inst.id);
+
+			metrics.rulesLoaded.dec();
 		}
 	}
 
@@ -89,6 +96,9 @@ export function createMonitor({
 	}
 
 	subManager.on("data", async (data: AnyEvent) => {
+		metrics.eventsReceived.inc();
+		const start = process.hrtime();
+
 		db.ingest.analytics.onEvent(data);
 
 		engine.evaluate(data, {
@@ -96,9 +106,15 @@ export function createMonitor({
 			db,
 			now: Date.now,
 		});
+
+		const diff = process.hrtime(start);
+		const seconds = diff[0] + diff[1] / 1e9;
+		metrics.ruleEvalDuration.observe(seconds);
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
+		metrics.alertsProcessed.inc();
+
 		if (alert.id === undefined) {
 			console.warn("alert without id", alert.name, alert.owner.toHex());
 			return;
@@ -163,6 +179,7 @@ export function createMonitor({
 
 export async function createMonitorFromDB(
 	db: HyperionDB,
+	metrics: Metrics,
 	createStreamsClient?: CreateStreamsClient,
 ): Promise<Monitor> {
 	const factory = createStreamsClient ?? createOcelloidsClient;
@@ -174,6 +191,7 @@ export async function createMonitorFromDB(
 			rules,
 			subManager: new SubscriptionManager(client),
 			db,
+			metrics,
 		}),
 	);
 }

@@ -60,6 +60,7 @@ import { intel } from "./api/routes";
 import { images } from "./assets/img";
 import { type JWKSSource, loadJWKS, withOwnerFromJWT } from "./auth/jwks";
 import { createAuthApi } from "./auth/stytch";
+import { createMetrics } from "./metrics";
 import { Forbidden, NotFound } from "./response";
 
 export type Serve = {
@@ -79,6 +80,8 @@ export async function serve({
 	jwks?: JWKSSource;
 	createStreamsClient?: CreateStreamsClient;
 }): Promise<Serve> {
+	const metrics = createMetrics();
+
 	const db = await createHyperionDB(dbPath ?? "./db");
 
 	await loadJWKS(jwks);
@@ -87,7 +90,7 @@ export async function serve({
 
 	const authApi = createAuthApi();
 
-	const monitor = await createMonitorFromDB(db, createStreamsClient);
+	const monitor = await createMonitorFromDB(db, metrics, createStreamsClient);
 	await monitor.start();
 
 	const ctx = Object.freeze({ db, authApi, monitor });
@@ -139,6 +142,10 @@ export async function serve({
 					return NotFound;
 				}
 			},
+			"/metrics": async () =>
+				new Response(await metrics.register.metrics(), {
+					headers: { "Content-Type": metrics.register.contentType },
+				}),
 			"/login": {
 				GET: LoginPage,
 				POST: authApi.login,
@@ -195,7 +202,7 @@ export async function serve({
 			"/console/watchlist/form/rows/category": async (req) =>
 				WatchlistCategoryRowPage(ctx, req),
 			"/uptime": () => Response.json({ ok: true, uptime: process.uptime() }),
-			"/docs": apiDocs,
+			"/api-docs": apiDocs,
 			"/openapi.json": () =>
 				Response.json(openapi, {
 					headers: { "Cache-Control": "public, max-age=3600" },

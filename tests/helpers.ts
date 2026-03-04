@@ -40,14 +40,16 @@ export async function runTestServer() {
 		dbPath: ":memory:",
 		createStreamsClient: async () => {
 			return {
+				subscribeOpenGov: async () => () => {},
 				subscribeIssuance:
-					(
+					async (
 						_params: { subscriptionId: string },
 						_emit: (msg: IssuanceEvent) => void,
 					) =>
 					() => {},
-				subscribeTransfers: (_emit: (msg: TransferEvent) => void) => () => {},
-				subscribeXc: (_emit: (msg: TransferEvent) => void) => () => {},
+				subscribeTransfers:
+					async (_emit: (msg: TransferEvent) => void) => () => {},
+				subscribeXc: async (_emit: (msg: TransferEvent) => void) => () => {},
 				close: async () => {},
 			};
 		},

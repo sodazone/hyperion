@@ -7,5 +7,5 @@ export const RulesRegistry = [
 	TransfersRule,
 	CrosschainInvariantRule,
 	WatchedRule,
-	OpenGovRule,
+	//OpenGovRule,
 ];
