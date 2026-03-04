@@ -14,11 +14,13 @@ export function createMetrics() {
 	const alertsProcessed = new Counter({
 		name: "hyperion_alerts_processed_total",
 		help: "Number of alerts processed by Hyperion",
+		labelNames: ["id"],
 	});
 
 	const eventsReceived = new Counter({
 		name: "hyperion_events_received_total",
 		help: "Number of events received",
+		labelNames: ["type"],
 	});
 
 	const rulesLoaded = new Gauge({

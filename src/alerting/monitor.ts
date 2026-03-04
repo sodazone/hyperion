@@ -96,7 +96,7 @@ export function createMonitor({
 	}
 
 	subManager.on("data", async (data: AnyEvent) => {
-		metrics.eventsReceived.inc();
+		metrics.eventsReceived.labels(data.type).inc();
 		const start = process.hrtime();
 
 		db.ingest.analytics.onEvent(data);
@@ -113,7 +113,7 @@ export function createMonitor({
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
-		metrics.alertsProcessed.inc();
+		metrics.alertsProcessed.labels(alert.id?.toString() ?? "unknown").inc();
 
 		if (alert.id === undefined) {
 			console.warn("alert without id", alert.name, alert.owner.toHex());
