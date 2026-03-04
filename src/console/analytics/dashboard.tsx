@@ -15,7 +15,7 @@ export function Dashboard({
 			id="dashboard-container"
 			x-data={`dashboard('${network}', '${bucket}')`}
 			x-init="init()"
-			className="flex flex-col min-h-0 max-w-full md:w-5xl lg:w-6xl md:mx-auto space-y-4"
+			className="flex flex-col min-h-0 max-w-full md:w-5xl lg:w-6xl md:mx-auto space-y-4 mb-12"
 		>
 			<TopBar
 				left={<h1 className="text-lg font-semibold">Ecosystem Overview</h1>}
