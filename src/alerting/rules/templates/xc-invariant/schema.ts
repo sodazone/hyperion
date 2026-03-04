@@ -3,19 +3,24 @@ import { level } from "../common/schema";
 
 const IssuanceSubscriptions = [
 	{
-		id: "hyperion:assethub-DOT-hydration",
-		name: "DOT AssetHub Hydration",
-		description: "Tracks DOT crosschain reserve and remote balance events.",
+		id: "hyperion:polkadot-DOT-hydration_xcm",
+		name: "XCM DOT Polkadot Hydration",
 	},
 	{
-		id: "hyperion:assethub-tBTC-hydration",
-		name: "tBTC AssetHub Hydration",
-		description: "Tracks tBTC crosschain reserve and remote balance events.",
+		id: "hyperion:polkadot-DOT-bifrost_xcm",
+		name: "XCM DOT Polkadot Bifrost",
 	},
 	{
-		id: "hyperion:assethub-DOT-bifrost",
-		name: "DOT AssetHub Bifrost",
-		description: "Tracks DOT crosschain reserve and remote balance events.",
+		id: "hyperion:polkadot-DOT-astar_xcm",
+		name: "XCM DOT Polkadot Astar",
+	},
+	{
+		id: "hyperion:polkadot-DOT-kusama_xcm",
+		name: "XCM DOT Polkadot Kusama",
+	},
+	{
+		id: "hyperion:polkadot-DOT-moonbeam_xcm",
+		name: "XCM DOT Polkadot Moonbeam",
 	},
 ] as const;
 
@@ -23,12 +28,19 @@ const subscriptionIds = IssuanceSubscriptions.map(
 	(s) => s.id,
 ) as readonly string[];
 
+const subscriptionMeta = {
+	label: "Subscription",
+	options: IssuanceSubscriptions.map(({ id, name }) => ({
+		label: name,
+		value: id,
+	})),
+	multiple: false,
+	help: "Select the subscription to monitor crosschain balances.",
+};
+
 export const schema = z.object({
 	level,
-	subscriptionId: z.enum(subscriptionIds).meta({
-		label: "Subscription",
-		help: "Select the subscription to monitor crosschain balances.",
-	}),
+	subscriptionId: z.enum(subscriptionIds).meta(subscriptionMeta),
 	kSlack: z.number().min(0).meta({
 		label: "Slack per tick",
 		help: "Small allowance to ignore minor fluctuations when computing the cumulative deficit.",
