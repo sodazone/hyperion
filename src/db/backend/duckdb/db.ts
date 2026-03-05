@@ -94,7 +94,7 @@ export class AnalyticsDB {
         PRIMARY KEY (
           ts,
           subscription_id,
-          asset_symbol
+          asset_id
         )
       );
 
@@ -339,7 +339,7 @@ export class AnalyticsDB {
   FROM (
     SELECT *,
     ROW_NUMBER() OVER (
-      PARTITION BY subscription_id, asset_symbol ORDER BY ts DESC
+      PARTITION BY subscription_id, asset_id ORDER BY ts DESC
     ) as rn
     FROM crosschain_solvency_snapshots
     WHERE remote_chain = ?
