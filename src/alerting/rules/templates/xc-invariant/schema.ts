@@ -27,8 +27,56 @@ const IssuanceSubscriptions = [
 		name: "XCM Polkadot Moonbeam",
 	},
 	{
+		id: "hyperion:hydration-polkadot_xcm",
+		name: "XCM Hydration Polkadot",
+	},
+	{
+		id: "hyperion:hydration-astar_xcm",
+		name: "XCM Hydration Astar",
+	},
+	{
+		id: "hyperion:hydration-moonbeam_xcm",
+		name: "XCM Hydration Moonbeam",
+	},
+	{
+		id: "hyperion:moonbeam-bifrost_xcm",
+		name: "XCM Moonbeam Bifrost",
+	},
+	{
+		id: "hyperion:moonbeam-hydration_xcm",
+		name: "XCM Moonbeam Hydration",
+	},
+	{
+		id: "hyperion:moonbeam-astar_xcm",
+		name: "XCM Moonbeam Astar",
+	},
+	{
+		id: "hyperion:astar-bifrost_xcm",
+		name: "XCM Astar Bifrost",
+	},
+	{
+		id: "hyperion:astar-moonbeam_xcm",
+		name: "XCM Astar Moonbeam",
+	},
+	{
+		id: "hyperion:bifrost-polkadot_xcm",
+		name: "XCM Bifrost Polkadot",
+	},
+	{
+		id: "hyperion:bifrost-astar_xcm",
+		name: "XCM Bifrost Astar",
+	},
+	{
+		id: "hyperion:bifrost-moonbeam_xcm",
+		name: "XCM Bifrost Moonbeam",
+	},
+	{
 		id: "hyperion:ethereum-polkadot_snowbridge",
 		name: "Snowbridge Polkadot Ethereum",
+	},
+	{
+		id: "hyperion:kusama-polkadot_xcm",
+		name: "XCM Kusama Polkadot",
 	},
 ] as const;
 
