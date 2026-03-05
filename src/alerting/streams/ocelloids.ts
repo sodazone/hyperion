@@ -106,6 +106,7 @@ export async function createOcelloidsClient({
 	function createManagedSubscription(options: {
 		client: OcelloidsClientApi;
 		maxIdle?: number;
+		tag: string;
 		start: (ctx: {
 			onMessage: () => void;
 			onClose: () => void;
@@ -115,6 +116,7 @@ export async function createOcelloidsClient({
 		const controller = new AbortController();
 
 		const reconnectable = withReconnect({
+			tag: options.tag,
 			maxIdle: options.maxIdle,
 			start: async (ctx) => {
 				await waitForHealthy(options.client, controller.signal);
@@ -146,6 +148,7 @@ export async function createOcelloidsClient({
 	return {
 		subscribeIssuance: async ({ subscriptionId }, emit) => {
 			const sub = createManagedSubscription({
+				tag: `issuance:${subscriptionId}`,
 				client: issuance,
 				start: async ({ onMessage, onClose, onError }) => {
 					return issuance.subscribe(subscriptionId, {
@@ -165,6 +168,7 @@ export async function createOcelloidsClient({
 
 		subscribeXc: async (emit) => {
 			const sub = createManagedSubscription({
+				tag: "xc",
 				client: crosschain,
 				maxIdle: 60_000 * 60,
 				start: async ({ onMessage, onClose, onError }) => {
@@ -198,6 +202,7 @@ export async function createOcelloidsClient({
 
 		subscribeTransfers: async (emit) => {
 			const sub = createManagedSubscription({
+				tag: "transfers",
 				client: transfers,
 				maxIdle: 60_000 * 5,
 				start: async ({ onMessage, onClose, onError }) => {
@@ -230,6 +235,7 @@ export async function createOcelloidsClient({
 
 		subscribeOpenGov: async (emit) => {
 			const sub = createManagedSubscription({
+				tag: "opengov",
 				client: opengov,
 				start: async ({ onMessage, onClose, onError }) => {
 					return opengov.subscribe(subIds.og, {

@@ -1,9 +1,11 @@
 export function withReconnect({
 	start,
+	tag,
 	maxDelay = 30_000,
 	minDelay = 1_000,
 	maxIdle,
 }: {
+	tag: string;
 	start: (hooks: {
 		onOpen: () => void;
 		onMessage: () => void;
@@ -36,7 +38,7 @@ export function withReconnect({
 		clearIdleTimer();
 		if (!maxIdle) return;
 		idleTimer = setTimeout(() => {
-			console.info("Idle timeout reached, reconnecting...");
+			console.info(`[${tag}] Idle timeout reached, reconnecting...`);
 			handleCloseOrError(new Error("Idle timeout"));
 		}, maxIdle);
 	};
@@ -47,7 +49,7 @@ export function withReconnect({
 		const jitter = Math.random() * 0.3 + 0.85;
 		const delay = Math.min(retryDelay * jitter, maxDelay);
 
-		console.info(`Reconnecting in ${Math.round(delay)}ms`);
+		console.info(`[${tag}] Reconnecting in ${Math.round(delay)}ms`);
 
 		reconnectTimer = setTimeout(() => {
 			reconnectTimer = null;
@@ -59,7 +61,11 @@ export function withReconnect({
 	const handleCloseOrError = (err?: any) => {
 		if (stopped) return;
 
-		console.warn("Connection lost", err?.code ?? "", err?.reason ?? "");
+		console.warn(
+			`[${tag}] Connection lost`,
+			err?.code ?? "",
+			err?.reason ?? "",
+		);
 
 		clearIdleTimer();
 		try {
@@ -81,7 +87,7 @@ export function withReconnect({
 		try {
 			current = await start({
 				onOpen: () => {
-					console.log("Connected");
+					console.log(`[${tag}] Connected`);
 					resetIdleTimer();
 				},
 				onMessage: () => {
@@ -95,7 +101,7 @@ export function withReconnect({
 				onError: handleCloseOrError,
 			});
 		} catch (err) {
-			console.error("Initial connection failed", err);
+			console.error(`[${tag}] Initial connection failed`, err);
 			scheduleReconnect();
 		} finally {
 			connecting = false;
