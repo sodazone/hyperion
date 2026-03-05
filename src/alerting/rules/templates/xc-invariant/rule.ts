@@ -45,10 +45,10 @@ export const CrosschainInvariantRule: RuleDefinition<
 		"Alerts when crosschain reserve and remote balances diverge beyond thresholds.",
 	schema,
 	defaults,
-	/*autoDependencies: subscriptionIds.map((subscriptionId) => ({
+	autoDependencies: subscriptionIds.map((subscriptionId) => ({
 		kind: "issuance",
 		subscriptionId,
-	})),*/
+	})),
 
 	matcher: async (event, { config, global: { state }, id }) => {
 		if (
