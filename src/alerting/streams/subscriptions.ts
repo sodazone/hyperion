@@ -43,6 +43,14 @@ export class SubscriptionManager extends EventEmitter {
 		}
 	}
 
+	addDependency(dep: RuleDependency) {
+		if (!this.isSupportedKind(dep.kind)) return;
+		const handler = this.handlers[dep.kind];
+		const key = handler.getKey(dep);
+
+		this.acquire(key, Infinity, () => handler.factory(dep));
+	}
+
 	removeInstance(def: RuleDefinition, instance: RuleInstance) {
 		const deps = getDependencies(def, instance);
 

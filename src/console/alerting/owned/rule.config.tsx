@@ -172,18 +172,33 @@ export function ConfigField({
 				</label>
 
 				<div className="relative flex items-center">
-					<input
-						type="text"
-						id={name}
-						name={name}
-						inputMode="numeric"
-						pattern="[0-9]*"
-						required={required}
-						hx-on:input="this.value=this.value.replace(/[^\d]/g,'')"
-						defaultValue={defaultValue ?? ""}
-						placeholder={placeholder}
-						className={`${baseClass} ${suffix ? "pr-10" : ""}`}
-					/>
+					{meta?.decimals ? (
+						<input
+							type="text"
+							id={name}
+							name={name}
+							inputMode="decimal"
+							pattern="[0-9]*[.]?[0-9]*"
+							required={required}
+							hx-on:input="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')"
+							defaultValue={defaultValue ?? ""}
+							placeholder={placeholder}
+							className={`${baseClass} ${suffix ? "pr-10" : ""}`}
+						/>
+					) : (
+						<input
+							type="text"
+							id={name}
+							name={name}
+							inputMode="numeric"
+							pattern="[0-9]*"
+							required={required}
+							hx-on:input="this.value=this.value.replace(/[^\d]/g,'')"
+							defaultValue={defaultValue ?? ""}
+							placeholder={placeholder}
+							className={`${baseClass} ${suffix ? "pr-10" : ""}`}
+						/>
+					)}
 
 					{suffix && (
 						<span className="absolute right-2 text-xs text-zinc-500 pointer-events-none">

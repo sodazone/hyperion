@@ -2,7 +2,7 @@ import type { Alert, AlertPayload } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { toDecimal } from "@/utils/amounts";
 import type { IssuanceEvent, RuleDefinition } from "../../types";
-import { type Config, schema } from "./schema";
+import { type Config, schema, subscriptionIds } from "./schema";
 
 const ruleName = "xc-invariant";
 const SO_STATE_VAR = "so";
@@ -45,15 +45,10 @@ export const CrosschainInvariantRule: RuleDefinition<
 		"Alerts when crosschain reserve and remote balances diverge beyond thresholds.",
 	schema,
 	defaults,
-
-	resolveDependencies: (instance) => {
-		return [
-			{
-				kind: "issuance",
-				subscriptionId: instance.config.subscriptionId,
-			},
-		];
-	},
+	/*autoDependencies: subscriptionIds.map((subscriptionId) => ({
+		kind: "issuance",
+		subscriptionId,
+	})),*/
 
 	matcher: async (event, { config, global: { state }, id }) => {
 		if (

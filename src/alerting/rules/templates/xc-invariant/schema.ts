@@ -32,7 +32,7 @@ const IssuanceSubscriptions = [
 	},
 ] as const;
 
-const subscriptionIds = IssuanceSubscriptions.map(
+export const subscriptionIds = IssuanceSubscriptions.map(
 	(s) => s.id,
 ) as readonly string[];
 
@@ -51,47 +51,47 @@ const assetsMeta = {
 	options: [
 		{
 			label: "DOT",
-			id: "DOT",
+			value: "DOT",
 		},
 		{
 			label: "PAXG",
-			id: "PAXG",
+			value: "PAXG",
 		},
 		{
 			label: "LINK",
-			id: "LINK",
+			value: "LINK",
 		},
 		{
 			label: "tBTC",
-			id: "tBTC",
+			value: "tBTC",
 		},
 		{
 			label: "ASTR",
-			id: "ASTR",
+			value: "ASTR",
 		},
 		{
 			label: "GLMR",
-			id: "GLMR",
+			value: "GLMR",
 		},
 		{
 			label: "USDt",
-			id: "USDt",
+			value: "USDt",
 		},
 		{
 			label: "USDC",
-			id: "USDC",
+			value: "USDC",
 		},
 		{
 			label: "vDOT",
-			id: "vDOT",
+			value: "vDOT",
 		},
 		{
 			label: "BNC",
-			id: "BNC",
+			value: "BNC",
 		},
 		{
 			label: "BNCS",
-			id: "BNCS",
+			value: "BNCS",
 		},
 	].sort((a, b) => a.label.localeCompare(b.label)),
 	multiple: true,
@@ -108,6 +108,7 @@ export const schema = z.object({
 	}),
 	hThreshold: z.number().min(0).meta({
 		label: "Deficit Threshold",
+		decimals: true,
 		help: "Total cumulative deficit between reserve and remote that triggers an alert.",
 	}),
 	minConsecutive: z.number().min(0).meta({

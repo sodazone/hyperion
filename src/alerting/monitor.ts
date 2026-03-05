@@ -163,6 +163,14 @@ export function createMonitor({
 			await state.load();
 			subManager.start();
 			engine.start();
+
+			for (const rule of rules) {
+				if (!rule.autoDependencies) continue;
+
+				for (const dep of rule.autoDependencies) {
+					subManager.addDependency(dep);
+				}
+			}
 		},
 		rules: {
 			update: updateInstance,

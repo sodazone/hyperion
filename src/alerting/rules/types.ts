@@ -172,6 +172,7 @@ export type RuleDefinition<
 	schema: z.ZodObject;
 	defaults: Partial<Config>;
 	matcher: RuleMatcher<Event, Data, Config>;
+	autoDependencies?: RuleDependency[];
 	resolveDependencies?: (instance: RuleInstance) => RuleDependency[];
 	alertTemplate?: (
 		event: Event,
@@ -219,6 +220,7 @@ export type FieldMeta = {
 	help?: string;
 	suffix?: string;
 	placeholder?: string;
+	decimals?: boolean;
 	input?:
 		| "text"
 		| "number"
