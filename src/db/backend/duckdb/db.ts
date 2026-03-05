@@ -338,10 +338,9 @@ export class AnalyticsDB {
     collateral_ratio
   FROM (
     SELECT *,
-      ROW_NUMBER() OVER (
-        PARTITION BY subscription_id
-        ORDER BY ts DESC
-      ) AS rn
+    ROW_NUMBER() OVER (
+      PARTITION BY subscription_id, asset_symbol ORDER BY ts DESC
+    ) as rn
     FROM crosschain_solvency_snapshots
     WHERE remote_chain = ?
   ) t
