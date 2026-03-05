@@ -63,6 +63,13 @@ export const CrosschainInvariantRule: RuleDefinition<
 			return { matched: false };
 		}
 
+		if (
+			config.assetSymbols?.length &&
+			!config.assetSymbols.includes(event.payload.inputs.assetSymbol)
+		) {
+			return { matched: false };
+		}
+
 		const reserveAmount = toDecimal({
 			amount: event.payload.reserve,
 			decimals: event.payload.inputs.reserveDecimals,

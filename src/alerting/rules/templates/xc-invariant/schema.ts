@@ -3,56 +3,32 @@ import { level } from "../common/schema";
 
 const IssuanceSubscriptions = [
 	{
-		id: "hyperion:polkadot-DOT-hydration_xcm",
-		name: "XCM DOT Polkadot Hydration",
+		id: "hyperion:polkadot-hydration_xcm",
+		name: "XCM Polkadot Hydration",
 	},
 	{
-		id: "hyperion:polkadot-PAXG-hydration_xcm",
-		name: "XCM PAXG Polkadot Hydration",
+		id: "hyperion:astar-hydration_xcm",
+		name: "XCM Astar Hydration",
 	},
 	{
-		id: "hyperion:polkadot-LINK-hydration_xcm",
-		name: "XCM LINK Polkadot Hydration",
+		id: "hyperion:bifrost-hydration_xcm",
+		name: "XCM Bifrost Hydration",
 	},
 	{
-		id: "hyperion:polkadot-USDt-hydration_xcm",
-		name: "XCM USDt Polkadot Hydration",
+		id: "hyperion:polkadot-bifrost_xcm",
+		name: "XCM Polkadot Bifrost",
 	},
 	{
-		id: "hyperion:astar-ASTR-hydration_xcm",
-		name: "XCM ASTR Astar Hydration",
+		id: "hyperion:polkadot-astar_xcm",
+		name: "XCM Polkadot Astar",
 	},
 	{
-		id: "hyperion:bifrost-BNC-hydration_xcm",
-		name: "XCM BNC Bifrost Hydration",
+		id: "hyperion:polkadot-kusama_xcm",
+		name: "XCM Polkadot Kusama",
 	},
 	{
-		id: "hyperion:bifrost-BNCS-hydration_xcm",
-		name: "XCM BNCS Bifrost Hydration",
-	},
-	{
-		id: "hyperion:bifrost-vDOT-hydration_xcm",
-		name: "XCM vDOT Bifrost Hydration",
-	},
-	{
-		id: "hyperion:bifrost-vASTR-hydration_xcm",
-		name: "XCM vASTR Bifrost Hydration",
-	},
-	{
-		id: "hyperion:polkadot-DOT-bifrost_xcm",
-		name: "XCM DOT Polkadot Bifrost",
-	},
-	{
-		id: "hyperion:polkadot-DOT-astar_xcm",
-		name: "XCM DOT Polkadot Astar",
-	},
-	{
-		id: "hyperion:polkadot-DOT-kusama_xcm",
-		name: "XCM DOT Polkadot Kusama",
-	},
-	{
-		id: "hyperion:polkadot-DOT-moonbeam_xcm",
-		name: "XCM DOT Polkadot Moonbeam",
+		id: "hyperion:polkadot-moonbeam_xcm",
+		name: "XCM Polkadot Moonbeam",
 	},
 ] as const;
 
@@ -70,9 +46,62 @@ const subscriptionMeta = {
 	help: "Select the subscription to monitor crosschain balances.",
 };
 
+const assetsMeta = {
+	label: "Assets",
+	options: [
+		{
+			label: "DOT",
+			id: "DOT",
+		},
+		{
+			label: "PAXG",
+			id: "PAXG",
+		},
+		{
+			label: "LINK",
+			id: "LINK",
+		},
+		{
+			label: "tBTC",
+			id: "tBTC",
+		},
+		{
+			label: "ASTR",
+			id: "ASTR",
+		},
+		{
+			label: "GLMR",
+			id: "GLMR",
+		},
+		{
+			label: "USDt",
+			id: "USDt",
+		},
+		{
+			label: "USDC",
+			id: "USDC",
+		},
+		{
+			label: "vDOT",
+			id: "vDOT",
+		},
+		{
+			label: "BNC",
+			id: "BNC",
+		},
+		{
+			label: "BNCS",
+			id: "BNCS",
+		},
+	].sort((a, b) => a.label.localeCompare(b.label)),
+	multiple: true,
+	help: "Filter the monitored asset symbols.",
+};
+
 export const schema = z.object({
 	level,
 	subscriptionId: z.enum(subscriptionIds).meta(subscriptionMeta),
+	assetSymbols: z.array(z.string()).optional().meta(assetsMeta),
 	kSlack: z.number().min(0).meta({
 		label: "Slack per tick",
 		help: "Small allowance to ignore minor fluctuations when computing the cumulative deficit.",
