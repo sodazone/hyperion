@@ -93,7 +93,8 @@ export class AnalyticsDB {
 
         PRIMARY KEY (
           ts,
-          subscription_id
+          subscription_id,
+          asset_symbol
         )
       );
 
