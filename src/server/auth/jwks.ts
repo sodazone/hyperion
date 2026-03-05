@@ -50,8 +50,8 @@ export async function getOwnerHashFromRequest(
 		if (!jwk) throw new Error("JWK not found");
 
 		const { payload } = await jose.jwtVerify(token, await jose.importJWK(jwk), {
-			issuer: "dev-api.ocelloids.net",
-			// audience: "hyperion",
+			issuer: "api.ocelloids.net",
+			audience: "hyperion",
 			algorithms: ["EdDSA"],
 		});
 
