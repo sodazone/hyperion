@@ -23,10 +23,6 @@ const IssuanceSubscriptions = [
 		name: "XCM Polkadot Astar",
 	},
 	{
-		id: "hyperion:polkadot-kusama_xcm",
-		name: "XCM Polkadot Kusama",
-	},
-	{
 		id: "hyperion:polkadot-moonbeam_xcm",
 		name: "XCM Polkadot Moonbeam",
 	},

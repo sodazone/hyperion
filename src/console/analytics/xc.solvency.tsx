@@ -7,6 +7,8 @@ import type { PageContext } from "../types";
 import { truncMid } from "../util";
 import { parseDashboardParams } from "./params";
 
+const ROWS_PER_PAGE = 5;
+
 function pct(n: number | null) {
 	if (n === null) return "—";
 	return `${(n * 100).toFixed(2)}%`;
@@ -96,10 +98,50 @@ export async function CrosschainSolvencyFragment(
 	}
 
 	return render(
-		<div className="flex flex-col divide-y divide-zinc-900">
-			{rows.map((r) => (
-				<SolvencyCard key={r.asset_id} row={r} />
-			))}
+		<div
+			x-data={`pagination({totalItems: ${rows.length}, perPage: ${ROWS_PER_PAGE}})`}
+			className="space-y-4"
+		>
+			<div className="flex flex-col divide-y divide-zinc-900">
+				{rows.map((r, index) => (
+					<div key={r.asset_id} x-show={`isVisible(${index + 1})`}>
+						<SolvencyCard row={r} />
+					</div>
+				))}
+			</div>
+			<div
+				className="flex justify-end space-x-2 mt-4"
+				x-show="totalPages() > 1"
+			>
+				<button
+					x-bind:disabled="currentPage === 1"
+					x-on:click="prevPage()"
+					className="ui-btn text-xs"
+					type="button"
+				>
+					Prev
+				</button>
+
+				<template x-for="page in totalPages()" x-bind:key="page">
+					<button
+						x-on:click="goToPage(page)"
+						x-bind:class="{'bg-zinc-900 font-semibold text-zinc-100': currentPage === page}"
+						className="ui-btn text-xs"
+						type="button"
+					>
+						<span x-text="page"></span>
+					</button>
+				</template>
+
+				<button
+					x-bind:disabled="currentPage === totalPages()"
+					x-on:click="nextPage()"
+					className="ui-btn text-xs"
+					type="button"
+				>
+					Next
+				</button>
+			</div>
 		</div>,
 	);
 }
