@@ -327,6 +327,7 @@ export class AnalyticsDB {
   SELECT
     ts,
     subscription_id,
+    protocol,
     reserve_chain,
     reserve_address,
     remote_chain,
@@ -356,6 +357,7 @@ export class AnalyticsDB {
 			(r): CrosschainSolvencyRow => ({
 				ts: r.ts,
 				subscription_id: r.subscription_id,
+				protocol: r.protocol,
 
 				reserve_chain: r.reserve_chain,
 				reserve_address: r.reserve_address,

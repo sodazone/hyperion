@@ -1,6 +1,7 @@
 export interface CrosschainSolvencyRow {
 	ts: string;
 	subscription_id: string;
+	protocol: string;
 
 	reserve_chain: string;
 	reserve_address: string;
