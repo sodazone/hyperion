@@ -59,7 +59,8 @@ export function withReconnect({
 	const handleCloseOrError = (err?: any) => {
 		if (stopped) return;
 
-		console.warn("Connection lost", err?.code ?? "");
+		console.warn("Connection lost", err?.code ?? "", err?.reason ?? "");
+
 		clearIdleTimer();
 		try {
 			current?.close();

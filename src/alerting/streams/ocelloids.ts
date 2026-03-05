@@ -65,8 +65,11 @@ async function waitForHealthy(client: OcelloidsClientApi, signal: AbortSignal) {
 		}
 
 		try {
+			if (attempt > 0) {
+				console.log(`[health] check, attempt=${attempt}`);
+			}
+
 			attempt++;
-			console.log(`[health] check, attempt=${attempt}`);
 
 			const res = await client.health({ signal });
 
@@ -74,7 +77,6 @@ async function waitForHealthy(client: OcelloidsClientApi, signal: AbortSignal) {
 				throw new Error(`Health check failed: ${res.status}`);
 			}
 
-			console.log("[health] OK");
 			return;
 		} catch (err) {
 			if (signal.aborted) {
