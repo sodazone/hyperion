@@ -25,6 +25,10 @@ export function multiselect({
 				).values(),
 			);
 
+			this.$watch("query", () => {
+				this.highlightIndex = -1;
+			});
+
 			// generate hidden inputs
 			this.$nextTick(() => {
 				this.dispatchChange();
@@ -61,7 +65,10 @@ export function multiselect({
 					validator.setCustomValidity("");
 				}
 
-				this.$refs.input.dispatchEvent(new Event("change", { bubbles: true }));
+				const input = this.$refs.input;
+				if (input) {
+					input.dispatchEvent(new Event("change", { bubbles: true }));
+				}
 			});
 		},
 
@@ -76,36 +83,42 @@ export function multiselect({
 		highlightIndex: -1,
 
 		keyDown(e) {
-			const items = this.$refs.results?.querySelectorAll("button") || [];
+			const items = this.filteredOptions;
+
 			switch (e.key) {
 				case "Escape":
 					this.closeDropdown();
-					this.$refs.input.blur();
+					this.$refs.input?.blur();
 					break;
+
 				case "ArrowDown":
 					e.preventDefault();
 					if (!items.length) return;
+
 					this.highlightIndex = (this.highlightIndex + 1) % items.length;
-					items[this.highlightIndex].scrollIntoView({ block: "nearest" });
 					break;
+
 				case "ArrowUp":
 					e.preventDefault();
 					if (!items.length) return;
+
 					this.highlightIndex =
 						(this.highlightIndex - 1 + items.length) % items.length;
-					items[this.highlightIndex].scrollIntoView({ block: "nearest" });
 					break;
+
 				case "Enter":
-					if (items[this.highlightIndex]) {
+					if (this.highlightIndex >= 0 && this.highlightIndex < items.length) {
 						e.preventDefault();
-						items[this.highlightIndex].click();
+						this.select(items[this.highlightIndex]);
 					}
 					break;
+
 				case "Backspace":
 					if (!this.query && this.selectedItems.length) {
 						this.remove(this.selectedItems[this.selectedItems.length - 1]);
 					}
 					break;
+
 				case "Tab":
 					this.closeDropdown();
 					break;

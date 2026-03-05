@@ -75,11 +75,12 @@ export function Multiselect({
 					x-cloak=""
 					x-ref="results"
 				>
-					<template x-for="opt in filteredOptions" x-bind:key="opt.value">
+					<template x-for="(opt, i) in filteredOptions" x-bind:key="opt.value">
 						<button
 							type="button"
 							className="block w-full text-left px-2 py-1 hover:bg-zinc-800"
 							x-on:click="select(opt)"
+							x-bind:class="{ 'bg-zinc-800': highlightIndex === i }"
 						>
 							<span x-text="opt.label"></span>
 						</button>
