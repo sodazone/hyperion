@@ -24,6 +24,7 @@ import {
 import { LatestAlertsFragment } from "@/console/analytics/alerts.latest";
 import { TopExchangesFragment } from "@/console/analytics/cex.top";
 import { DashboardPage } from "@/console/analytics/pages";
+import { CrosschainSolvencyFragment } from "@/console/analytics/xc.solvency";
 import {
 	WatchlistCategoryRowPage,
 	WatchlistFormPage,
@@ -158,6 +159,8 @@ export async function serve({
 				TopExchangesFragment(ctx, req),
 			"/console/dashboard/fragments/latest-alerts": async (req) =>
 				LatestAlertsFragment(ctx, req),
+			"/console/dashboard/fragments/xc-solvency": async (req) =>
+				CrosschainSolvencyFragment(ctx, req),
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),

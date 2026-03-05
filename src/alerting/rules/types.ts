@@ -83,6 +83,7 @@ export type IssuanceEvent = BaseEvent<
 	"issuance",
 	{
 		subscriptionId: string;
+		protocol: string;
 		inputs: {
 			reserveChain: string;
 			reserveAssetId: string;

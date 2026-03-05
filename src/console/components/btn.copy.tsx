@@ -1,6 +1,14 @@
 import { CopyIcon } from "./icons";
 
-export function CopyButton({ text, title }: { text: string; title?: string }) {
+export function CopyButton({
+	text,
+	title,
+	size = 16,
+}: {
+	text: string;
+	title?: string;
+	size?: number;
+}) {
 	return (
 		<button
 			type="button"
@@ -18,7 +26,7 @@ export function CopyButton({ text, title }: { text: string; title?: string }) {
 			className="cursor-copy rounded-md p-1 text-zinc-600 hover:text-zinc-200 hover:bg-zinc-900 transition"
 			title={title || "Copy"}
 		>
-			<CopyIcon />
+			<CopyIcon size={size} />
 		</button>
 	);
 }

@@ -28,6 +28,7 @@ export function dashboard(initialNetwork, initialBucket) {
 				() => {
 					this.loadChart();
 					htmx.trigger(this.$refs.topExchanges, "refresh");
+					htmx.trigger(this.$refs.xcReserves, "refresh");
 					this.updateURL();
 				},
 			);

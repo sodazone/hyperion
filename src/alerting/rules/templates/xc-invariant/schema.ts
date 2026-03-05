@@ -7,6 +7,38 @@ const IssuanceSubscriptions = [
 		name: "XCM DOT Polkadot Hydration",
 	},
 	{
+		id: "hyperion:polkadot-PAXG-hydration_xcm",
+		name: "XCM PAXG Polkadot Hydration",
+	},
+	{
+		id: "hyperion:polkadot-LINK-hydration_xcm",
+		name: "XCM LINK Polkadot Hydration",
+	},
+	{
+		id: "hyperion:polkadot-USDt-hydration_xcm",
+		name: "XCM USDt Polkadot Hydration",
+	},
+	{
+		id: "hyperion:astar-ASTR-hydration_xcm",
+		name: "XCM ASTR Astar Hydration",
+	},
+	{
+		id: "hyperion:bifrost-BNC-hydration_xcm",
+		name: "XCM BNC Bifrost Hydration",
+	},
+	{
+		id: "hyperion:bifrost-BNCS-hydration_xcm",
+		name: "XCM BNCS Bifrost Hydration",
+	},
+	{
+		id: "hyperion:bifrost-vDOT-hydration_xcm",
+		name: "XCM vDOT Bifrost Hydration",
+	},
+	{
+		id: "hyperion:bifrost-vASTR-hydration_xcm",
+		name: "XCM vASTR Bifrost Hydration",
+	},
+	{
 		id: "hyperion:polkadot-DOT-bifrost_xcm",
 		name: "XCM DOT Polkadot Bifrost",
 	},

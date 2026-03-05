@@ -114,6 +114,19 @@ export function Dashboard({
 
 			<div className="flex flex-col p-4 space-y-4">
 				<h3 className="text-zinc-200 text-sm font-semibold">
+					Crosschain Reserves
+				</h3>
+				<div
+					x-ref="xcReserves"
+					hx-get="/console/dashboard/fragments/xc-solvency"
+					hx-trigger="load, refresh"
+					hx-target="this"
+					hx-include="#dashboard-filters"
+				></div>
+			</div>
+
+			<div className="flex flex-col p-4 space-y-4">
+				<h3 className="text-zinc-200 text-sm font-semibold">
 					<a
 						href="/console/public/alerts"
 						hx-get="/console/public/alerts"

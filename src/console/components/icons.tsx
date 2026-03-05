@@ -352,12 +352,12 @@ export function ChevronDownIcon() {
 	);
 }
 
-export function CopyIcon() {
+export function CopyIcon({ size = 16 }: { size?: number }) {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			width="16"
-			height="16"
+			width={size}
+			height={size}
 			fill="currentColor"
 			viewBox="0 0 24 24"
 			role="img"

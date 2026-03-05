@@ -6,6 +6,12 @@ type NetworkIconProps = {
 	size?: number;
 };
 
+export function NetworkName({ urn }: { urn: string }) {
+	const net = NetworkCache.fromURN(urn);
+	const label = net?.name ?? urn;
+	return <span>{label}</span>;
+}
+
 export function NetworkIcon({
 	urn,
 	showName = false,

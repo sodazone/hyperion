@@ -19,6 +19,16 @@ export const NETWORK_OPTIONS = [
 		value: "urn:ocn:polkadot:2004",
 		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2004/icon.svg",
 	},
+	{
+		label: "Bifrost",
+		value: "urn:ocn:polkadot:2030",
+		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2030/icon.svg",
+	},
+	{
+		label: "Astar",
+		value: "urn:ocn:polkadot:2006",
+		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2006/icon.svg",
+	},
 ];
 export const NETWORKS = NETWORK_OPTIONS.map((opt) => opt.value);
 

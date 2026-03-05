@@ -43,6 +43,8 @@ export function createAnalyticsIngestionPipeline({
 				event.payload.status === TransferStatus.SUCCESS
 			) {
 				onTransfer(event);
+			} else if (event.type === "issuance") {
+				analytics.ingestIssuance(event);
 			}
 		},
 	};

@@ -1,11 +1,14 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 
-import type { TransferEvent } from "@/alerting/rules/types";
+import type { IssuanceEvent, TransferEvent } from "@/alerting/rules/types";
+import { toDecimal } from "@/utils/amounts";
+import { safeStringify } from "@/utils/strings";
 import {
 	type CEXFlowQueryParams,
 	Queries,
 	type TopExchangesQueryParams,
 } from "./queries";
+import type { CrosschainSolvencyRow } from "./types";
 
 const safe = (v: any) => (v === undefined || v === null ? "" : String(v));
 const safeNumber = (v: any, fallback = 0) =>
@@ -66,6 +69,42 @@ export class AnalyticsDB {
 
       CREATE INDEX IF NOT EXISTS idx_tag ON address_tag(tag);
       CREATE INDEX IF NOT EXISTS idx_category ON address_category(category);
+
+      CREATE TABLE IF NOT EXISTS crosschain_solvency_snapshots (
+        ts TIMESTAMP,
+
+        subscription_id TEXT,
+
+        protocol TEXT,
+
+        reserve_chain TEXT,
+        reserve_address TEXT,
+
+        remote_chain TEXT,
+
+        asset_id TEXT,
+        asset_symbol TEXT,
+
+        reserve_balance DOUBLE,
+        remote_balance DOUBLE,
+
+        difference DOUBLE,
+        collateral_ratio DOUBLE,
+
+        PRIMARY KEY (
+          ts,
+          subscription_id
+        )
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_xc_inv_asset
+      ON crosschain_solvency_snapshots(asset_id);
+
+      CREATE INDEX IF NOT EXISTS idx_xc_inv_ts
+      ON crosschain_solvency_snapshots(ts);
+
+      CREATE INDEX IF NOT EXISTS idx_xc_inv_remote_ts
+      ON crosschain_solvency_snapshots(remote_chain, ts DESC);
     `);
 	}
 
@@ -213,6 +252,127 @@ export class AnalyticsDB {
 			console.error("Error during ingestTransfer:", event, error);
 			throw error;
 		}
+	}
+
+	async ingestIssuance(event: IssuanceEvent) {
+		if (event.type !== "issuance") return;
+
+		const p = event.payload;
+
+		const timestamp = event.origin.timestamp ?? Date.now();
+
+		const reserveAmount = toDecimal({
+			amount: p.reserve,
+			decimals: p.inputs.reserveDecimals,
+		});
+
+		const remoteAmount = toDecimal({
+			amount: p.remote,
+			decimals: p.inputs.remoteDecimals,
+		});
+
+		const difference = reserveAmount - remoteAmount;
+
+		const collateralRatio =
+			remoteAmount === 0 ? null : reserveAmount / remoteAmount;
+
+		const reserveAssetId =
+			typeof p.inputs.reserveAssetId === "string"
+				? p.inputs.reserveAssetId
+				: safeStringify(p.inputs.reserveAssetId);
+
+		await this.enqueueWrite(async () => {
+			await this.conn.run(
+				`
+        INSERT INTO crosschain_solvency_snapshots (
+          ts,
+          subscription_id,
+          protocol,
+          reserve_chain,
+          reserve_address,
+          remote_chain,
+          asset_id,
+          asset_symbol,
+          reserve_balance,
+          remote_balance,
+          difference,
+          collateral_ratio
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+				[
+					new Date(timestamp).toISOString(),
+					p.subscriptionId,
+					p.protocol,
+					p.inputs.reserveChain,
+					p.inputs.reserveAddress,
+					p.inputs.remoteChain,
+					reserveAssetId,
+					p.inputs.assetSymbol,
+					reserveAmount,
+					remoteAmount,
+					difference,
+					collateralRatio,
+				],
+			);
+		});
+	}
+
+	async solvencyByRemoteChain(
+		remoteChain: string,
+	): Promise<CrosschainSolvencyRow[]> {
+		const result = await this.conn.runAndReadAll(
+			`
+  SELECT
+    ts,
+    subscription_id,
+    reserve_chain,
+    reserve_address,
+    remote_chain,
+    asset_id,
+    asset_symbol,
+    reserve_balance,
+    remote_balance,
+    difference,
+    collateral_ratio
+  FROM (
+    SELECT *,
+      ROW_NUMBER() OVER (
+        PARTITION BY subscription_id
+        ORDER BY ts DESC
+      ) AS rn
+    FROM crosschain_solvency_snapshots
+    WHERE remote_chain = ?
+  ) t
+  WHERE rn = 1
+  ORDER BY asset_symbol, subscription_id
+  `,
+			[remoteChain],
+		);
+
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): CrosschainSolvencyRow => ({
+				ts: r.ts,
+				subscription_id: r.subscription_id,
+
+				reserve_chain: r.reserve_chain,
+				reserve_address: r.reserve_address,
+
+				remote_chain: r.remote_chain,
+
+				asset_id: r.asset_id,
+				asset_symbol: r.asset_symbol,
+
+				reserve_balance: Number(r.reserve_balance),
+				remote_balance: Number(r.remote_balance),
+
+				difference: Number(r.difference),
+				collateral_ratio:
+					r.collateral_ratio === null ? null : Number(r.collateral_ratio),
+			}),
+		);
 	}
 
 	async cexSeries(params: CEXFlowQueryParams) {
