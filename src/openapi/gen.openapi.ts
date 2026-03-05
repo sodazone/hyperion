@@ -14,7 +14,12 @@ Hyperion is a public API for blockchain address analysis, including risk scoring
 		`.trim(),
 	},
 	servers: [
-		{ url: "http://localhost:8080", description: "Local development server" },
+		Bun.env.NODE_ENV === "production"
+			? { url: "https://hyperion.soda.zone", description: "Hyperion server" }
+			: {
+					url: "http://localhost:8080",
+					description: "Local development server",
+				},
 	],
 	tags: [
 		{ name: "System", description: "Server status and health endpoints" },
