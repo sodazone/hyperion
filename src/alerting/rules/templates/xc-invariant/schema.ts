@@ -30,6 +30,10 @@ const IssuanceSubscriptions = [
 		id: "hyperion:polkadot-moonbeam_xcm",
 		name: "XCM Polkadot Moonbeam",
 	},
+	{
+		id: "hyperion:ethereum-polkadot_snowbridge",
+		name: "Snowbridge Polkadot Ethereum",
+	},
 ] as const;
 
 export const subscriptionIds = IssuanceSubscriptions.map(
