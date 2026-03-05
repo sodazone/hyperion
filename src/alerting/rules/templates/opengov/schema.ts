@@ -26,10 +26,11 @@ export const supportedNetworks = {
 			label: "Hydration",
 			value: "urn:ocn:polkadot:2034",
 		},
+		/*
 		{
 			label: "Moonbeam",
 			value: "urn:ocn:polkadot:2004",
-		},
+		},*/
 		{
 			label: "Polkadot",
 			value: "urn:ocn:polkadot:1000",
