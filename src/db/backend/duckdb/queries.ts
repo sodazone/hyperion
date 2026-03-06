@@ -47,8 +47,23 @@ export function generateCEXFlowsQuery({
 	return `WITH filtered AS (
   SELECT
     ${castExpr} AS timestamp,
-    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd,
-    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd
+    -- exchange → chain (chain inflow)
+        SUM(
+          CASE
+            WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL
+            THEN t.amount_usd
+            ELSE 0
+          END
+        ) AS inflow_usd,
+
+        -- chain → exchange (chain outflow)
+        SUM(
+          CASE
+            WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL
+            THEN t.amount_usd
+            ELSE 0
+          END
+        ) AS outflow_usd
   FROM transfers t
   LEFT JOIN address_tag tag_to
     ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
@@ -99,8 +114,23 @@ export function generateTopExchangesQuery({
 WITH aggregated AS (
   SELECT
     COALESCE(tag_to.tag, tag_from.tag) AS exchange,
-    SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN t.amount_usd ELSE 0 END) AS inflow_usd,
-    SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN t.amount_usd ELSE 0 END) AS outflow_usd
+    -- exchange → chain
+    SUM(
+      CASE
+        WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL
+        THEN t.amount_usd
+        ELSE 0
+      END
+    ) AS inflow_usd,
+
+    -- chain → exchange
+    SUM(
+      CASE
+        WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL
+        THEN t.amount_usd
+        ELSE 0
+      END
+    ) AS outflow_usd
   FROM transfers t
   LEFT JOIN address_tag tag_to
     ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
@@ -133,8 +163,8 @@ export const Queries = {
   WITH daily AS (
   SELECT
       CAST(sent_at AS DATE) AS day,
-      SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN amount_usd ELSE 0 END) -
-      SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN amount_usd ELSE 0 END) AS netflow_usd
+      SUM(CASE WHEN tag_from.tag IS NOT NULL AND tag_to.tag IS NULL THEN amount_usd ELSE 0 END) -
+      SUM(CASE WHEN tag_to.tag IS NOT NULL AND tag_from.tag IS NULL THEN amount_usd ELSE 0 END)
   FROM transfers t
   LEFT JOIN address_tag tag_to ON t.to_address = tag_to.address AND tag_to.tag LIKE 'exchange_name:%'
   LEFT JOIN address_tag tag_from ON t.from_address = tag_from.address AND tag_from.tag LIKE 'exchange_name:%'
