@@ -22,7 +22,7 @@ const defaults = {
 
 export const OpenGovRule: RuleDefinition<OpenGovEvent, void, Config> = {
 	id: ruleName,
-	resolveDependencies: () => [{ kind: "opengov" }],
+	autoDependencies: [{ kind: "opengov" }],
 	title: "OpenGov Alerts",
 	description: "Alerts on OpenGov events filtered by network and event type.",
 	schema,
