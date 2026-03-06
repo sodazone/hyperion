@@ -175,7 +175,10 @@ export function mapOpenGov(message: Message): OpenGovEvent | null {
 	const payload = message.payload as OpenGovPayload;
 
 	const eventType = mapEventType(payload.triggeredBy.name);
-	if (!eventType) return null;
+	if (!eventType) {
+		console.log("[opengov] event type not found", message);
+		return null;
+	}
 
 	const status = humanizeStatus(eventType);
 
