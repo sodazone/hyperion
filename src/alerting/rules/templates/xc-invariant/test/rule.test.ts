@@ -25,58 +25,71 @@ function makeCtx(configOverrides = {}) {
 	};
 }
 
-it("fires after sustained deficit", async () => {
-	const ctx = makeCtx();
+it("fires after sustained deviation above threshold", async () => {
+	const ctx = makeCtx({
+		kSlack: 0.001, // 0.1% tolerance
+		hThreshold: 0.01, // 1% sustained drift
+		minConsecutive: 2,
+	});
 
-	// rawDiff = -100
-	// accumulation per tick = -100 + 10 = -90
-	// threshold = 100
-	// fires on 2nd tick (-180 < -100)
+	// Reserve: 1000, Remote: 1020 [logRatio ~ 0.0198 (~2%)]
+	// Exceeds threshold, fires after 2 consecutive ticks
 
 	for (let i = 0; i < 5; i++) {
 		const result = await CrosschainInvariantRule.matcher(
-			mockEvent({ reserve: 1000, remote: 1100 }),
+			mockEvent({ reserve: 1000, remote: 1020 }),
 			ctx as any,
 		);
 
 		if (result.matched) {
-			expect(result.data?.difference).toBe(100);
+			// ratio check
+			expect(result.data?.ratio).toBeCloseTo(1020 / 1000, 5);
 			return;
 		}
 	}
 
-	throw new Error("CUSUM never fired");
+	throw new Error("Log-ratio matcher never fired");
 });
 
-it("does NOT fire if slack cancels deficit", async () => {
+it("fires only after minConsecutive log-ratio deviations", async () => {
 	const ctx = makeCtx({
-		kSlack: 100, // exactly cancels rawDiff
-		hThreshold: 50,
+		kSlack: 0.001,
+		hThreshold: 0.01,
+		minConsecutive: 3,
 	});
 
-	// rawDiff = -100
-	// accumulation per tick = -100 + 100 = 0
-	// never accumulates
+	const reserve = 1000;
+	const remote = reserve * 1.02; // 2% deviation > threshold
 
-	for (let i = 0; i < 50; i++) {
+	let fired = false;
+	for (let i = 0; i < 5; i++) {
 		const result = await CrosschainInvariantRule.matcher(
-			mockEvent({ reserve: 1000, remote: 1100 }),
+			mockEvent({ reserve, remote }),
 			ctx as any,
 		);
 
-		expect(result.matched).toBe(false);
+		if (result.matched) {
+			fired = true;
+			break;
+		}
 	}
+
+	expect(fired).toBe(true);
 });
 
-it("does NOT fire if threshold too high", async () => {
+it("does NOT fire under small log-ratio noise", async () => {
 	const ctx = makeCtx({
-		kSlack: 10,
-		hThreshold: 10_000,
+		kSlack: 0.002, // 0.2%
+		hThreshold: 0.01, // 1% threshold
 	});
 
-	for (let i = 0; i < 50; i++) {
+	const noise = [0.001, -0.001, 0.002, -0.001, 0.0005];
+
+	for (const n of noise) {
+		const reserve = 1000;
+		const remote = reserve * Math.exp(n); // log(remote/reserve) = n
 		const result = await CrosschainInvariantRule.matcher(
-			mockEvent({ reserve: 1000, remote: 1100 }),
+			mockEvent({ reserve, remote }),
 			ctx as any,
 		);
 
@@ -86,8 +99,8 @@ it("does NOT fire if threshold too high", async () => {
 
 it("does NOT fire on single large spike", async () => {
 	const ctx = makeCtx({
-		kSlack: 10,
-		hThreshold: 200,
+		kSlack: 0.002,
+		hThreshold: 0.01,
 	});
 
 	// One large spike
@@ -107,20 +120,15 @@ it("does NOT fire on single large spike", async () => {
 	expect(result.matched).toBe(false);
 });
 
-it("does NOT fire under small noise", async () => {
-	const ctx = makeCtx({
-		kSlack: 10,
-		hThreshold: 100,
-	});
-
+it("does NOT fire under small log-ratio noise", async () => {
+	const ctx = makeCtx({ kSlack: 0.001, hThreshold: 0.01 });
+	const reserve = 1000;
 	const noise = [5, -3, 7, -2, 4, -6, 3, -4];
 
 	for (const n of noise) {
+		const remote = reserve * Math.exp(n / reserve);
 		const result = await CrosschainInvariantRule.matcher(
-			mockEvent({
-				reserve: 1000,
-				remote: 1000 + n,
-			}),
+			mockEvent({ reserve, remote }),
 			ctx as any,
 		);
 
