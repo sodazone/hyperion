@@ -14,8 +14,8 @@ function makeCtx(configOverrides = {}) {
 	return {
 		config: {
 			subscriptionId: "sub-1",
-			kSlack: 10,
-			hThreshold: 100,
+			kSlack: 0.002,
+			hThreshold: 0.01,
 			level: 1,
 			minConsecutive: 2,
 			...configOverrides,

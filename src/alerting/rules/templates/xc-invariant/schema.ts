@@ -91,7 +91,7 @@ const subscriptionMeta = {
 		value: id,
 	})),
 	multiple: false,
-	help: "Select the subscription to monitor crosschain balances.",
+	help: "Select the cross-chain subscription whose reserve and remote balances should be monitored.",
 };
 
 const assetsMeta = {
@@ -143,29 +143,34 @@ const assetsMeta = {
 		},
 	].sort((a, b) => a.label.localeCompare(b.label)),
 	multiple: true,
-	help: "Filter the monitored asset symbols.",
+	help: "Optional list of asset symbols to monitor for reserve/remote balance divergence.",
 };
 
 export const schema = z.object({
 	level,
 	subscriptionId: z.enum(subscriptionIds).meta(subscriptionMeta),
 	assetSymbols: z.array(z.string()).optional().meta(assetsMeta),
-	kSlack: z.number().min(0).meta({
-		label: "Slack per tick",
-		help: "Small allowance to ignore minor fluctuations when computing the cumulative deficit.",
-	}),
-	hThreshold: z.number().min(0).meta({
-		label: "Deficit Threshold",
+	kSlack: z.number().min(0).max(1).meta({
+		label: "Noise Tolerance",
 		decimals: true,
-		help: "Total cumulative deficit between reserve and remote that triggers an alert.",
+		unit: "%",
+		help: "Tick tolerance for minor deviations; internally used as log(ratio), roughly equals percentage for small deviations.",
 	}),
-	minConsecutive: z.number().min(0).meta({
+	hThreshold: z.number().min(0).max(1).meta({
+		label: "Alert Threshold",
+		decimals: true,
+		unit: "%",
+		help: "Sustained deviation threshold (log ratio); for small deviations, roughly equals percentage difference between remote and reserve balances.",
+	}),
+	minConsecutive: z.number().min(0).max(50).meta({
 		label: "Minimum Consecutive Deficit Ticks",
-		help: "Number of consecutive ticks with deficit before accumulating towards an alert.",
+		help: "Minimum number of consecutive divergent observations required before triggering an alert.",
 	}),
-	maxStep: z.number().min(1).optional().meta({
+	maxStep: z.number().min(0).max(1).optional().meta({
 		label: "Maximum Step (Spike Tolerance)",
-		help: "Caps the impact of a single large transfer to avoid false alerts on one-off spikes.",
+		decimals: true,
+		unit: "%",
+		help: "Limits the impact of a single large percentage deviation to avoid alerts from one-off balance spikes.",
 	}),
 });
 

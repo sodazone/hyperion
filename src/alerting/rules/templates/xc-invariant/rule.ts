@@ -9,8 +9,9 @@ const SO_STATE_VAR = "so";
 
 const defaults = {
 	level: 1,
-	kSlack: 50,
-	minConsecutive: 1,
+	kSlack: 0.002, // ~0.2%
+	hThreshold: 0.02, // ~2% sustained drift
+	minConsecutive: 3,
 };
 
 export interface CrosschainInvariantPayload extends AlertPayload {
@@ -34,6 +35,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 	IssuanceEvent,
 	{
 		difference: number;
+		ratio: number;
 		reserveAmount: number;
 		remoteAmount: number;
 	},
@@ -74,38 +76,26 @@ export const CrosschainInvariantRule: RuleDefinition<
 			decimals: event.payload.inputs.remoteDecimals,
 		});
 
-		const maxStep = config.maxStep ?? Infinity;
 		const ns = `${ruleName}:${id}`;
-		const so = (state.get(ns, SO_STATE_VAR) ?? {
-			sMinus: 0,
-			consecutiveDeficit: 0,
-		}) as {
-			sMinus: number;
-			consecutiveDeficit: number;
-		};
 
-		const rawDiff = reserveAmount - remoteAmount;
+		const stateObj = (state.get(ns, SO_STATE_VAR) ?? {
+			consecutive: 0,
+		}) as { consecutive: number };
 
-		if (rawDiff < 0) {
-			so.consecutiveDeficit++;
+		const ratio = remoteAmount / Math.max(reserveAmount, 1e-12);
+		const deviation = Math.abs(Math.log(ratio));
+
+		if (deviation > config.hThreshold) {
+			stateObj.consecutive++;
 		} else {
-			so.consecutiveDeficit = 0;
-			so.sMinus = 0;
+			stateObj.consecutive = 0;
 		}
 
-		if (so.consecutiveDeficit >= (config.minConsecutive ?? 1)) {
-			const step = Math.max(rawDiff, -maxStep);
-			so.sMinus += step + config.kSlack;
-			if (so.sMinus > 0) so.sMinus = 0;
-		}
+		state.set(ns, SO_STATE_VAR, stateObj);
 
-		state.set(ns, SO_STATE_VAR, so);
-
-		if (so.sMinus < -config.hThreshold) {
-			so.sMinus = 0;
-			so.consecutiveDeficit = 0;
-
-			state.set(ns, SO_STATE_VAR, so);
+		if (stateObj.consecutive >= (config.minConsecutive ?? 1)) {
+			stateObj.consecutive = 0;
+			state.set(ns, SO_STATE_VAR, stateObj);
 
 			return {
 				matched: true,
@@ -113,6 +103,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 					difference: remoteAmount - reserveAmount,
 					reserveAmount,
 					remoteAmount,
+					ratio,
 				},
 			};
 		}
@@ -155,7 +146,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 				],
 				["t", symbol],
 			],
-			remark: `Deficit > ${config.hThreshold?.toFixed(4)}`,
+			remark: `Remote/Reserve ratio ${data.ratio.toFixed(4)}`,
 			payload: {
 				kind: "xc-invariant",
 				reserve: {
