@@ -172,9 +172,11 @@ export function mapTransfer(tx: any): TransferEvent {
 }
 
 export function mapOpenGov(message: Message): OpenGovEvent | null {
-	const payload = message.payload as OpenGovPayload;
+	console.log("[opengov] received message", message);
 
-	const eventType = mapEventType(payload.triggeredBy.name);
+	const payload = message.payload as OpenGovPayload;
+	const eventType = mapEventType(payload.triggeredBy?.name ?? "");
+
 	if (!eventType) {
 		console.log("[opengov] event type not found", message);
 		return null;
