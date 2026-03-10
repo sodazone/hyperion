@@ -1,193 +1,259 @@
-# Hyperion Intelligence Console — User Guide
+# Hyperion Intelligence Console
 
-The **Hyperion Intelligence Console** is a monitoring platform designed to track cross-chain activity, detect anomalies, and alert users about potential risks in the Polkadot ecosystems.
+The **Hyperion Intelligence Console** monitors cross-chain activity in the Polkadot ecosystem.
 
-The console allows users to:
+It allows users to:
 
-- Monitor onchain activity and asset flows
+- Monitor on-chain activity and asset flows
 - Tag and track addresses
-- Configure automated monitoring rules
-- Receive alerts through multiple delivery channels
+- Create automated monitoring rules
+- Receive alerts through multiple channels
 
-## Authentication
+---
 
-### Access Model
+# Access
 
-The console currently operates with two access levels:
+## Public Access
 
-**Public Access**
+Some dashboards and monitoring views are available without login.
 
-Some sections, like selected dashboards and monitoring views, are available without authentication for general ecosystem insights.
-
-**Authenticated Access**
+## Authenticated Access
 
 Logged-in users can:
 
-- Create and manage custom monitoring rules
-- Configure alert delivery channels
+- Create monitoring rules
+- Configure alert channels
 - View private alerts
-- Maintain a personal entity registry
+- Manage personal entities
 
-### Early Access Phase
+## Early Access
 
-This first iteration of the console is in **early access**. Private accounts are limited, and new users are manually onboarded. Early users provide feedback to help refine features and monitoring capabilities before broader release.
+The console is currently in **early access**. Accounts are limited and users are manually onboarded.
 
-Private access to the Hyperion Intelligence Console is currently focused on Polkadot protocol teams, security teams, infrastructure providers, and entities managing large on-chain volumes.  
+Initial access is focused on:
 
-Interested users should contact the SO/DA zone team with their email address, which will be used to create a console account.
+- Polkadot protocol teams
+- Security teams
+- Infrastructure providers
+- Entities managing large on-chain volumes
 
-### Login Method
+To request access, contact the **SO/DA Zone team**.
 
-The console uses passwordless authentication powered by Stytch. Users log in via a magic link sent to their email.
+## Login
 
-#### Login process
+Authentication uses **email magic links**.
 
-1. Navigate to the Hyperion Intelligence Console login page.
-2. Enter your registered email address.
-3. A magic login link will be sent to your inbox.
-4. Click the link to securely sign in—no password required.
+**Login process**
 
----
+1. Open the login page
+2. Enter your email
+3. Click the login link sent to your inbox
 
-## Dashboard
-
-The dashboard provides a quick overview of important activity across the platform, combining market signals, cross-chain solvency data, and recent alerts. Some sections are publicly accessible and can be viewed without logging in, while others include personalized information for authenticated users.
-
-### Exchange Flows
-
-This section tracks asset movement between wallets and centralized exchanges, expressed in USD:
-
-- **Volume** — Total value of tracked transfers in the selected time window.
-- **Net Flow** — The difference between inflows and outflows across exchanges.
-- **Z-Score** — A statistical indicator showing how unusual the current net flow is compared to historical activity.
-
-A chart visualizes how these flows evolve over time, helping identify spikes or abnormal activity.
-
-The Top Exchanges table shows the exchanges with the largest activity during the selected period, including:
-
-- Total inflows
-- Total outflows
-- Net flow per exchange
-
-This section is publicly accessible and can be viewed without logging in.
+No password is required.
 
 ---
 
-### Cross-Chain Reserves
+# Dashboard
 
-This section displays the solvency status of bridged assets across supported chains.
+The dashboard provides an overview of ecosystem activity, cross-chain solvency, and recent alerts.
 
-For each asset, the dashboard compares:
+Some sections are public. Others require login.
 
-- **Reserve** — The amount locked on the reserve chain
-- **Remote** — The amount issued on the destination chain
-- **Δ (Delta)** — The difference between reserve and issued supply in asset amount
-- **Ratio** — The solvency ratio between the two
+## Exchange Flows
 
-A ratio close to `100%` indicates that the issued assets are fully backed by reserves. Significant deviations may indicate potential inconsistencies in bridge accounting or supply tracking.
+Tracks transfers between wallets and centralized exchanges in USD.
 
-The table also displays the reserve address associated with each asset.
+Metrics:
 
-This section is publicly accessible and can be viewed without logging in.
+- **Volume** — total value transferred during the selected period
+- **Net Flow** — inflows minus outflows
+- **Z-Score** — deviation from historical flow patterns
 
----
+The chart shows flows over time.
 
-### Latest Alerts
+The **Top Exchanges** table lists inflows, outflows, and net flow per exchange.
 
-This section provides a real-time feed of recently generated alerts.
+This section is public.
 
-This feed may include:
+## Cross-Chain Reserves
 
-- **Public alerts** generated by platform-wide monitoring rules
-- **Private alerts** triggered by monitoring rules configured in your account
+Shows solvency data for bridged assets.
 
-If you are logged in and have configured custom rules, alerts related to those rules will appear alongside the public alerts.
+For each asset:
 
-Selecting **Latest Alerts** opens the full alert list where alerts can be inspected in greater detail.
+- **Reserve** — amount locked on the reserve chain
+- **Remote** — amount issued on the destination chain
+- **Delta** — difference between reserve and issued supply
+- **Ratio** — reserve vs issued supply
 
----
+A ratio close to **100%** indicates full backing.
 
-## Alerting
+The reserve address is also displayed.
 
-### Crosschain Invariant Monitoring
+This section is public.
 
-The Crosschain Invariant rule monitors the balance relationship between a reserve chain and a remote chain for bridged assets.
+## Latest Alerts
 
-It alerts when the issued supply on the remote chain diverges from the assets locked on the reserve chain beyond a configured tolerance.
+Displays recently generated alerts.
 
-This helps detect issues such as:
+Alerts may include:
 
-- Bridge accounting errors  
-- Supply mismatches  
-- Delayed synchronization between chains  
-- Potential minting or locking failures  
+- **Public alerts** from platform monitoring
+- **Private alerts** from rules configured in your account
 
----
-
-#### How It Works
-
-For each monitored asset, the rule continuously compares the ratio between:
-
-- Reserve balance: assets locked on the reserve chain  
-- Remote balance: assets issued or circulating on the remote chain  
-
-Under normal conditions these balances should remain close to 1:1.
-
-If the difference between them becomes too large and persists for several observations, an alert is triggered.
+Logged-in users see both in the same feed.
 
 ---
 
-#### Configuration
+# Entities and Address Tagging
 
-**Subscription**
+Addresses can be grouped into **entities** to add context to monitoring and alerts.
 
-Select the bridge route to monitor. Each route represents a **reserve chain → remote chain pair** for a specific bridge protocol.
+Entities are available in the right menu:
 
-Example:
+- **Public Entities**
+- **My Entities**
 
-```
-XCM Polkadot → Hydration
+Rules can reference **categories or tags**.  
+For example, a rule can trigger when any address tagged `exchange_name:kraken` sends or receives funds. This allows monitoring groups of addresses without modifying rules when new wallets are added.
 
-The rule monitors the relationship:
+## Public Entities
 
-assets locked on Polkadot relay + system chains
-vs
-assets issued on Hydration
-```
+Public entities are maintained by the platform.
 
-**Assets (Optional)**
+Examples include:
 
-You can limit monitoring to specific assets. If left empty, the rule monitors **all supported assets** on the selected route.
+- Exchanges
+- Sanctioned entities
+- Protocol treasuries
+- Infrastructure providers
+- Known ecosystem participants
 
-**Noise Tolerance**
+These entities can be viewed and searched but cannot be modified.
 
-Parameter: `kSlack`  
-Default: `0.002` (~0.2%)
+## My Entities
 
-This parameter defines how much small fluctuation is ignored. Increasing this value makes the rule less sensitive to small noise.
+**My Entities** are private to your account.
 
-**Alert Threshold**
+They can be used to:
 
-Parameter: `hThreshold`  
-Default: `0.02` (~2%)
+- Track wallets
+- Maintain watchlists
+- Group related addresses
+- Support monitoring rules
 
-Defines how large the remote/reserve deviation must be before the rule considers it abnormal. A threshold value of 2% means that an alert will be triggered if amount of locked reserves is more than 2% below amount of issued remote balance.
+Users can create entities, assign categories, add addresses, add tags, and edit or delete entities.
 
-**Minimum Consecutive Deficit Ticks**
+## Categories
 
-Parameter: `minConsecutive`  
-Default: `3`
+Each entity belongs to a **category**.
 
-The number of consecutive observations that must exceed the threshold before an alert is triggered. This prevents alerts caused by short-lived spikes. If a normal reading occurs, the counter resets.
+Categories are predefined to keep classification consistent.
 
-**Maximum Step (Spike Tolerance)**
+Examples include:
 
-Limits the impact of single large deviations.
+- Cybercrime
+- DeFi Protocol
+- Exchange
+- Infrastructure
+- Services
+- Sanctions
 
-This protects against alerts caused by:
+## Tags
 
-- Sudden indexing corrections
-- Temporary balance spikes
-- Data synchronization issues 
+Tags provide flexible labels for entities and are fully user-defined.
 
-If configured, large one-off deviations are capped before evaluation.
+Common patterns include `name:binance`, `exchange_name:kraken`, or `team:treasury`.
+
+Using consistent tags helps filter entities, build monitoring rules, and organize address lists.
+
+---
+
+# Alerting
+
+## Alerts
+
+An **alert** is generated when a monitoring rule detects a significant on-chain event.
+
+Alerts can be delivered through channels such as:
+
+- Discord
+- Telegram
+
+All alerts are also available in the console under **Public Alerts** or **My Alerts**.
+
+## Creating a Rule
+
+1. Open **Rules**
+2. Click **Add Rule**
+3. Select a rule template
+4. Configure the parameters
+5. Click **Save**
+
+The monitoring system automatically begins evaluating the rule.
+
+## Channels
+
+Channels define where alerts are delivered.
+
+Channels are configured in the **Channels** section. Users can create, edit, or delete channels and then attach them to monitoring rules.
+
+A **test action** can send a sample alert to verify the configuration.
+
+---
+
+# Rule Templates
+
+Hyperion provides several built-in monitoring templates.
+
+| Template | ID | Description |
+|---|---|---|
+| Asset Movement | `transfer` | Detect large transfers using thresholds, tags, and categories |
+| Crosschain Invariant | `xc-invariant` | Detect divergence between reserve and issued supply |
+| Watched Entities | `watched` | Monitor activity related to selected entities, filtered by category and tags |
+| OpenGov Alerts | `opengov` | Monitor governance events |
+
+---
+
+# Crosschain Invariant Monitoring
+
+The **Crosschain Invariant** rule monitors the relationship between assets locked on a reserve chain and assets issued on a remote chain.
+
+An alert is triggered when the **log ratio between reserve and remote balances** exceeds configured thresholds.
+
+## How It Works
+
+For each monitored asset the system compares:
+
+- **Reserve balance** — assets locked on the reserve chain  
+- **Remote balance** — assets issued on the destination chain  
+
+The monitor evaluates the **log ratio between the two balances**. Under normal conditions this value remains close to zero, meaning the balances are near **1:1**.
+
+If the deviation persists across several observations, an alert is generated.
+
+Using the log ratio allows the system to measure **relative deviations symmetrically**, regardless of whether the reserve is higher or lower than the issued supply.
+
+## Configuration
+
+**Subscription**  
+Bridge route to monitor (reserve → remote)
+
+**Assets (optional)**  
+Limit monitoring to specific assets. If empty, all assets are monitored.
+
+**Noise Tolerance (`kSlack`)**  
+Default `0.002`
+
+**Alert Threshold (`hThreshold`)**  
+Default `0.02`
+
+**Minimum Consecutive Deficit (`minConsecutive`)**  
+Default `3`
+
+**Maximum Step**  
+Limits large single deviations to reduce noise.
+
+--- 
+
+Happy monitoring!
