@@ -197,20 +197,48 @@ A **test action** can send a sample alert to verify the configuration.
 
 Hyperion provides several built-in monitoring templates.
 
-| Template | ID | Description |
+| Rule | ID | Description |
 |---|---|---|
 | Asset Movement | `transfer` | Detect large transfers using thresholds, tags, and categories |
 | Crosschain Invariant | `xc-invariant` | Detect divergence between reserve and issued supply |
 | Watched Entities | `watched` | Monitor activity related to selected entities, filtered by category and tags |
 | OpenGov Alerts | `opengov` | Monitor governance events |
 
-# Crosschain Invariant Monitoring
+
+## Asset Movement
+
+The **Asset Movement** rule monitors large transfers using thresholds, entity categories, and tags.  
+
+For example, you can tag entities in your private registry with `watch:my-list-1` and monitor transfers for **all addresses in that list**. Since tagging is separate from rules, you can reuse the same tags in multiple rules and manage your address lists easily, without editing the rule itself.
+
+### Rule Parameters
+
+- **Threshold (`minUsd`)**  
+  Minimum transfer value in USD that triggers the alert.  
+  Example: `10000` alerts on transfers ≥ $10,000
+
+- **Entity Categories (`categories`)**  
+  Optional. Limit monitoring to entities in specific categories (e.g., Exchange, DeFi Protocol, Cybercrime).
+
+- **Include Public Entities (`includePublicEntities`)**  
+  Optional, defaults to `true`. Include entities from the public registry.
+
+- **Tags (`tags`)**  
+  Optional. Monitor addresses with specific tags, e.g., `watch:my-list-1`.
+
+- **Networks (`networks`)**  
+  Select which chains or network segments to monitor.
+
+> [!TIP]
+> Use consistent tags to create reusable watchlists. Updating the tags automatically affects all rules that reference them, without editing the rules themselves.
+
+## Crosschain Invariant Rule
 
 The **Crosschain Invariant** rule monitors the relationship between assets locked on a reserve chain and assets issued on a remote chain.
 
 An alert is triggered when the **log ratio between reserve and remote balances** exceeds configured thresholds.
 
-## How It Works
+### How It Works
 
 For each monitored asset the system compares:
 
@@ -223,13 +251,13 @@ If the deviation persists across several observations, an alert is generated.
 
 Using the log ratio allows the system to measure **relative deviations symmetrically**, regardless of whether the reserve is higher or lower than the issued supply.
 
-## Configuration
+### Configuration
 
 > [!NOTE]
-> kSlack and hThreshold are log ratio units. Small values approximate % difference. A log ratio of 0.02 is roughly a 2% imbalance between reserve and remote balances. For larger deviations, the approximation becomes slightly nonlinear, but it is sufficient for typical monitoring ranges.
+> `kSlack` and `hThreshold` are log ratio units. Small values approximate % difference. A log ratio of 0.02 is roughly a 2% imbalance between reserve and remote balances. For larger deviations, the approximation becomes slightly nonlinear, but it is sufficient for typical monitoring ranges.
 
 **Subscription**  
-Bridge route to monitor (reserve → remote)
+Bridge route to monitor (reserve to remote)
 
 **Assets (optional)**  
 Limit monitoring to specific assets. If empty, all assets are monitored.
