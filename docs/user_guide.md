@@ -111,6 +111,9 @@ A ratio close to **100%** indicates full backing.
 
 The reserve address is also displayed.
 
+> **Note**
+> For DOT, the reserve value is calculated as the sum of reserves across the Polkadot Relay Chain, Asset Hub, and Coretime Chain.
+
 This section is public.
 
 ## Latest Alerts
