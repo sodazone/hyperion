@@ -10,5 +10,6 @@ export function expandPath(path: string): string {
 }
 
 export const config = {
-	dataDir: expandPath(process.env.HYPERION_DATA_DIR ?? "~/.hyperion/data"),
+	dataDir: expandPath(Bun.env.HYPERION_DATA_DIR ?? "~/.hyperion/data"),
+	dbPath: expandPath(Bun.env.HYPERION_DB_PATH ?? "./.db/current"),
 };
