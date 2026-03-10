@@ -9,6 +9,30 @@ It allows users to:
 - Create automated monitoring rules
 - Receive alerts through multiple channels
 
+# Table of Contents
+
+- [Access](#access)
+  - [Public Access](#public-access)
+  - [Authenticated Access](#authenticated-access)
+  - [Early Access](#early-access)
+  - [Sign In](#sign-in)
+- [Dashboard](#dashboard)
+  - [Exchange Flows](#exchange-flows)
+  - [Cross-Chain Reserves](#cross-chain-reserves)
+  - [Latest Alerts](#latest-alerts)
+- [Entities and Address Tagging](#entities-and-address-tagging)
+  - [Public Entities](#public-entities)
+  - [My Entities](#my-entities)
+  - [Categories](#categories)
+  - [Tags](#tags)
+- [Alerting](#alerting)
+  - [Alerts](#alerts)
+  - [Creating a Rule](#creating-a-rule)
+  - [Channels](#channels)
+- [Rule Templates](#rule-templates)
+  - [Asset Movement Rule](#asset-movement-rule)
+  - [Crosschain Invariant Rule](#crosschain-invariant-rule)
+ 
 # Access
 
 ## Public Access
