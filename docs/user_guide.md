@@ -9,8 +9,6 @@ It allows users to:
 - Create automated monitoring rules
 - Receive alerts through multiple channels
 
----
-
 # Access
 
 ## Public Access
@@ -50,8 +48,6 @@ Authentication uses **email magic links**.
 3. Click the login link sent to your inbox
 
 No password is required.
-
----
 
 # Dashboard
 
@@ -102,8 +98,6 @@ Alerts may include:
 - **Private alerts** from rules configured in your account
 
 Logged-in users see both in the same feed.
-
----
 
 # Entities and Address Tagging
 
@@ -167,8 +161,6 @@ Common patterns include `name:binance`, `exchange_name:kraken`, or `team:treasur
 
 Using consistent tags helps filter entities, build monitoring rules, and organize address lists.
 
----
-
 # Alerting
 
 ## Alerts
@@ -200,8 +192,6 @@ Channels are configured in the **Channels** section. Users can create, edit, or 
 
 A **test action** can send a sample alert to verify the configuration.
 
----
-
 # Rule Templates
 
 Hyperion provides several built-in monitoring templates.
@@ -212,8 +202,6 @@ Hyperion provides several built-in monitoring templates.
 | Crosschain Invariant | `xc-invariant` | Detect divergence between reserve and issued supply |
 | Watched Entities | `watched` | Monitor activity related to selected entities, filtered by category and tags |
 | OpenGov Alerts | `opengov` | Monitor governance events |
-
----
 
 # Crosschain Invariant Monitoring
 
