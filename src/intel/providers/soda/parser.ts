@@ -36,7 +36,7 @@ export function parse(path: string): Entity[] {
 				version,
 			}));
 
-			if (account.identities.length > 0) {
+			if (account.identities?.length) {
 				for (const identity of account.identities) {
 					const id = identity.display ?? Object.values(identity.extra).at(0);
 					tags.push({
