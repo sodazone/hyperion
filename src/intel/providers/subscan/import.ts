@@ -1,9 +1,10 @@
+import { config } from "@/config";
 import { createEntitiesDB } from "@/db";
 import { merkleSubscan } from "./runner";
 
 const t0 = performance.now();
 
-const db = await createEntitiesDB("./.db/current");
+const db = await createEntitiesDB(config.dbPath);
 
 for (const job of merkleSubscan) {
 	await job.run(db);

@@ -1,9 +1,10 @@
+import { config } from "@/config";
 import { createEntitiesDB } from "@/db";
 import { ofac } from "./runner";
 
 const t0 = performance.now();
 
-const db = await createEntitiesDB("./.db/current");
+const db = await createEntitiesDB(config.dbPath);
 
 await ofac.run(db);
 

@@ -1,7 +1,8 @@
+import { config } from "@/config";
 import { createEntitiesDB } from "@/db";
 import { polkadotJs } from "./runner";
 
-const db = await createEntitiesDB("./.db/current");
+const db = await createEntitiesDB(config.dbPath);
 
 const t0 = performance.now();
 
