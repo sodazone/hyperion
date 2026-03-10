@@ -224,6 +224,8 @@ Using the log ratio allows the system to measure **relative deviations symmetric
 
 ## Configuration
 
+> **Note:** kSlack and hThreshold are log ratio units. Small values approximate % difference. A log ratio of 0.02 is roughly a 2% imbalance between reserve and remote balances. For larger deviations, the approximation becomes slightly nonlinear, but it is sufficient for typical monitoring ranges.
+
 **Subscription**  
 Bridge route to monitor (reserve → remote)
 
@@ -231,10 +233,10 @@ Bridge route to monitor (reserve → remote)
 Limit monitoring to specific assets. If empty, all assets are monitored.
 
 **Noise Tolerance (`kSlack`)**  
-Default `0.002`
+Default `0.002` ~0.2% difference
 
 **Alert Threshold (`hThreshold`)**  
-Default `0.02`
+Default `0.02` ~2% difference
 
 **Minimum Consecutive Deficit (`minConsecutive`)**  
 Default `3`
