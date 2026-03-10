@@ -1,46 +1,14 @@
-import type { CrosschainInvariantPayload } from "@/alerting/rules/templates/xc-invariant/rule";
 import type { Alert, AlertActor } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { dateFormatter } from "@/utils/dates";
 import { trunc, truncMid } from "../util";
+import { AlertDetailsRegistry } from "./alert/details.registry";
 import { AlertMessage } from "./alert.message";
 import { SeverityBadge } from "./badge.severity";
 import { CopyButton } from "./btn.copy";
 import { NetworkGroup } from "./network.group";
 import { NetworkIcon } from "./network.icon";
 import { RuleIcons } from "./rule.icons";
-
-function InvariantAlertDetails({ payload }: { payload: unknown }) {
-	const p = payload as CrosschainInvariantPayload;
-	return (
-		<div className="flex flex-col gap-3 px-3 py-1.5 rounded-md bg-zinc-800/20">
-			<div className="flex flex-col gap-2">
-				<NetworkIcon urn={p.reserve.network} showName />
-				<div className="flex gap-4 items-baseline">
-					<span className="text-zinc-500 w-36">Reserve</span>
-					<span className="flex gap-1 items-baseline">
-						<span className="font-mono text-zinc-200 font-semibold">
-							{p.reserve.balance.toFixed(6)}
-						</span>
-						<span className="text-zinc-500">{p.asset.symbol}</span>
-					</span>
-				</div>
-			</div>
-			<div className="flex flex-col gap-2">
-				<NetworkIcon urn={p.remote.network} showName />
-				<div className="flex gap-4 items-baseline">
-					<span className="text-zinc-500 w-36">Remote</span>
-					<span className="flex gap-1 items-baseline">
-						<span className="font-mono text-zinc-200 font-semibold">
-							{p.remote.balance.toFixed(6)}
-						</span>
-						<span className="text-zinc-500">{p.asset.symbol}</span>
-					</span>
-				</div>
-			</div>
-		</div>
-	);
-}
 
 function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 	if (!networks || networks.length === 0 || networks[0]?.block_hash == null)
@@ -92,7 +60,11 @@ function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 }
 
 export function AlertCard({ alert }: { alert: Alert }) {
-	const kind = alert.payload?.kind;
+	const { payload } = alert;
+	const DetailComponent = payload?.kind
+		? AlertDetailsRegistry[payload.kind]
+		: null;
+
 	const actors = alert.payload?.actors ?? [];
 	return (
 		<div
@@ -121,9 +93,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 				</summary>
 
 				<div className="flex flex-col gap-2 text-sm mt-2 text-zinc-400">
-					{kind === "xc-invariant" && (
-						<InvariantAlertDetails payload={alert.payload} />
-					)}
+					{DetailComponent && <DetailComponent payload={payload} />}
 					{actors.length > 0 &&
 						actors.map((a: AlertActor) => (
 							<div key={a.role} className="flex items-center gap-2">

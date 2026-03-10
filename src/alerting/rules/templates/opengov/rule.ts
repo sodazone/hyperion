@@ -10,8 +10,10 @@ import { type Config, schema } from "./schema";
 
 const ruleName = "opengov";
 
-interface OpenGovAlertPayload extends AlertPayload {
+export interface OpenGovAlertPayload extends AlertPayload {
 	kind: "opengov";
+	link?: string;
+	willExecuteAt?: string;
 }
 
 const defaults = {
@@ -80,6 +82,8 @@ export const OpenGovRule: RuleDefinition<OpenGovEvent, void, Config> = {
 			message,
 			payload: {
 				kind: "opengov",
+				link: payload.content.link,
+				willExecuteAt: payload.timeline?.willExecuteAtUtc,
 			},
 		};
 	},
