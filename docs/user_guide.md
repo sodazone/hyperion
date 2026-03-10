@@ -26,7 +26,8 @@ Logged-in users can:
 
 ## Early Access
 
-The console is currently in **early access**. Accounts are limited and users are manually onboarded.
+> [!IMPORTANT]
+> The console is currently in **early access**. Accounts are limited and users are manually onboarded.
 
 Initial access is focused on:
 
@@ -224,7 +225,8 @@ Using the log ratio allows the system to measure **relative deviations symmetric
 
 ## Configuration
 
-> **Note:** kSlack and hThreshold are log ratio units. Small values approximate % difference. A log ratio of 0.02 is roughly a 2% imbalance between reserve and remote balances. For larger deviations, the approximation becomes slightly nonlinear, but it is sufficient for typical monitoring ranges.
+> [!NOTE]
+> kSlack and hThreshold are log ratio units. Small values approximate % difference. A log ratio of 0.02 is roughly a 2% imbalance between reserve and remote balances. For larger deviations, the approximation becomes slightly nonlinear, but it is sufficient for typical monitoring ranges.
 
 **Subscription**  
 Bridge route to monitor (reserve → remote)
