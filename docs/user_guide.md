@@ -37,15 +37,15 @@ Initial access is focused on:
 
 To request access, contact the **SO/DA Zone team**.
 
-## Login
+## Sign In
 
 Authentication uses **email magic links**.
 
-**Login process**
+**Sign-in process**
 
-1. Open the login page
-2. Enter your email
-3. Click the login link sent to your inbox
+1. Open the **Sign In** page from the left menu  
+2. Enter your email  
+3. Click the login link sent to your inbox  
 
 No password is required.
 
@@ -103,7 +103,7 @@ Logged-in users see both in the same feed.
 
 Addresses can be grouped into **entities** to add context to monitoring and alerts.
 
-Entities are available in the right menu:
+Entities are available in the left menu:
 
 - **Public Entities**
 - **My Entities**
