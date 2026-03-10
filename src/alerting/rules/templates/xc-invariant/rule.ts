@@ -36,6 +36,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 	{
 		difference: number;
 		ratio: number;
+		coveragePercent: number;
 		reserveAmount: number;
 		remoteAmount: number;
 	},
@@ -104,6 +105,8 @@ export const CrosschainInvariantRule: RuleDefinition<
 					reserveAmount,
 					remoteAmount,
 					ratio,
+					coveragePercent:
+						(reserveAmount / Math.max(remoteAmount, 1e-12)) * 100,
 				},
 			};
 		}
@@ -146,7 +149,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 				],
 				["t", symbol],
 			],
-			remark: `Remote/Reserve ratio ${data.ratio.toFixed(4)}`,
+			remark: `Remote/Reserve coverage ${data.coveragePercent.toFixed(2)}%`,
 			payload: {
 				kind: "xc-invariant",
 				reserve: {
