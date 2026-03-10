@@ -23,33 +23,31 @@ Some sections, like selected dashboards and monitoring views, are available with
 
 Logged-in users can:
 
-- Create and manage **custom monitoring rules**
-- Configure **alert delivery channels**
-- View **private alerts**
-- Maintain a **personal entity registry**
-
----
+- Create and manage custom monitoring rules
+- Configure alert delivery channels
+- View private alerts
+- Maintain a personal entity registry
 
 ### Early Access Phase
 
 This first iteration of the console is in **early access**. Private accounts are limited, and new users are manually onboarded. Early users provide feedback to help refine features and monitoring capabilities before broader release.
 
-Access to the **Hyperion Intelligence Console** is currently focused on the **Polkadot ecosystem**, including protocol teams, infrastructure providers, and entities managing large on-chain volumes.  
+Private access to the Hyperion Intelligence Console is currently focused on Polkadot protocol teams, security teams, infrastructure providers, and entities managing large on-chain volumes.  
 
-Interested users should **contact the Hyperion team with their email address**, which will be used to create a console account.
-
----
+Interested users should contact the SO/DA zone team with their email address, which will be used to create a console account.
 
 ### Login Method
 
-The console uses **passwordless authentication** powered by Stytch. Users log in via a **magic link sent to their email**.
+The console uses passwordless authentication powered by Stytch. Users log in via a magic link sent to their email.
 
 #### Login process
 
 1. Navigate to the Hyperion Intelligence Console login page.
 2. Enter your registered email address.
-3. A **magic login link** will be sent to your inbox.
+3. A magic login link will be sent to your inbox.
 4. Click the link to securely sign in—no password required.
+
+---
 
 ## Dashboard
 
@@ -106,6 +104,8 @@ This feed may include:
 If you are logged in and have configured custom rules, alerts related to those rules will appear alongside the public alerts.
 
 Selecting **Latest Alerts** opens the full alert list where alerts can be inspected in greater detail.
+
+---
 
 ## Alerting
 
