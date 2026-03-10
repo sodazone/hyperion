@@ -1,26 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="62.25"
-   height="62.25"
-   viewBox="0 0 62.25 62.25"
-   fill="none"
-   version="1.1"
-   id="svg6"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <defs
-     id="defs10" />
-  <circle
-     style="fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:0.4"
-     id="path1137"
-     cx="31.125"
-     cy="31.125"
-     r="30" />
-  <!-- Outer circle frame -->
-  <!-- Sharp, angular 'H' -->
-  <path
-     d="M 16.125,44.25 V 18 h 7.5 l 7.5,13.125 7.5,-13.125 h 7.5 v 26.25 h -7.5 l -7.5,-13.125 -7.5,13.125 z"
-     fill="#111111"
-     id="path4"
-     style="fill:#73e6cb;fill-opacity:1;stroke-width:0.9375" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="59.474" height="56.647" fill="none" version="1.1" viewBox="0 0 59.474 56.647" xmlns="http://www.w3.org/2000/svg">
+ <rect x="-3.9583" y="-4.0199" width="67.391" height="64.686" fill="#041612" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".4" stroke-width="2.25"/>
+ <!-- Outer circle frame -->
+ <!-- Sharp, angular 'H' -->
+ <path d="m198.37 91.608-113.77-65.685 59.769-34.507v34.507h36v-96.861l-131.77 76.077-131.77-76.077v96.861h36v-34.507l59.772 34.508-113.77 65.686 113.77 65.685-59.77 34.507v-34.507h-36v96.86l131.77-76.077 131.77 76.077v-96.86h-36v34.507l-59.771-34.509zm-149.77-44.9 77.769 44.9-77.771 44.901-77.77-44.899z"/>
+ <path d="m49.737 28.323-15.192-8.7714 7.9814-4.608v4.608h4.8074v-12.935l-17.596 10.159-17.597-10.159v12.935h4.8074v-4.608l7.9818 4.6081-15.193 8.7716 15.193 8.7714-7.9815 4.608v-4.608h-4.8074v12.934l17.596-10.159 17.596 10.159v-12.934h-4.8074v4.608l-7.9817-4.6083zm-20-5.9958 10.385 5.9958-10.385 5.996-10.385-5.9957z" fill="#73e6cb" stroke-width=".13354"/>
 </svg>
