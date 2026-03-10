@@ -71,8 +71,14 @@ export type OpenGovEventPayload = {
 
 export const OpenGovEventTypes = [
 	"deciding",
-	"approved",
+	"confirming",
+	"confirmed",
 	"rejected",
+	"cancelled",
+	"aborted",
+	"killed",
+	"executed",
+	"execution_succeeded",
 	"execution_failed",
 ] as const;
 

@@ -16,6 +16,9 @@ export type OpenGovPayload = {
 			};
 		};
 	};
+	execution: {
+		result: { success: boolean };
+	};
 	blockNumber: string;
 	decodedCall: {
 		module: string;
