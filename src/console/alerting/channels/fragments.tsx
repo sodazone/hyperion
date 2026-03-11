@@ -14,9 +14,7 @@ function ChannelOptions({
 	if (!channels.length) {
 		return (
 			<div className="text-sm text-zinc-500">
-				No channels yet. Create one in the{" "}
-				<span className="font-medium text-zinc-200">Channels</span> section
-				first.
+				No channels yet. You can create one in the Channels section.
 			</div>
 		);
 	}
