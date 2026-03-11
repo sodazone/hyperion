@@ -14,15 +14,9 @@ function ChannelOptions({
 	if (!channels.length) {
 		return (
 			<div className="text-sm text-zinc-500">
-				No channels yet.
-				<a
-					href="/console/channels/form/__new__"
-					hx-get="/console/channels/form/__new__"
-					hx-target="#main-content"
-					className="ml-2 text-zinc-200 underline"
-				>
-					Create one
-				</a>
+				No channels yet. Create one in the{" "}
+				<span className="font-medium text-zinc-200">Channels</span> section
+				first.
 			</div>
 		);
 	}
