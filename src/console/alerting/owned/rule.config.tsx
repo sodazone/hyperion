@@ -89,7 +89,7 @@ export function ConfigField({
 				<Multiselect
 					name={name}
 					placeholder="Select networks…"
-					options={NetworkCache.all().map((n) => ({
+					options={NetworkCache.hot().map((n) => ({
 						label: n.name,
 						value: n.urn,
 					}))}

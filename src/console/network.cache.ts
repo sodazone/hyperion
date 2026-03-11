@@ -1,6 +1,8 @@
 import { NetworkMap } from "@/intel/mapping";
 import { loadExtraInfos } from "./extra.infos";
 
+const MONITORED_CONSENSUS = ["polkadot", "kusama", "ethereum", "sui", "solana"];
+
 type CachedNetwork = {
 	id: number;
 	urn: string;
@@ -10,6 +12,7 @@ type CachedNetwork = {
 
 let cache: {
 	all(): readonly CachedNetwork[];
+	hot(): readonly CachedNetwork[];
 	fromId(id: number): CachedNetwork | undefined;
 	fromURN(urn: string): CachedNetwork | undefined;
 	name(urn: string): string | undefined;
@@ -40,8 +43,13 @@ export async function initNetworkCache() {
 		a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
 	);
 
+	const hot = list.filter((n) =>
+		MONITORED_CONSENSUS.includes(n.urn.split(":")[2] ?? "_"),
+	);
+
 	cache = {
 		all: () => list,
+		hot: () => hot,
 		fromId: (id) => byId.get(id),
 		fromURN: (urn) => byURN.get(urn),
 		name: (urn) => byURN.get(urn)?.name,
@@ -60,6 +68,7 @@ function getCache() {
 
 export const NetworkCache = {
 	all: () => getCache().all(),
+	hot: () => getCache().hot(),
 	fromId: (id: number) => getCache().fromId(id),
 	fromURN: (urn: string) => getCache().fromURN(urn),
 	name: (urn: string) => getCache().name(urn),
