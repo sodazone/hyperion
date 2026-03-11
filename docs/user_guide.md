@@ -9,6 +9,8 @@ It allows users to:
 - Create automated monitoring rules
 - Receive alerts through multiple channels
 
+The console is live at https://hyperion.soda.zone/
+
 # Table of Contents
 
 - [Access](#access)
