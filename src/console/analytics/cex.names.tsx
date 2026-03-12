@@ -97,6 +97,10 @@ const cexMap: Record<string, { name: string; icon?: string }> = {
 		name: "AltcoinTrader",
 		icon: "https://assets.coingecko.com/markets/images/661/large/Altcoin.png",
 	},
+	"coin.z.com": {
+		name: "GMO Coin Japan",
+		icon: "https://assets.coingecko.com/markets/images/430/large/gmo_z_com.png",
+	},
 };
 
 const fallback = (name: string) => ({ name, icon: "" });
