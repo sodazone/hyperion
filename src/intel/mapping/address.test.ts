@@ -28,6 +28,12 @@ describe("normalizeAddress", () => {
 				"382dda7599ea282e91b81f4a5faf82cc616f783817c2b7f85add1d0db101ea6a",
 			);
 		}
+
+		expect(
+			hex(normalizeAddress("111111111111111111111111111111111HC1")),
+		).toEqual(
+			"0000000000000000000000000000000000000000000000000000000000000000",
+		);
 	});
 
 	it("should normalize Ethereum 20-byte hex with 0x prefix", () => {
