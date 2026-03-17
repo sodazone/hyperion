@@ -16,6 +16,9 @@ import {
 	createOcelloidsClient,
 } from "./streams/ocelloids";
 
+const HYP_MONITOR_TELEMETRY_ENABLED =
+	Bun.env.HYP_MONITOR_TELEMETRY_ENABLED === "true";
+
 export interface Monitor {
 	rules: {
 		remove: (rule: RuleInstance) => void;
@@ -95,10 +98,7 @@ export function createMonitor({
 		addInstance(inst);
 	}
 
-	subManager.on("data", async (data: AnyEvent) => {
-		metrics.eventsReceived.labels(data.type).inc();
-		const start = process.hrtime();
-
+	const processData = (data: AnyEvent) => {
 		db.ingest.analytics.onEvent(data);
 
 		engine.evaluate(data, {
@@ -106,10 +106,21 @@ export function createMonitor({
 			db,
 			now: Date.now,
 		});
+	};
 
-		const diff = process.hrtime(start);
-		const seconds = diff[0] + diff[1] / 1e9;
-		metrics.ruleEvalDuration.observe(seconds);
+	subManager.on("data", (data: AnyEvent) => {
+		if (HYP_MONITOR_TELEMETRY_ENABLED) {
+			metrics.eventsReceived.labels(data.type).inc();
+			const start = process.hrtime();
+
+			processData(data);
+
+			const diff = process.hrtime(start);
+			const seconds = diff[0] + diff[1] / 1e9;
+			metrics.ruleEvalDuration.observe(seconds);
+		} else {
+			processData(data);
+		}
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
