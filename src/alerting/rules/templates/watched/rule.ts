@@ -54,7 +54,8 @@ interface WatchedAlertPayload extends AlertPayload {
 export const WatchedRule: RuleDefinition<BaseEvent, LocalData, Config> = {
 	id: ruleName,
 	title: "Watched Entities",
-	description: "Watches entities that match configured categories and tags.",
+	description:
+		"Watches all supported activities linked to entities that match the configured categories and tags.",
 	schema,
 	defaults,
 
