@@ -32,6 +32,10 @@ export const schema = z.object({
 		.default(true)
 		.meta(includePublicEntitiesMeta),
 	tags: z.array(z.string()).optional().meta(tagsMeta),
+	assetSymbols: z.string().optional().meta({
+		label: "Asset Symbols",
+		help: "Comma-separated list of asset symbols. Case-insensitive and spaces are automatically trimmed.",
+	}),
 	networks,
 });
 

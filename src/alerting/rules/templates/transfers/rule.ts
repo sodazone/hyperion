@@ -58,8 +58,20 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 		if (event.type !== "transfer") return { matched: false };
 		if (!matchesNetwork(event, config)) return { matched: false };
 
-		const { from, to, totalUsd } = event.payload as TransferPayload;
-		if (!totalUsd || totalUsd < config.minUsd) return { matched: false };
+		const { from, to, totalUsd, assets } = event.payload as TransferPayload;
+		if (totalUsd == null || totalUsd < config.minUsd) return { matched: false };
+
+		if (config.assetSymbols?.length) {
+			const targetAssetSymbols = new Set(
+				config.assetSymbols.split(",").map((s) => s.trim().toLowerCase()),
+			);
+
+			const hasMatchingAsset = assets.some((a) =>
+				targetAssetSymbols.has(a.symbol.toLowerCase()),
+			);
+
+			if (!hasMatchingAsset) return { matched: false };
+		}
 
 		const local: LocalData = { addresses: new Set(), entities: {} };
 		const owners = toOwners(owner, config.includePublicEntities);
