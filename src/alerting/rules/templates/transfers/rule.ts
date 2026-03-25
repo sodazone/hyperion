@@ -50,7 +50,7 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	resolveDependencies: () => [{ kind: "transfer" }, { kind: "xc" }],
 	title: "Asset Movement",
 	description:
-		"Detects asset movements in USD using thresholds, tags and categories.",
+		"Detect asset movements in USD using thresholds, tags, and categories. Includes cross-chain transfers.",
 	schema,
 	defaults,
 
