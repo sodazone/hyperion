@@ -27,8 +27,20 @@ export function TelegramChannelConfig({ config }: { config?: any }) {
 				/>
 			</div>
 
-			<div className="text-xs text-zinc-500">
-				You can find the chat ID using @userinfobot.
+			<div className="text-xs/6 text-zinc-500">
+				<p>
+					Enter the Telegram chat ID where messages will be sent:
+					<ul className="list-inside list-disc">
+						<li>User chat: message @userinfobot and copy your "Id"</li>
+						<li>
+							Group chat: add the bot, send a message, then use @userinfobot or
+							the API to get the ID (usually starts with -100)
+						</li>
+					</ul>
+					<em className="pt-2">
+						Make sure the bot has permission to send messages in the chat.
+					</em>
+				</p>
 			</div>
 		</div>
 	);
@@ -48,6 +60,14 @@ export function DiscordChannelConfig({ config }: { config?: any }) {
 					defaultValue={config?.webhookUrl}
 					className="ui-input w-full px-2 py-1"
 				/>
+				<div className="text-xs text-zinc-500">
+					<p>
+						Enter the Discord webhook URL where messages will be sent. To get
+						it, go to your{" "}
+						<em>Discord server / Settings / Integrations / Webhooks</em>, create
+						a webhook, and copy its URL.
+					</p>
+				</div>
 			</div>
 
 			<div className="flex flex-col gap-2">
