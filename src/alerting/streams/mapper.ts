@@ -64,6 +64,7 @@ export function mapJourney({
 			if (start !== undefined && end !== undefined) {
 				return {
 					type: "transfer",
+					addresses: [from, to],
 					origin: {
 						chainURN: origin,
 						blockHeight: start.from.blockNumber,
@@ -183,9 +184,18 @@ export function mapOpenGov(message: Message): OpenGovEvent | null {
 	}
 
 	const status = humanizeStatus(eventType);
+	const addresses: string[] = [];
+
+	if (payload.deposits?.decisionDeposit !== undefined) {
+		addresses.push(payload.deposits.decisionDeposit.who);
+	}
+	if (payload.deposits?.submissionDeposit !== undefined) {
+		addresses.push(payload.deposits.submissionDeposit.who);
+	}
 
 	return {
 		type: "opengov",
+		addresses,
 		origin: {
 			chainURN: message.metadata.networkId,
 			timestamp:

@@ -16,6 +16,16 @@ export type OpenGovPayload = {
 			};
 		};
 	};
+	deposits?: {
+		submissionDeposit?: {
+			who: string;
+			amount: string;
+		};
+		decisionDeposit?: {
+			who: string;
+			amount: string;
+		};
+	};
 	execution: {
 		result: { success: boolean };
 	};
