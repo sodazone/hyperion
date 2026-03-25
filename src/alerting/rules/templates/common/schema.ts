@@ -32,14 +32,14 @@ export const categoriesMeta = {
 		})),
 	],
 	multiple: true,
-	help: "If a activity matches any of the selected categories.",
+	help: "Select categories to alert on activities linked to matching entities or addresses. Categories classify addresses by function and can be managed in the Entities section.",
 };
 
 export const tagsMeta = {
 	label: "Tags",
 	input: "select-tags",
 	multiple: true,
-	help: "If a activity matches any of the selected tags.",
+	help: "Select tags to alert on activities linked to matching entities or addresses. Tags are private free-form labels managed in the Entities / My Registry section.",
 };
 
 export const includePublicEntitiesMeta = {
