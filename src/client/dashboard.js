@@ -235,7 +235,6 @@ export function dashboard(initialNetwork, initialBucket) {
 		fillMissingPoints(flows, bucket) {
 			if (!Array.isArray(flows)) return [];
 
-			const now = new Date();
 			const lookback = bucket === "hour" ? 24 : 30;
 			const filled = [];
 			const flowMap = new Map();
@@ -254,13 +253,26 @@ export function dashboard(initialNetwork, initialBucket) {
 				flowMap.set(key, f);
 			});
 
-			const start = new Date(now);
+			let start;
 			if (bucket === "hour") {
-				start.setUTCHours(start.getUTCHours(), 0, 0, 0);
-				start.setUTCHours(start.getUTCHours() - (lookback - 1));
+				const nowUTC = new Date();
+				start = new Date(
+					Date.UTC(
+						nowUTC.getUTCFullYear(),
+						nowUTC.getUTCMonth(),
+						nowUTC.getUTCDate(),
+						nowUTC.getUTCHours() - (lookback - 1),
+					),
+				);
 			} else {
-				start.setUTCHours(0, 0, 0, 0);
-				start.setUTCDate(start.getUTCDate() - (lookback - 1));
+				const nowUTC = new Date();
+				start = new Date(
+					Date.UTC(
+						nowUTC.getUTCFullYear(),
+						nowUTC.getUTCMonth(),
+						nowUTC.getUTCDate() - (lookback - 1),
+					),
+				);
 			}
 
 			let lastCumulative = {
@@ -312,7 +324,6 @@ export function dashboard(initialNetwork, initialBucket) {
 					});
 				}
 			}
-
 			return filled;
 		},
 	};
