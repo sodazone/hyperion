@@ -98,28 +98,88 @@ const assetsMeta = {
 	label: "Assets",
 	options: [
 		{
+			label: "ASTR",
+			value: "ASTR",
+		},
+		{
+			label: "AAVE",
+			value: "AAVE",
+		},
+		{
+			label: "BNC",
+			value: "BNC",
+		},
+		{
+			label: "BNCS",
+			value: "BNCS",
+		},
+		{
+			label: "CGT2.0",
+			value: "CGT2.0",
+		},
+		{
+			label: "DAI",
+			value: "DAI",
+		},
+		{
 			label: "DOT",
 			value: "DOT",
 		},
 		{
-			label: "PAXG",
-			value: "PAXG",
+			label: "ENA",
+			value: "ENA",
+		},
+		{
+			label: "ETH",
+			value: "ETH",
+		},
+		{
+			label: "EURC",
+			value: "EURC",
+		},
+		{
+			label: "FIL",
+			value: "FIL",
+		},
+		{
+			label: "GLMR",
+			value: "GLMR",
+		},
+		{
+			label: "KSM",
+			value: "KSM",
+		},
+		{
+			label: "LDO",
+			value: "LDO",
 		},
 		{
 			label: "LINK",
 			value: "LINK",
 		},
 		{
+			label: "PAXG",
+			value: "PAXG",
+		},
+		{
+			label: "PRIME",
+			value: "PRIME",
+		},
+		{
+			label: "SKY",
+			value: "SKY",
+		},
+		{
+			label: "SUI",
+			value: "SUI",
+		},
+		{
 			label: "tBTC",
 			value: "tBTC",
 		},
 		{
-			label: "ASTR",
-			value: "ASTR",
-		},
-		{
-			label: "GLMR",
-			value: "GLMR",
+			label: "TONCOIN",
+			value: "TONCOIN",
 		},
 		{
 			label: "USDt",
@@ -130,16 +190,56 @@ const assetsMeta = {
 			value: "USDC",
 		},
 		{
+			label: "USDC (snowbridge)",
+			value: "USDC (snowbridge)",
+		},
+		{
+			label: "USDT (snowbridge)",
+			value: "USDT (snowbridge)",
+		},
+		{
+			label: "USDC (wormhole)",
+			value: "USDC (wormhole)",
+		},
+		{
+			label: "USDT (wormhole)",
+			value: "USDT (wormhole)",
+		},
+		{
+			label: "vASTR",
+			value: "vASTR",
+		},
+		{
+			label: "vBNC",
+			value: "vBNC",
+		},
+		{
 			label: "vDOT",
 			value: "vDOT",
 		},
 		{
-			label: "BNC",
-			value: "BNC",
+			label: "vFIL",
+			value: "vFIL",
 		},
 		{
-			label: "BNCS",
-			value: "BNCS",
+			label: "vGLMR",
+			value: "vGLMR",
+		},
+		{
+			label: "vMANTA",
+			value: "vMANTA",
+		},
+		{
+			label: "WBTC",
+			value: "WBTC",
+		},
+		{
+			label: "WETH",
+			value: "WETH",
+		},
+		{
+			label: "wstETH",
+			value: "wstETH",
 		},
 	].sort((a, b) => a.label.localeCompare(b.label)),
 	multiple: true,
@@ -150,27 +250,15 @@ export const schema = z.object({
 	level,
 	subscriptionId: z.enum(subscriptionIds).meta(subscriptionMeta),
 	assetSymbols: z.array(z.string()).optional().meta(assetsMeta),
-	kSlack: z.number().min(0).max(1).meta({
-		label: "Noise Tolerance",
-		decimals: true,
-		unit: "%",
-		help: "Tick tolerance for minor deviations; internally used as log(ratio), roughly equals percentage for small deviations.",
-	}),
 	hThreshold: z.number().min(0).max(1).meta({
 		label: "Alert Threshold",
 		decimals: true,
 		unit: "%",
-		help: "Sustained deviation threshold (log ratio); for small deviations, roughly equals percentage difference between remote and reserve balances.",
+		help: "How big the difference between reserve and issued assets must be to trigger an alert. Values range from 0 (no difference) to 1 (100% difference). For example, 0.02 means an alert triggers if issued assets are roughly 2% higher than reserve assets.",
 	}),
 	minConsecutive: z.number().min(0).max(50).meta({
 		label: "Minimum Consecutive Deficit Ticks",
-		help: "Minimum number of consecutive divergent observations required before triggering an alert.",
-	}),
-	maxStep: z.number().min(0).max(1).optional().meta({
-		label: "Maximum Step (Spike Tolerance)",
-		decimals: true,
-		unit: "%",
-		help: "Limits the impact of a single large percentage deviation to avoid alerts from one-off balance spikes.",
+		help: "Number of consecutive checks the deviation must persist before triggering an alert. Each check happens whenever the reserve or issued balance changes onchain. For example, 3 means the difference must exceed the threshold across 3 consecutive balance updates to trigger an alert.",
 	}),
 });
 

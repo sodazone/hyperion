@@ -14,7 +14,6 @@ function makeCtx(configOverrides = {}) {
 	return {
 		config: {
 			subscriptionId: "sub-1",
-			kSlack: 0.002,
 			hThreshold: 0.01,
 			level: 1,
 			minConsecutive: 2,
@@ -27,7 +26,6 @@ function makeCtx(configOverrides = {}) {
 
 it("fires after sustained deviation above threshold", async () => {
 	const ctx = makeCtx({
-		kSlack: 0.001, // 0.1% tolerance
 		hThreshold: 0.01, // 1% sustained drift
 		minConsecutive: 2,
 	});
@@ -53,7 +51,6 @@ it("fires after sustained deviation above threshold", async () => {
 
 it("fires only after minConsecutive log-ratio deviations", async () => {
 	const ctx = makeCtx({
-		kSlack: 0.001,
 		hThreshold: 0.01,
 		minConsecutive: 3,
 	});
@@ -79,7 +76,6 @@ it("fires only after minConsecutive log-ratio deviations", async () => {
 
 it("does NOT fire under small log-ratio noise", async () => {
 	const ctx = makeCtx({
-		kSlack: 0.002, // 0.2%
 		hThreshold: 0.01, // 1% threshold
 	});
 
@@ -99,7 +95,6 @@ it("does NOT fire under small log-ratio noise", async () => {
 
 it("does NOT fire on single large spike", async () => {
 	const ctx = makeCtx({
-		kSlack: 0.002,
 		hThreshold: 0.01,
 	});
 
@@ -121,7 +116,7 @@ it("does NOT fire on single large spike", async () => {
 });
 
 it("does NOT fire under small log-ratio noise", async () => {
-	const ctx = makeCtx({ kSlack: 0.001, hThreshold: 0.01 });
+	const ctx = makeCtx({ hThreshold: 0.01 });
 	const reserve = 1000;
 	const noise = [5, -3, 7, -2, 4, -6, 3, -4];
 

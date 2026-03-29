@@ -150,6 +150,7 @@ export async function createOcelloidsClient({
 			const sub = createManagedSubscription({
 				tag: `issuance:${subscriptionId}`,
 				client: issuance,
+				maxIdle: 60_000 * 60,
 				start: async ({ onMessage, onClose, onError }) => {
 					return issuance.subscribe(subscriptionId, {
 						onMessage: (message) => {
@@ -170,7 +171,7 @@ export async function createOcelloidsClient({
 			const sub = createManagedSubscription({
 				tag: "xc",
 				client: crosschain,
-				maxIdle: 60_000 * 60,
+				maxIdle: 60_000 * 30,
 				start: async ({ onMessage, onClose, onError }) => {
 					const lastSeenId = await pointers.load("x");
 					console.log("[crosschain] lastSeenId", lastSeenId);
@@ -237,6 +238,7 @@ export async function createOcelloidsClient({
 			const sub = createManagedSubscription({
 				tag: "opengov",
 				client: opengov,
+				maxIdle: 60_000 * 60 * 24,
 				start: async ({ onMessage, onClose, onError }) => {
 					return opengov.subscribe(subIds.og, {
 						onMessage: (message) => {
