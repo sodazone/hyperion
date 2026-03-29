@@ -240,7 +240,11 @@ export function dashboard(initialNetwork, initialBucket) {
 			const flowMap = new Map();
 
 			flows.forEach((f) => {
-				const ts = new Date(f.timestamp);
+				const ts = new Date(
+					typeof f.timestamp === "string" && !f.timestamp.endsWith("Z")
+						? `${f.timestamp}Z`
+						: f.timestamp,
+				);
 				const key =
 					bucket === "hour"
 						? Date.UTC(
@@ -313,7 +317,7 @@ export function dashboard(initialNetwork, initialBucket) {
 						cumulative_netflow_usd:
 							f.cumulative_netflow_usd ?? lastCumulative.cumulative_netflow_usd,
 					};
-					filled.push(f);
+					filled.push({ ...f, timestamp: current });
 				} else {
 					filled.push({
 						timestamp: current,
