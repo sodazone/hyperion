@@ -9,7 +9,6 @@ const SO_STATE_VAR = "so";
 
 const defaults = {
 	level: 1,
-	kSlack: 0.002, // ~0.2%
 	hThreshold: 0.02, // ~2% sustained drift
 	minConsecutive: 3,
 };
@@ -84,9 +83,10 @@ export const CrosschainInvariantRule: RuleDefinition<
 		}) as { consecutive: number };
 
 		const ratio = remoteAmount / Math.max(reserveAmount, 1e-12);
-		const deviation = Math.abs(Math.log(ratio));
+		const deviation = Math.log(ratio);
+		const deficitDeviation = deviation > 0 ? deviation : 0;
 
-		if (deviation > config.hThreshold) {
+		if (deficitDeviation > config.hThreshold) {
 			stateObj.consecutive++;
 		} else {
 			stateObj.consecutive = 0;
