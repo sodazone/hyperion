@@ -7,6 +7,7 @@ import {
 import { SubscriptionManager } from "@/alerting/streams";
 import type { HyperionDB, OwnedAlert } from "@/db";
 import type { Metrics } from "@/server/metrics";
+import { createAliveTracker } from "./alive";
 import { notifyTelegram } from "./channels";
 import { notifyDiscord } from "./channels/discord/notify";
 import { createStateStore } from "./rules/state";
@@ -108,6 +109,10 @@ export function createMonitor({
 		});
 	};
 
+	const markAlive = createAliveTracker({
+		intervalMs: 1 * 60 * 1000,
+	});
+
 	subManager.on("data", (data: AnyEvent) => {
 		if (HYP_MONITOR_TELEMETRY_ENABLED) {
 			metrics.eventsReceived.labels(data.type).inc();
@@ -121,6 +126,8 @@ export function createMonitor({
 		} else {
 			processData(data);
 		}
+
+		markAlive(data.type);
 	});
 
 	engine.on("alert", async (alert: OwnedAlert) => {
