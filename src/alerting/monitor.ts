@@ -110,7 +110,7 @@ export function createMonitor({
 	};
 
 	const markAlive = createAliveTracker({
-		intervalMs: 1 * 60 * 1000,
+		intervalMs: 10 * 60 * 1000,
 	});
 
 	subManager.on("data", (data: AnyEvent) => {
