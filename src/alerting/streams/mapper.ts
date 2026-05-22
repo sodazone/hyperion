@@ -1,5 +1,6 @@
-import type { issuance, Message } from "@sodazone/ocelloids-client";
+import type { defi, issuance, Message } from "@sodazone/ocelloids-client";
 import {
+	type DefiLiquidityEvent,
 	type IssuanceEvent,
 	type OpenGovEvent,
 	type TransferEvent,
@@ -172,6 +173,14 @@ export function mapTransfer(tx: any): TransferEvent {
 			],
 		},
 	};
+}
+
+export function mapDefiLiquidity(
+	message: Message<defi.DefiSubscriptionPayload>,
+): DefiLiquidityEvent | null {
+	if (message.payload.type === "liquidity") {
+	}
+	return null;
 }
 
 export function mapOpenGov(message: Message): OpenGovEvent | null {

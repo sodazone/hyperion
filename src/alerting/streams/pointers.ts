@@ -1,14 +1,15 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import type { EventId } from "@sodazone/ocelloids-client";
 
-type PointerMap = Record<string, number>;
+type PointerMap = Record<string, EventId>;
 
 export function createPointerStorage(dbPath: string) {
 	if (dbPath === ":memory:") {
 		const mem: PointerMap = {};
 		return {
 			load: async (k: string) => mem[k],
-			save: async (_k: string, _id: number) => {},
+			save: async (_k: string, _id: EventId) => {},
 		};
 	}
 
@@ -51,7 +52,7 @@ export function createPointerStorage(dbPath: string) {
 		return cache[key];
 	}
 
-	function save(key: string, id: number) {
+	function save(key: string, id: EventId) {
 		cache[key] = id;
 		dirty = true;
 		scheduleFlush();

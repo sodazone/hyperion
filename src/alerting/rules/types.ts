@@ -85,6 +85,43 @@ export const OpenGovEventTypes = [
 export type OpenGovEventType = (typeof OpenGovEventTypes)[number];
 export type OpenGovEvent = BaseEvent<"opengov", OpenGovEventPayload>;
 
+export type LiquidityAsset = {
+	assetId: string;
+	symbol: string;
+	decimals: number;
+
+	priceUSD: number;
+
+	balances: {
+		total?: string;
+		available?: string;
+		borrowed?: string;
+	};
+
+	role?: "liquid" | "collateral" | "debt";
+};
+
+export type DefiLiquidityEvent = BaseEvent<
+	"defi-liquidity",
+	{
+		category: "exchange" | "money-market";
+
+		subscriptionId: string;
+		protocol: string;
+		marketId: string;
+
+		tvlUSD: number;
+
+		assets: LiquidityAsset[];
+
+		lending?: {
+			utilization?: number;
+			borrowAPR?: number;
+			supplyAPR?: number;
+		};
+	}
+>;
+
 export type IssuanceEvent = BaseEvent<
 	"issuance",
 	{
@@ -111,6 +148,7 @@ export interface EventMap {
 	transfer: TransferEvent;
 	issuance: IssuanceEvent;
 	opengov: OpenGovEvent;
+	liquidity: DefiLiquidityEvent;
 }
 
 export type StateValue = unknown;
@@ -156,6 +194,13 @@ export type RuleDependency =
 	| {
 			kind: "issuance";
 			subscriptionId: string;
+	  }
+	| {
+			kind: "defi-liquidity";
+			subscriptionId: string;
+	  }
+	| {
+			kind: "defi-events";
 	  }
 	| {
 			kind: "opengov";

@@ -1,12 +1,25 @@
 import {
 	createCrosschainAgent,
 	createCrosschainIssuanceAgent,
+	createDefiAgent,
 	createOpenGovAgent,
 	createTransfersAgent,
+	type EventId,
 	type OcelloidsClientApi,
 } from "@sodazone/ocelloids-client";
-import type { IssuanceEvent, OpenGovEvent, TransferEvent } from "../rules";
-import { mapIssuance, mapJourney, mapOpenGov, mapTransfer } from "./mapper";
+import type {
+	DefiLiquidityEvent,
+	IssuanceEvent,
+	OpenGovEvent,
+	TransferEvent,
+} from "../rules";
+import {
+	mapDefiLiquidity,
+	mapIssuance,
+	mapJourney,
+	mapOpenGov,
+	mapTransfer,
+} from "./mapper";
 import { createPointerStorage } from "./pointers";
 import { withReconnect } from "./reconnect";
 
@@ -20,6 +33,15 @@ export type StreamsClient = {
 	subscribeIssuance: (
 		params: { subscriptionId: string },
 		emit: (msg: IssuanceEvent) => void,
+	) => Promise<() => void>;
+
+	subscribeDefiLiquidity: (
+		params: { subscriptionId: string },
+		emit: (msg: DefiLiquidityEvent) => void,
+	) => Promise<() => void>;
+
+	subscribeDefiEvents: (
+		emit: (msg: TransferEvent) => void,
 	) => Promise<() => void>;
 
 	subscribeTransfers: (
@@ -37,6 +59,7 @@ const subIds = {
 	transfers: Bun.env.OC_TRANSFERS_SUB_ID || "transfers-all-networks",
 	xc: Bun.env.OC_XC_SUB_ID || "xc-all-networks",
 	og: Bun.env.OC_OG_SUB_ID || "opengov-all-networks",
+	defiEvents: Bun.env.OC_DEFI_EVENTS_SUB_ID || "defi-events-all-networks",
 };
 
 function sleep(ms: number, signal: AbortSignal) {
@@ -98,6 +121,7 @@ export async function createOcelloidsClient({
 	const crosschain = createCrosschainAgent(OC_CONFIG);
 	const issuance = createCrosschainIssuanceAgent(OC_CONFIG);
 	const opengov = createOpenGovAgent(OC_CONFIG);
+	const defi = createDefiAgent(OC_CONFIG);
 
 	const pointers = createPointerStorage(storagePath);
 
@@ -146,6 +170,60 @@ export async function createOcelloidsClient({
 	}
 
 	return {
+		subscribeDefiLiquidity: async ({ subscriptionId }, emit) => {
+			const sub = createManagedSubscription({
+				tag: `defi-liquidity:${subscriptionId}`,
+				client: defi,
+				maxIdle: 60_000 * 60,
+				start: async ({ onMessage, onClose, onError }) => {
+					return defi.subscribe(subscriptionId, {
+						onMessage: (message) => {
+							onMessage();
+							const event = mapDefiLiquidity(message);
+							if (event) emit(event);
+						},
+						onClose,
+						onError,
+					});
+				},
+			});
+
+			return sub.start();
+		},
+
+		subscribeDefiEvents: async (emit) => {
+			const sub = createManagedSubscription({
+				tag: "defi-events",
+				client: defi,
+				maxIdle: 60_000 * 5,
+				start: async ({ onMessage, onClose, onError }) => {
+					const lastSeenId = await pointers.load("d.e");
+					console.log("[defi-events] lastSeenId", lastSeenId);
+
+					return defi.subscribeWithReplay(
+						subIds.defiEvents,
+						{
+							onMessage: ({ payload }) => {
+								onMessage();
+								emit(mapTransfer(payload));
+							},
+							onError,
+							onClose,
+							onAuthError: onError,
+						},
+						{
+							onPersist: async (id: EventId) => {
+								pointers.save("t", id);
+							},
+							lastSeenId,
+						},
+					);
+				},
+			});
+
+			return sub.start();
+		},
+
 		subscribeIssuance: async ({ subscriptionId }, emit) => {
 			const sub = createManagedSubscription({
 				tag: `issuance:${subscriptionId}`,
@@ -189,7 +267,7 @@ export async function createOcelloidsClient({
 							onAuthError: onError,
 						},
 						{
-							onPersist: async (id: number) => {
+							onPersist: async (id: EventId) => {
 								pointers.save("x", id);
 							},
 							lastSeenId,
@@ -222,7 +300,7 @@ export async function createOcelloidsClient({
 							onAuthError: onError,
 						},
 						{
-							onPersist: async (id: number) => {
+							onPersist: async (id: EventId) => {
 								pointers.save("t", id);
 							},
 							lastSeenId,
