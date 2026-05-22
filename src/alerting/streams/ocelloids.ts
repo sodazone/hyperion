@@ -213,7 +213,7 @@ export async function createOcelloidsClient({
 						},
 						{
 							onPersist: async (id: EventId) => {
-								pointers.save("t", id);
+								pointers.save("d.e", id);
 							},
 							lastSeenId,
 						},
