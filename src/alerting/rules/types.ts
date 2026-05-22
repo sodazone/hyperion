@@ -223,6 +223,10 @@ export type RuleDefinition<
 	schema: z.ZodObject;
 	defaults: Partial<Config>;
 	matcher: RuleMatcher<Event, Data, Config>;
+	/**
+	 * Global stream dependencies that start automatically at boot,
+	 * regardless of whether any active rule instance exist.
+	 */
 	autoDependencies?: RuleDependency[];
 	resolveDependencies?: (instance: RuleInstance) => RuleDependency[];
 	alertTemplate?: (
