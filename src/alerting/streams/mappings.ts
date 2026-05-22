@@ -2,6 +2,8 @@ import type { defi, issuance, Message } from "@sodazone/ocelloids-client";
 import {
 	type DefiLiquidityEvent,
 	type IssuanceEvent,
+	type LiquidityAsset,
+	type MoneyMarketPayload,
 	type OpenGovEvent,
 	type TransferEvent,
 	TransferStatus,
@@ -178,9 +180,70 @@ export function mapTransfer(tx: any): TransferEvent {
 export function mapDefiLiquidity(
 	message: Message<defi.DefiSubscriptionPayload>,
 ): DefiLiquidityEvent | null {
-	if (message.payload.type === "liquidity") {
+	const payload = message.payload;
+
+	if (payload.type !== "liquidity") {
+		return null;
 	}
-	return null;
+
+	const mappedAssets: LiquidityAsset[] = (payload.assets ?? []).map(
+		(asset) => ({
+			assetId: asset.assetId,
+			symbol: asset.symbol,
+			decimals: asset.decimals,
+			priceUSD: asset.priceUSD,
+			role: asset.role,
+			balances: {
+				total: asset.balances?.total,
+				available: asset.balances?.available,
+				borrowed: asset.balances?.borrowed,
+				holdingCap: asset.balances?.holdingCap,
+				mintCap: asset.balances?.mintCap,
+				reserves: asset.balances?.reserves ?? "0",
+			},
+		}),
+	);
+
+	let mappedLending: MoneyMarketPayload | undefined;
+	if (payload.lending) {
+		mappedLending = {
+			utilization: payload.lending.utilization,
+			borrowedUSD: payload.lending.borrowedUSD,
+			borrowAPR: payload.lending.borrowAPR,
+			supplyAPR: payload.lending.supplyAPR,
+			isPaused: payload.lending.isPaused,
+			canBorrow: payload.lending.canBorrow,
+			borrowCap: payload.lending.borrowCap,
+			supplyCap: payload.lending.supplyCap,
+			health: payload.lending.health
+				? {
+						solvencyRatio: payload.lending.health.solvencyRatio,
+						badDebtUSD: payload.lending.health.badDebtUSD,
+					}
+				: undefined,
+		};
+	}
+
+	const { metadata } = message;
+	const chainURN = metadata.networkId ?? payload.networkId;
+
+	return {
+		type: "defi-liquidity",
+		origin: {
+			chainURN,
+		},
+		payload: {
+			type: "liquidity",
+			category: payload.category,
+			networkId: payload.networkId,
+			protocol: payload.protocol,
+			marketId: payload.marketId,
+			subscriptionId: metadata.subscriptionId,
+			suppliedUSD: payload.suppliedUSD,
+			assets: mappedAssets,
+			lending: mappedLending,
+		},
+	};
 }
 
 export function mapOpenGov(message: Message): OpenGovEvent | null {

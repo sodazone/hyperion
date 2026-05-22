@@ -19,7 +19,7 @@ import {
 	mapJourney,
 	mapOpenGov,
 	mapTransfer,
-} from "./mapper";
+} from "./mappings";
 import { createPointerStorage } from "./pointers";
 import { withReconnect } from "./reconnect";
 
