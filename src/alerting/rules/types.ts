@@ -89,36 +89,47 @@ export type LiquidityAsset = {
 	assetId: string;
 	symbol: string;
 	decimals: number;
-
 	priceUSD: number;
-
 	balances: {
 		total?: string;
 		available?: string;
 		borrowed?: string;
+		holdingCap?: string;
+		mintCap?: string;
+		reserves: string;
 	};
-
 	role?: "liquid" | "collateral" | "debt";
+};
+
+export type MoneyMarketPayload = {
+	utilization?: number;
+	borrowedUSD?: number;
+	borrowAPR?: number;
+	supplyAPR?: number;
+	isPaused?: boolean;
+	canBorrow?: boolean;
+	borrowCap?: string;
+	supplyCap?: string;
+	health?: {
+		solvencyRatio: number;
+		badDebtUSD?: number;
+	};
 };
 
 export type DefiLiquidityEvent = BaseEvent<
 	"defi-liquidity",
 	{
-		category: "exchange" | "money-market";
-
-		subscriptionId: string;
+		type: "liquidity";
+		category: "exchange" | "money-market" | "stability";
+		networkId: string;
 		protocol: string;
 		marketId: string;
+		subscriptionId: string;
 
-		tvlUSD: number;
+		suppliedUSD: number;
 
 		assets: LiquidityAsset[];
-
-		lending?: {
-			utilization?: number;
-			borrowAPR?: number;
-			supplyAPR?: number;
-		};
+		lending?: MoneyMarketPayload;
 	}
 >;
 
