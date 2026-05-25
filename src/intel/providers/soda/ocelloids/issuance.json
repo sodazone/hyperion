@@ -1,0 +1,296 @@
+[
+	{
+		"id": "hyperion:polkadot-ethereum_snowbridge",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:ethereum:1"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:polkadot-bifrost_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:polkadot:2030"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:polkadot-kusama_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:kusama:1000"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:kusama-polkadot_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:kusama:1000",
+			"remoteChain": "urn:ocn:polkadot:1000"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:polkadot-astar_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:polkadot:2006"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:polkadot-moonbeam_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:polkadot:2004"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:polkadot-hydration_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:1000",
+			"remoteChain": "urn:ocn:polkadot:2034"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:ethereum-polkadot_snowbridge",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:ethereum:1",
+			"remoteChain": "urn:ocn:polkadot:1000"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:moonbeam-hydration_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2004",
+			"remoteChain": "urn:ocn:polkadot:2034"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:moonbeam-bifrost_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2004",
+			"remoteChain": "urn:ocn:polkadot:2030"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:moonbeam-astar_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2004",
+			"remoteChain": "urn:ocn:polkadot:2006"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:astar-bifrost_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2006",
+			"remoteChain": "urn:ocn:polkadot:2030"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:astar-hydration_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2006",
+			"remoteChain": "urn:ocn:polkadot:2034"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:astar-moonbeam_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2006",
+			"remoteChain": "urn:ocn:polkadot:2004"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:bifrost-polkadot_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2030",
+			"remoteChain": "urn:ocn:polkadot:1000"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:bifrost-astar_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2030",
+			"remoteChain": "urn:ocn:polkadot:2006"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:bifrost-moonbeam_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2030",
+			"remoteChain": "urn:ocn:polkadot:2004"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:bifrost-hydration_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2030",
+			"remoteChain": "urn:ocn:polkadot:2034"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:hydration-polkadot_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2034",
+			"remoteChain": "urn:ocn:polkadot:1000"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:hydration-astar_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2034",
+			"remoteChain": "urn:ocn:polkadot:2006"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:hydration-moonbeam_xcm",
+		"agent": "issuance",
+		"public": false,
+		"args": {
+			"reserveChain": "urn:ocn:polkadot:2034",
+			"remoteChain": "urn:ocn:polkadot:2004"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	}
+]
