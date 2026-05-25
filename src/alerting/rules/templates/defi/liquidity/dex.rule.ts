@@ -1,7 +1,7 @@
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
-import { type Configs, schemas, subscriptionIds } from "./schema";
+import { type Configs, schemas } from "./schema";
 
 const ruleName = "exchange-liquidity";
 const STATE_KEY = "dex_tvl";
@@ -25,14 +25,16 @@ export const ExchangeLiquidityRule: RuleDefinition<
 	Configs["dex"]
 > = {
 	id: ruleName,
-	title: "DEX Liquidity Alerts",
-	description: "Alerts on TVL shocks or progressive liquidity drains.",
+	title: "DEX Liquidity",
+	description: "Alerts on TVL shocks or progressive liquidity drains/spikes.",
 	schema: schemas.dex,
-	defaults: {},
-	autoDependencies: subscriptionIds.map((id) => ({
-		kind: "defi-liquidity",
-		subscriptionId: id,
-	})),
+	defaults: {
+		driftThresholdDrop: 0.15,
+		driftThresholdSpike: 0.5,
+		stepThreshold: 0.1,
+		minTvlUSD: 0,
+	},
+	autoDependencies: [{ kind: "defi-liquidity" }],
 
 	matcher: async (event, { config, global: { state } }) => {
 		if (
@@ -46,12 +48,8 @@ export const ExchangeLiquidityRule: RuleDefinition<
 			!config.networks.includes(event.origin.chainURN)
 		)
 			return { matched: false };
+
 		const payload = event.payload;
-		if (
-			config.protocols?.length &&
-			!config.protocols.includes(payload.protocol)
-		)
-			return { matched: false };
 
 		const currentTvl = payload.suppliedUSD;
 		if (currentTvl < (config.minTvlUSD ?? 10000)) return { matched: false };
@@ -72,16 +70,29 @@ export const ExchangeLiquidityRule: RuleDefinition<
 				? (currentTvl - marketState.lastAlertedTvl) / marketState.lastAlertedTvl
 				: 0;
 
-		if (Math.abs(tickDrift) >= (config.driftThreshold ?? 0.15)) {
+		const stepThresh = config.stepThreshold ?? 0.1;
+
+		// instant
+		if (
+			tickDrift < 0 &&
+			Math.abs(tickDrift) >= (config.driftThresholdDrop ?? 0.15)
+		) {
 			shouldAlert = true;
 		} else if (
+			tickDrift > 0 &&
+			tickDrift >= (config.driftThresholdSpike ?? 0.5)
+		) {
+			shouldAlert = true;
+		}
+		// multi-step
+		else if (
 			marketState.lastAlertedTvl > 0 &&
-			Math.abs(cumulativeCascadeShift) >= (config.stepThreshold ?? 0.1)
+			Math.abs(cumulativeCascadeShift) >= stepThresh
 		) {
 			shouldAlert = true;
 		} else if (
 			marketState.lastAlertedTvl === 0 &&
-			Math.abs(tickDrift) >= (config.stepThreshold ?? 0.1)
+			Math.abs(tickDrift) >= stepThresh
 		) {
 			shouldAlert = true;
 		}

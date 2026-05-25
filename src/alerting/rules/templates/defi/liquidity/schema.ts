@@ -1,42 +1,27 @@
 import z from "zod";
 import { level, networks } from "../../common/schema";
 
-const DefiLiquiditySubscriptions = [
-	{
-		id: "hyperion:hydration-liquidity",
-		name: "Hydration",
-		urn: "urn:ocn:polkadot:2034",
-	},
-] as const;
-
-export const subscriptionIds = DefiLiquiditySubscriptions.map(
-	(s) => s.id,
-) as readonly string[];
-
-// TODO: supported protocols
-const protocols = z.array(z.string()).optional().meta({
-	label: "Protocols",
-	input: "select",
-	multiple: true,
-	help: "Filter by protocol name.",
-});
-
 export const schemas = {
 	dex: z.object({
 		level,
 		networks,
-		protocols,
-		driftThreshold: z.number().min(0).max(1).meta({
-			label: "Drift Threshold",
+		driftThresholdDrop: z.number().min(0).max(1).meta({
+			label: "Drop Threshold",
 			decimals: true,
 			unit: "%",
-			help: "Alerts instantly if TVL changes by this much in a single update (e.g. 0.15 = 15%).",
+			help: "Alerts if TVL drops by this much in one update. Set lower to catch exploits early.",
+		}),
+		driftThresholdSpike: z.number().min(0).max(1).meta({
+			label: "Spike Threshold",
+			decimals: true,
+			unit: "%",
+			help: "Alerts if TVL spikes by this much in one update. Set higher to filter out normal whale deposits.",
 		}),
 		stepThreshold: z.number().min(0).max(1).meta({
 			label: "Step Threshold",
 			decimals: true,
 			unit: "%",
-			help: "Alerts when TVL continues to drop or spike by this percentage from the last alert, catching multi-step drains.",
+			help: "Alerts if TVL continues drifting in either direction by this % from the last alert.",
 		}),
 		minTvlUSD: z.number().min(0).meta({
 			label: "Minimum Liquidity Floor",
@@ -47,10 +32,22 @@ export const schemas = {
 	mm: z.object({
 		level,
 		networks,
-		protocols,
-		minSolvencyRatio: z.number().min(0).default(1.05),
-		maxUtilization: z.number().min(0).max(1).default(0.95),
-		alertOnBadDebt: z.boolean().default(true),
+		minSolvencyRatio: z.number().min(0).meta({
+			label: "Minimum Solvency Ratio",
+			decimals: true,
+			unit: "x",
+			help: "Trigger an alert if the market maker's total assets divided by total liabilities drops below this threshold.",
+		}),
+		maxUtilization: z.number().min(0).max(1).meta({
+			label: "Maximum Pool Utilization",
+			decimals: true,
+			unit: "%",
+			help: "Alert if capital utilization (borrowed funds / supplied funds) exceeds this ceiling.",
+		}),
+		alertOnBadDebt: z.boolean().meta({
+			label: "Alert on Bad Debt",
+			help: "Instantly trigger high-severity notifications if the pool accumulates uncollateralized or unrecoverable debt.",
+		}),
 	}),
 };
 

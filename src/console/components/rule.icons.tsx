@@ -43,4 +43,37 @@ export const RuleIcons: Record<string, React.ReactNode> = {
 			<path d="m5 16.67 15.38-6.25c.38-.15.62-.52.62-.93s-.25-.77-.62-.93l-16-6.49c-.31-.12-.66-.09-.94.1S3 2.67 3 3v19h2zm0-2.16V4.49L17.34 9.5z"></path>
 		</svg>
 	),
+	"exchange-liquidity": (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+		</svg>
+	),
+	"money-market-health": (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="M13.744 17.736a6 6 0 1 1-7.48-7.48" />
+			<path d="M15 6h1v4" />
+			<path d="m6.134 14.768.866-.5 2 3.464" />
+			<circle cx="16" cy="8" r="6" />
+		</svg>
+	),
 } as const;
