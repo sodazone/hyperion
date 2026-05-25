@@ -41,6 +41,8 @@ export async function runTestServer() {
 		createStreamsClient: async () => {
 			return {
 				subscribeOpenGov: async () => () => {},
+				subscribeDefiEvents: async () => () => {},
+				subscribeDefiLiquidity: async () => () => {},
 				subscribeIssuance:
 					async (
 						_params: { subscriptionId: string },
