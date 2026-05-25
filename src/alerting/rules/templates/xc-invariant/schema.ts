@@ -1,6 +1,77 @@
 import z from "zod";
 import { level } from "../common/schema";
 
+const IssuanceNetworks = [
+	{
+		id: "urn:ocn:polkadot:1000",
+		name: "Polkadot",
+	},
+	{
+		id: "urn:ocn:polkadot:2004",
+		name: "Moonbeam",
+	},
+	{
+		id: "urn:ocn:polkadot:2006",
+		name: "Astar",
+	},
+	{
+		id: "urn:ocn:polkadot:2030",
+		name: "Bifrost",
+	},
+	{
+		id: "urn:ocn:polkadot:2034",
+		name: "Hydration",
+	},
+];
+
+const IssuanceSubscriptionMap = {
+	"urn:ocn:polkadot:2034": [
+		"hyperion:polkadot-hydration_xcm",
+		"hyperion:hydration-polkadot_xcm",
+		"hyperion:astar-hydration_xcm",
+		"hyperion:hydration-astar_xcm",
+		"hyperion:bifrost-hydration_xcm",
+		"hyperion:moonbeam-hydration_xcm",
+		"hyperion:hydration-moonbeam_xcm",
+	],
+	"urn:ocn:polkadot:2004": [
+		"hyperion:polkadot-moonbeam_xcm",
+		"hyperion:hydration-moonbeam_xcm",
+		"hyperion:moonbeam-bifrost_xcm",
+		"hyperion:moonbeam-hydration_xcm",
+		"hyperion:astar-moonbeam_xcm",
+		"hyperion:moonbeam-astar_xcm",
+	],
+	"urn:ocn:polkadot:1000": [
+		"hyperion:polkadot-hydration_xcm",
+		"hyperion:hydration-polkadot_xcm",
+		"hyperion:polkadot-bifrost_xcm",
+		"hyperion:bifrost-polkadot_xcm",
+		"hyperion:hydration-astar_xcm",
+		"hyperion:polkadot-moonbeam_xcm",
+		"hyperion:ethereum-polkadot_snowbridge",
+		"hyperion:kusama-polkadot_xcm",
+	],
+	"urn:ocn:polkadot:2030": [
+		"hyperion:bifrost-hydration_xcm",
+		"hyperion:polkadot-bifrost_xcm",
+		"hyperion:bifrost-polkadot_xcm",
+		"hyperion:moonbeam-bifrost_xcm",
+		"hyperion:bifrost-moonbeam_xcm",
+		"hyperion:bifrost-astar_xcm",
+		"hyperion:astar-bifrost_xcm",
+	],
+	"urn:ocn:polkadot:2006": [
+		"hyperion:astar-hydration_xcm",
+		"hyperion:hydration-astar_xcm",
+		"hyperion:astar-moonbeam_xcm",
+		"hyperion:moonbeam-astar_xcm",
+		"hyperion:polkadot-astar_xcm",
+		"hyperion:astar-bifrost_xcm",
+		"hyperion:bifrost-astar_xcm",
+	],
+};
+
 const IssuanceSubscriptions = [
 	{
 		id: "hyperion:polkadot-hydration_xcm",
@@ -84,14 +155,23 @@ export const subscriptionIds = IssuanceSubscriptions.map(
 	(s) => s.id,
 ) as readonly string[];
 
-const subscriptionMeta = {
-	label: "Subscription",
-	options: IssuanceSubscriptions.map(({ id, name }) => ({
+export const SubscriptionLookup = Object.fromEntries(
+	Object.entries(IssuanceSubscriptionMap).map(([networkId, subIds]) => [
+		networkId,
+		new Set(subIds),
+	]),
+) as Record<string, Set<string>>;
+
+const issuanceNetworks = IssuanceNetworks.map((s) => s.id) as readonly string[];
+
+const issuanceNetworkMeta = {
+	label: "Network",
+	options: IssuanceNetworks.map(({ id, name }) => ({
 		label: name,
 		value: id,
 	})),
 	multiple: false,
-	help: "Select a bridge route to monitor the backing on the reserve chain against the issued supply on the remote chain.",
+	help: "Select a reserve network to automatically monitor all associated bridge routes and issued token supplies across connected chains.",
 };
 
 const assetsMeta = {
@@ -248,7 +328,7 @@ const assetsMeta = {
 
 export const schema = z.object({
 	level,
-	subscriptionId: z.enum(subscriptionIds).meta(subscriptionMeta),
+	issuanceNetwork: z.enum(issuanceNetworks).meta(issuanceNetworkMeta),
 	assetSymbols: z.array(z.string()).optional().meta(assetsMeta),
 	hThreshold: z.number().min(0).max(1).meta({
 		label: "Alert Threshold",

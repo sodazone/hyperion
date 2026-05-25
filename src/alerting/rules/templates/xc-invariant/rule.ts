@@ -2,7 +2,12 @@ import type { Alert, AlertPayload } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { toDecimal } from "@/utils/amounts";
 import type { IssuanceEvent, RuleDefinition } from "../../types";
-import { type Config, schema, subscriptionIds } from "./schema";
+import {
+	type Config,
+	SubscriptionLookup,
+	schema,
+	subscriptionIds,
+} from "./schema";
 
 const ruleName = "xc-invariant";
 const SO_STATE_VAR = "so";
@@ -53,10 +58,12 @@ export const CrosschainInvariantRule: RuleDefinition<
 	})),
 
 	matcher: async (event, { config, global: { state }, id }) => {
-		if (
-			event.type !== "issuance" ||
-			event.payload.subscriptionId !== config.subscriptionId
-		) {
+		if (event.type !== "issuance" || config.issuanceNetwork === undefined) {
+			return { matched: false };
+		}
+
+		const validSubsSet = SubscriptionLookup[config.issuanceNetwork];
+		if (!validSubsSet || !validSubsSet.has(event.payload.subscriptionId)) {
 			return { matched: false };
 		}
 
