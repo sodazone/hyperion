@@ -1,0 +1,28 @@
+[
+	{
+		"id": "hyperion:transfers-all-networks",
+		"agent": "transfers",
+		"public": false,
+		"args": {
+			"networks": "*"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	},
+	{
+		"id": "hyperion:xc-all-networks",
+		"agent": "crosschain",
+		"public": false,
+		"args": {
+			"networks": "*"
+		},
+		"channels": [
+			{
+				"type": "websocket"
+			}
+		]
+	}
+]

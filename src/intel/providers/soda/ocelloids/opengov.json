@@ -1,0 +1,18 @@
+{
+	"id": "hyperion:opengov-all-networks",
+	"agent": "opengov",
+	"public": false,
+	"args": {
+		"networks": [
+			"urn:ocn:polkadot:1000",
+			"urn:ocn:polkadot:2034",
+			"urn:ocn:polkadot:2030",
+			"urn:ocn:kusama:1000"
+		]
+	},
+	"channels": [
+		{
+			"type": "websocket"
+		}
+	]
+}

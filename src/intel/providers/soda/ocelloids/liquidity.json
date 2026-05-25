@@ -1,0 +1,14 @@
+{
+	"id": "hyperion:liquidity-all-networks",
+	"agent": "defi",
+	"public": false,
+	"args": {
+		"networks": "*",
+		"topic": "liquidity"
+	},
+	"channels": [
+		{
+			"type": "websocket"
+		}
+	]
+}
