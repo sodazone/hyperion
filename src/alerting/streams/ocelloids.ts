@@ -36,7 +36,6 @@ export type StreamsClient = {
 	) => Promise<() => void>;
 
 	subscribeDefiLiquidity: (
-		params: { subscriptionId: string },
 		emit: (msg: DefiLiquidityEvent) => void,
 	) => Promise<() => void>;
 
@@ -56,10 +55,13 @@ export type StreamsClient = {
 };
 
 const subIds = {
-	transfers: Bun.env.OC_TRANSFERS_SUB_ID || "transfers-all-networks",
-	xc: Bun.env.OC_XC_SUB_ID || "xc-all-networks",
-	og: Bun.env.OC_OG_SUB_ID || "opengov-all-networks",
-	defiEvents: Bun.env.OC_DEFI_EVENTS_SUB_ID || "defi-events-all-networks",
+	transfers: Bun.env.OC_TRANSFERS_SUB_ID || "hyperion:transfers-all-networks",
+	xc: Bun.env.OC_XC_SUB_ID || "hyperion:xc-all-networks",
+	og: Bun.env.OC_OG_SUB_ID || "hyperion:opengov-all-networks",
+	defiEvents:
+		Bun.env.OC_DEFI_EVENTS_SUB_ID || "hyperion:defi-events-all-networks",
+	defiLiquidity:
+		Bun.env.OC_DEFI_EVENTS_SUB_ID || "hyperion:liquidity-all-networks",
 };
 
 function sleep(ms: number, signal: AbortSignal) {
@@ -170,13 +172,13 @@ export async function createOcelloidsClient({
 	}
 
 	return {
-		subscribeDefiLiquidity: async ({ subscriptionId }, emit) => {
+		subscribeDefiLiquidity: async (emit) => {
 			const sub = createManagedSubscription({
-				tag: `defi-liquidity:${subscriptionId}`,
+				tag: "defi-liquidity",
 				client: defi,
 				maxIdle: 60_000 * 60,
 				start: async ({ onMessage, onClose, onError }) => {
-					return defi.subscribe(subscriptionId, {
+					return defi.subscribe(subIds.defiLiquidity, {
 						onMessage: (message) => {
 							onMessage();
 							const event = mapDefiLiquidity(message);

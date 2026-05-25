@@ -208,7 +208,6 @@ export type RuleDependency =
 	  }
 	| {
 			kind: "defi-liquidity";
-			subscriptionId: string;
 	  }
 	| {
 			kind: "defi-events";

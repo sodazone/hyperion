@@ -139,11 +139,9 @@ export class SubscriptionManager extends EventEmitter {
 	> = {
 		"defi-liquidity": {
 			releasable: true,
-			getKey: (dep) => dep.subscriptionId,
-			factory: (dep) =>
-				this.ocelloids.subscribeDefiLiquidity(dep, (msg) =>
-					this.emit("data", msg),
-				),
+			getKey: () => "defi-liquidity",
+			factory: () =>
+				this.ocelloids.subscribeDefiLiquidity((msg) => this.emit("data", msg)),
 		},
 		"defi-events": {
 			releasable: false,

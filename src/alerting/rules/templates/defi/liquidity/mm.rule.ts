@@ -1,7 +1,7 @@
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
-import { type Configs, schemas, subscriptionIds } from "./schema";
+import { type Configs, schemas } from "./schema";
 
 const ruleName = "money-market-health";
 const STATE_KEY = "mm_health";
@@ -24,15 +24,16 @@ export const MoneyMarketHealthRule: RuleDefinition<
 	Configs["mm"]
 > = {
 	id: ruleName,
-	title: "Money Market Alerts",
+	title: "Money Market Health",
 	description:
 		"Monitors solvency, bad debt, and utilization crunches for lending protocols.",
 	schema: schemas.mm,
-	defaults: {},
-	autoDependencies: subscriptionIds.map((id) => ({
-		kind: "defi-liquidity",
-		subscriptionId: id,
-	})),
+	defaults: {
+		alertOnBadDebt: true,
+		minSolvencyRatio: 1.05,
+		maxUtilization: 0.95,
+	},
+	autoDependencies: [{ kind: "defi-liquidity" }],
 
 	matcher: async (event, { config, global: { state } }) => {
 		if (
@@ -56,12 +57,6 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		) {
 			return { matched: false };
 		}
-
-		if (
-			config.protocols?.length &&
-			!config.protocols.includes(payload.protocol)
-		)
-			return { matched: false };
 
 		const ns = `${ruleName}:${payload.protocol}:${payload.marketId}`;
 		const marketState = (state.get(ns, STATE_KEY) ?? {
