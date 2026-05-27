@@ -1,0 +1,141 @@
+import { type TransferEvent, TransferStatus } from "@/alerting/rules";
+
+export function mapJourney({
+	type,
+	from,
+	to,
+	fromFormatted,
+	toFormatted,
+	correlationId,
+	originProtocol,
+	destinationProtocol,
+	destinationTxPrimary,
+	status,
+	origin,
+	destination,
+	originTxPrimary,
+	stops,
+	assets,
+	totalUsd,
+}: {
+	origin: string;
+	destination: string;
+	status: string;
+	correlationId: string;
+	originProtocol: string;
+	destinationProtocol: string;
+	type: string;
+	to: string;
+	from: string;
+	fromFormatted?: string;
+	toFormatted?: string;
+	originTxPrimary?: string;
+	destinationTxPrimary?: string;
+	totalUsd?: number;
+	stops: string;
+	assets: {
+		asset: string;
+		symbol?: string;
+		amount: string;
+		decimals?: number;
+		usd?: number;
+	}[];
+}): TransferEvent | null {
+	if (
+		(type === "transfer" || type === "teleport") &&
+		(status === "received" || status === "failed") &&
+		assets?.length
+	) {
+		try {
+			const stopsArray = JSON.parse(stops);
+			const start = stopsArray[0];
+			const end = stopsArray[stopsArray.length - 1];
+			if (start !== undefined && end !== undefined) {
+				return {
+					type: "transfer",
+					addresses: [from, to],
+					origin: {
+						chainURN: origin,
+						blockHeight: start.from.blockNumber,
+						txHash: originTxPrimary,
+						blockHash: start.from.blockHash,
+						timestamp: start.from.timestamp ?? Date.now(),
+						protocol: originProtocol,
+					},
+					destination: {
+						chainURN: destination,
+						blockHeight: end.to.blockNumber,
+						txHash: destinationTxPrimary,
+						blockHash: end.to.blockHash,
+						timestamp: end.to.timestamp ?? Date.now(),
+						protocol: destinationProtocol,
+					},
+					payload: {
+						status:
+							status === "received"
+								? TransferStatus.SUCCESS
+								: TransferStatus.FAILURE,
+						from: {
+							address: from,
+							addressFormatted: fromFormatted ?? from,
+						},
+						to: {
+							address: to,
+							addressFormatted: toFormatted ?? to,
+						},
+						correlationId,
+						totalUsd: totalUsd ?? 0,
+						assets: assets.map((a) => ({
+							id: a.asset,
+							symbol: a.symbol ?? "??",
+							decimals: a.decimals ?? 0,
+							amount: a.amount,
+							amountUsd: a.usd ?? 0,
+						})),
+					},
+				};
+			}
+		} catch {
+			//
+		}
+	}
+	return null;
+}
+
+export function mapTransfer(tx: any): TransferEvent {
+	return {
+		type: "transfer",
+		origin: {
+			chainURN: tx.network,
+			blockHeight: tx.blockNumber,
+			txHash: tx.txPrimary,
+			blockHash: tx.blockHash,
+			timestamp: tx.sentAt ?? Date.now(),
+			protocol: tx.eventModule,
+		},
+		addresses: [tx.from, tx.to],
+		assets: [tx.asset],
+		payload: {
+			status: TransferStatus.SUCCESS,
+			correlationId: tx.transferHash,
+			from: {
+				address: tx.from,
+				addressFormatted: tx.fromFormatted,
+			},
+			to: {
+				address: tx.to,
+				addressFormatted: tx.toFormatted,
+			},
+			totalUsd: tx.usd,
+			assets: [
+				{
+					id: tx.asset,
+					symbol: tx.symbol,
+					decimals: tx.decimals,
+					amount: tx.amount,
+					amountUsd: tx.usd,
+				},
+			],
+		},
+	};
+}
