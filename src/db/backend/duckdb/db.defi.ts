@@ -21,8 +21,8 @@ export function createDefiAnalytics({
 			await conn.run(
 				`
 			INSERT INTO dex_liquidity_snapshots (
-				ts, subscription_id, network_id, protocol, market_id, supplied_usd
-			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?)
+				ts, subscription_id, network_id, protocol, market_id, label, supplied_usd
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?)
 		`,
 				[
 					timestamp,
@@ -30,6 +30,7 @@ export function createDefiAnalytics({
 					p.networkId,
 					p.protocol,
 					p.marketId,
+					p.label,
 					safeNumber(p.suppliedUSD, 0),
 				],
 			);
@@ -39,9 +40,9 @@ export function createDefiAnalytics({
 			await conn.run(
 				`
 			INSERT INTO money_market_health_snapshots (
-				ts, subscription_id, network_id, protocol, market_id,
+				ts, subscription_id, network_id, protocol, market_id, label,
 				supplied_usd, utilization, solvency_ratio, bad_debt_usd, is_paused
-			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 				[
 					timestamp,
@@ -49,6 +50,7 @@ export function createDefiAnalytics({
 					p.networkId,
 					p.protocol,
 					p.marketId,
+					p.label,
 					safeNumber(p.suppliedUSD, 0),
 					safeNumber(p.lending.utilization, null),
 					safeNumber(p.lending.health?.solvencyRatio, null),
@@ -72,6 +74,7 @@ export function createDefiAnalytics({
           network_id      TEXT,
           protocol        TEXT,
           market_id       TEXT,
+          label           TEXT,
           supplied_usd    DOUBLE,
 
           PRIMARY KEY (ts, protocol, market_id)
@@ -88,6 +91,7 @@ export function createDefiAnalytics({
           network_id      TEXT,
           protocol        TEXT,
           market_id       TEXT,
+          label           TEXT,
           supplied_usd    DOUBLE,
           utilization     DOUBLE,
           solvency_ratio  DOUBLE,
