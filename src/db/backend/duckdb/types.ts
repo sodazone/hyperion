@@ -17,3 +17,31 @@ export interface CrosschainSolvencyRow {
 	difference: number;
 	collateral_ratio: number | null;
 }
+
+export interface DexLiquidityRow {
+	ts: string;
+	subscription_id: string;
+	network_id: string;
+	protocol: string;
+	market_id: string;
+	label: string;
+
+	supplied_usd: number;
+	tvl_change_usd: number;
+	total_aggregate_tvl_usd: number;
+}
+
+export interface MoneyMarketHealthRow {
+	ts: string;
+	subscription_id: string;
+	network_id: string;
+	protocol: string;
+	market_id: string;
+	label: string;
+
+	supplied_usd: number;
+	utilization: number | null;
+	solvency_ratio: number | null;
+	bad_debt_usd: number;
+	is_paused: boolean;
+}

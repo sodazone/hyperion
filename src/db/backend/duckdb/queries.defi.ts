@@ -51,6 +51,7 @@ WITH bucketed_states AS (
     ${castExpr} AS timestamp,
     protocol,
     market_id,
+    any_value(label) as label,
     arg_max(supplied_usd, ts) AS supplied_usd
   FROM dex_liquidity_snapshots
   WHERE ts >= ${startExpr}
@@ -65,6 +66,7 @@ calculated AS (
     timestamp,
     protocol,
     market_id,
+    label,
     supplied_usd,
     supplied_usd - LAG(supplied_usd, 1, supplied_usd) OVER (PARTITION BY protocol, market_id ORDER BY timestamp) AS tvl_change_usd
   FROM bucketed_states
@@ -74,11 +76,12 @@ SELECT
   timestamp,
   protocol,
   market_id,
+  label,
   supplied_usd,
   tvl_change_usd,
   SUM(supplied_usd) OVER (PARTITION BY timestamp) AS total_aggregate_tvl_usd
 FROM calculated
-ORDER BY timestamp ASC, supplied_usd DESC;
+ORDER BY supplied_usd DESC, timestamp ASC;
 `;
 }
 
@@ -101,9 +104,10 @@ export function generateMoneyMarketHealthQuery({
 
 	return `
 SELECT
-  ${castExpr} AS timestamp,
+  ${castExpr}		 AS timestamp,
   protocol,
   market_id,
+  any_value(label) AS label,
   arg_max(supplied_usd, ts) AS supplied_usd,
   arg_max(utilization, ts) AS utilization,
   arg_max(solvency_ratio, ts) AS solvency_ratio,
@@ -115,7 +119,7 @@ WHERE ts >= ${startExpr}
   ${protocolFilter}
   ${marketFilter}
 GROUP BY 1, 2, 3
-ORDER BY timestamp ASC;
+ORDER BY solvency_ratio DESC, timestamp ASC;
 `;
 }
 

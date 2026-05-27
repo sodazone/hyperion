@@ -11,7 +11,11 @@ import type {
 } from "./queries.cex";
 import type { DefiQueryParams } from "./queries.defi";
 import { createWriteQueue } from "./queue";
-import type { CrosschainSolvencyRow } from "./types";
+import type {
+	CrosschainSolvencyRow,
+	DexLiquidityRow,
+	MoneyMarketHealthRow,
+} from "./types";
 
 export class AnalyticsDB {
 	private db!: Awaited<ReturnType<typeof DuckDBInstance.create>>;
@@ -129,14 +133,49 @@ export class AnalyticsDB {
 	}
 
 	async dexLiquiditySeries(params: DefiQueryParams) {
-		return (
-			await this.conn.runAndReadAll(Queries.defi.dex_liquidity(params))
-		).getRowObjectsJson();
+		const result = await this.conn.runAndReadAll(
+			Queries.defi.dex_liquidity(params),
+		);
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): DexLiquidityRow => ({
+				ts: String(r.timestamp),
+				subscription_id: String(r.subscription_id),
+				network_id: String(r.network_id),
+				protocol: String(r.protocol),
+				market_id: String(r.market_id),
+				label: r.label,
+
+				supplied_usd: Number(r.supplied_usd),
+				tvl_change_usd: Number(r.tvl_change_usd),
+				total_aggregate_tvl_usd: Number(r.total_aggregate_tvl_usd),
+			}),
+		);
 	}
 
 	async moneyMarketHealthSeries(params: DefiQueryParams) {
-		return (
-			await this.conn.runAndReadAll(Queries.defi.money_market_health(params))
-		).getRowObjectsJson();
+		const result = await this.conn.runAndReadAll(
+			Queries.defi.money_market_health(params),
+		);
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): MoneyMarketHealthRow => ({
+				ts: String(r.timestamp),
+				subscription_id: String(r.subscription_id),
+				network_id: String(r.network_id),
+				protocol: String(r.protocol),
+				market_id: String(r.market_id),
+				label: r.label,
+
+				supplied_usd: Number(r.supplied_usd),
+				utilization: r.utilization === null ? null : Number(r.utilization),
+				solvency_ratio:
+					r.solvency_ratio === null ? null : Number(r.solvency_ratio),
+				bad_debt_usd: Number(r.bad_debt_usd),
+				is_paused: Boolean(r.is_paused),
+			}),
+		);
 	}
 }
