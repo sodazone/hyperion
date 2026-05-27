@@ -119,7 +119,7 @@ WHERE ts >= ${startExpr}
   ${protocolFilter}
   ${marketFilter}
 GROUP BY 1, 2, 3
-ORDER BY solvency_ratio DESC, timestamp ASC;
+ORDER BY supplied_usd DESC, timestamp ASC;
 `;
 }
 

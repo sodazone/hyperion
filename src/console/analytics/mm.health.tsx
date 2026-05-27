@@ -22,7 +22,7 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 				<div className="flex items-center gap-2">
 					<div className="text-zinc-100 font-semibold">{row.label}</div>
 					{row.is_paused && (
-						<span className="px-1 py-0.5 text-xs bg-red-950 text-red-400 font-semibold rounded uppercase">
+						<span className="px-1 py-0.5 text-[10px] bg-red-950/40 text-red-400 font-semibold rounded uppercase">
 							Paused
 						</span>
 					)}
@@ -110,7 +110,7 @@ export async function MoneyMarketHealthFragment(
 		if (a.bad_debt_usd > 0 !== b.bad_debt_usd > 0) {
 			return a.bad_debt_usd > 0 ? -1 : 1;
 		}
-		return (a.solvency_ratio ?? 999) - (b.solvency_ratio ?? 999);
+		return b.supplied_usd - a.supplied_usd;
 	});
 
 	let currentTotalSupplied = 0;
@@ -142,7 +142,7 @@ export async function MoneyMarketHealthFragment(
 
 	return render(
 		<div className="space-y-6">
-			<div className="flex flex-col sm:flex-row gap-4">
+			<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row gap-4">
 				<Kpi
 					title="Total Supplied"
 					qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
@@ -150,15 +150,12 @@ export async function MoneyMarketHealthFragment(
 					deltaPct={periodDeltaPct}
 				/>
 				{currentTotalBadDebt > 0 && (
-					<div className="flex flex-col gap-1 p-3 bg-red-950/20 border border-red-900/40 rounded-xl min-w-50">
-						<span className="text-xs text-red-400 font-medium">
+					<div className="flex flex-col gap-1 min-w-50">
+						<span className="text-xs text-zinc-400 font-medium">
 							Total Bad Debt
 						</span>
-						<span className="text-2xl font-bold text-red-200 font-mono tracking-tight">
+						<span className="text-2xl font-bold bg-red-950/20 text-red-400 font-mono tracking-tight">
 							${formatNumberSI(currentTotalBadDebt, 2)}
-						</span>
-						<span className="text-xs text-red-500 font-medium font-mono">
-							Insolvent Position
 						</span>
 					</div>
 				)}
