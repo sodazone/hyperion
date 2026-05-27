@@ -1,12 +1,13 @@
 import type { DexLiquidityRow } from "@/db/backend/duckdb/types";
 import { render } from "@/server/render";
 import { formatNumberSI } from "@/utils/amounts";
-import { dateFormatter } from "@/utils/dates";
 import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
+import { monetaryDelta, protocolLabel } from "./format";
+import { Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
-import { parseDashboardParams } from "./params";
+import { parseDashboardParamsForDefi } from "./params";
 
 const ROWS_PER_PAGE = 5;
 
@@ -15,11 +16,8 @@ export function DexLiquidityCard({ row }: { row: DexLiquidityRow }) {
 
 	return (
 		<div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 py-2 gap-2">
-			{/* Left: Protocol & Pool Name */}
+			{/* Left */}
 			<div className="flex flex-col gap-0.5 min-w-37.5">
-				<span className="text-xs text-zinc-500 tracking-wide font-mono">
-					{dateFormatter.format(new Date(row.ts))}
-				</span>
 				<div className="text-zinc-100 font-semibold">{row.label}</div>
 				<div className="text-xs text-zinc-500">
 					<span className="flex gap-1 items-center font-mono truncate">
@@ -29,7 +27,7 @@ export function DexLiquidityCard({ row }: { row: DexLiquidityRow }) {
 				</div>
 			</div>
 
-			{/* Right: Core Liquidity Metrics */}
+			{/* Right */}
 			<div className="flex flex-wrap sm:flex-nowrap gap-4 text-sm justify-end flex-1">
 				<div className="flex flex-col items-end min-w-20">
 					<span className="text-zinc-500 text-xs">TVL</span>
@@ -43,12 +41,10 @@ export function DexLiquidityCard({ row }: { row: DexLiquidityRow }) {
 					<span
 						className={`font-mono ${isPositive ? "text-cyan-200" : "text-pink-300"}`}
 					>
-						${formatNumberSI(row.tvl_change_usd, 2)}
+						{monetaryDelta(row.tvl_change_usd)}
 					</span>
 					<div className="text-zinc-500 text-xs">
-						{row.protocol.indexOf(".") > -1
-							? row.protocol.split(".")[1]
-							: row.protocol}
+						{protocolLabel(row.protocol)}
 					</div>
 				</div>
 			</div>
@@ -60,17 +56,13 @@ export async function DexLiquidityFragment(
 	ctx: PageContext,
 	req: Bun.BunRequest<"/console/dashboard/fragments/dex-liquidity">,
 ) {
-	const { network: _network } = parseDashboardParams(req);
-
-	let network = _network ?? "urn:ocn:polkadot:1000";
-	if (network === "urn:ocn:polkadot:2004") {
-		network = "urn:ocn:ethereum:1284";
-	}
+	const { network, bucket, lookback, periodLabel } =
+		parseDashboardParamsForDefi(req);
 
 	const rows = (await ctx.db.analytics.dexLiquiditySeries({
 		network,
-		bucket: "day",
-		lookback: 7,
+		bucket,
+		lookback,
 	})) as DexLiquidityRow[];
 
 	if (!rows || rows.length === 0) {
@@ -81,22 +73,52 @@ export async function DexLiquidityFragment(
 		);
 	}
 
+	const latestRow = rows[rows.length - 1];
+	const earliestRow = rows[0];
+
+	const currentTotalTvl = latestRow?.total_aggregate_tvl_usd ?? 0;
+	const baselineTotalTvl = earliestRow?.total_aggregate_tvl_usd ?? 0;
+
+	const periodDeltaUsd = currentTotalTvl - baselineTotalTvl;
+	const periodDeltaPct =
+		baselineTotalTvl > 0 ? (periodDeltaUsd / baselineTotalTvl) * 100 : 0;
+
+	const uniquePoolsMap = new Map<string, DexLiquidityRow>();
+	for (const row of rows) {
+		const key = `${row.protocol}:${row.market_id}`;
+		const existing = uniquePoolsMap.get(key);
+		if (!existing || new Date(row.ts) > new Date(existing.ts)) {
+			uniquePoolsMap.set(key, row);
+		}
+	}
+	const lastRows = Array.from(uniquePoolsMap.values()).sort(
+		(a, b) => b.supplied_usd - a.supplied_usd,
+	);
+
 	return render(
-		<div
-			x-data={`pagination({totalItems: ${rows.length}, perPage: ${ROWS_PER_PAGE}})`}
-			className="space-y-4"
-		>
-			<div className="flex flex-col divide-y divide-zinc-900">
-				{rows.map((r, index) => (
-					<div
-						key={`${r.protocol}-${r.market_id}-${index}`}
-						x-show={`isVisible(${index + 1})`}
-					>
-						<DexLiquidityCard row={r} />
-					</div>
-				))}
+		<div className="space-y-6">
+			<Kpi
+				title="Total TVL"
+				qty={`${formatNumberSI(currentTotalTvl, 2)}`}
+				period={periodLabel}
+				deltaPct={periodDeltaPct}
+			/>
+			<div
+				x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
+				className="space-y-4"
+			>
+				<div className="flex flex-col divide-y divide-zinc-900">
+					{lastRows.map((r, index) => (
+						<div
+							key={`${r.protocol}-${r.market_id}-${index}`}
+							x-show={`isVisible(${index + 1})`}
+						>
+							<DexLiquidityCard row={r} />
+						</div>
+					))}
+				</div>
+				<PaginationControls />
 			</div>
-			<PaginationControls />
 		</div>,
 	);
 }
