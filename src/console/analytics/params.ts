@@ -55,3 +55,20 @@ export function parseDashboardParams(req: Bun.BunRequest) {
 		exchange,
 	};
 }
+
+export function parseDashboardParamsForDefi(req: Bun.BunRequest) {
+	const { lookback, bucket, network: _network } = parseDashboardParams(req);
+
+	let network = _network ?? "urn:ocn:polkadot:1000";
+	if (network === "urn:ocn:polkadot:2004") {
+		network = "urn:ocn:ethereum:1284";
+	}
+
+	const periodLabel = `${lookback} ${bucket}${lookback > 1 ? "s" : ""}`;
+	return {
+		bucket,
+		lookback,
+		network,
+		periodLabel,
+	};
+}
