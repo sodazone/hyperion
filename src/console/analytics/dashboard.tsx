@@ -112,6 +112,32 @@ export function Dashboard({
 				</div>
 			</div>
 
+			{/* DEX Pools */}
+			<div className="flex flex-col p-4 space-y-4">
+				<h3 className="text-zinc-200 text-sm font-semibold">DEX Liquidity</h3>
+				<div
+					x-ref="dexLiquidity"
+					hx-get="/console/dashboard/fragments/dex-liquidity"
+					hx-trigger="load, refresh"
+					hx-target="this"
+					hx-include="#dashboard-filters"
+				></div>
+			</div>
+
+			{/* Money Market Health */}
+			<div className="flex flex-col p-4 space-y-4">
+				<h3 className="text-zinc-200 text-sm font-semibold">Money Markets</h3>
+				<div
+					x-ref="moneyMarketHealth"
+					hx-get="/console/dashboard/fragments/mm-health"
+					hx-trigger="load, refresh"
+					hx-target="this"
+					hx-include="#dashboard-filters"
+				></div>
+			</div>
+
+			{/* Crosschain Reserves */}
+
 			<div className="flex flex-col p-4 space-y-4">
 				<h3 className="text-zinc-200 text-sm font-semibold">
 					Crosschain Reserves

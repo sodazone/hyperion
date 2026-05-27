@@ -23,6 +23,8 @@ import {
 } from "@/console/alerting/public/pages";
 import { LatestAlertsFragment } from "@/console/analytics/alerts.latest";
 import { TopExchangesFragment } from "@/console/analytics/cex.top";
+import { DexLiquidityFragment } from "@/console/analytics/dex.liquidity";
+import { MoneyMarketHealthFragment } from "@/console/analytics/mm.health";
 import { DashboardPage } from "@/console/analytics/pages";
 import { CrosschainSolvencyFragment } from "@/console/analytics/xc.solvency";
 import {
@@ -161,6 +163,10 @@ export async function serve({
 				LatestAlertsFragment(ctx, req),
 			"/console/dashboard/fragments/xc-solvency": async (req) =>
 				CrosschainSolvencyFragment(ctx, req),
+			"/console/dashboard/fragments/dex-liquidity": async (req) =>
+				DexLiquidityFragment(ctx, req),
+			"/console/dashboard/fragments/mm-health": async (req) =>
+				MoneyMarketHealthFragment(ctx, req),
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),
 			"/console/public/alerts/$": async (req) => AlertListPoller(ctx, req),
 			"/console/my/alerts": async (req) => MyAlertListPage(ctx, req),

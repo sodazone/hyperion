@@ -125,6 +125,7 @@ export type DefiLiquidityEvent = BaseEvent<
 		protocol: string;
 		marketId: string;
 		subscriptionId: string;
+		label: string;
 
 		suppliedUSD: number;
 
