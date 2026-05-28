@@ -6,6 +6,7 @@ import { multiselect } from "./multiselect";
 import { pagination } from "./pagination";
 import { richSelect } from "./rich-select";
 import { sidebar } from "./sidebar";
+import { sparkline } from "./sparkline";
 
 window.Alpine = Alpine;
 window.htmx = htmx;
@@ -15,5 +16,6 @@ Alpine.data("dashboard", dashboard);
 Alpine.data("richSelect", richSelect);
 Alpine.data("multiselect", multiselect);
 Alpine.data("pagination", pagination);
+Alpine.data("sparkline", sparkline);
 
 Alpine.start();

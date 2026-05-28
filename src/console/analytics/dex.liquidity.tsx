@@ -11,7 +11,13 @@ import { parseDashboardParamsForDefi } from "./params";
 
 const ROWS_PER_PAGE = 5;
 
-export function DexLiquidityCard({ row }: { row: DexLiquidityRow }) {
+export function DexLiquidityCard({
+	row,
+	dataPoints,
+}: {
+	row: DexLiquidityRow;
+	dataPoints: number[];
+}) {
 	const isPositive = row.tvl_change_usd >= 0;
 
 	return (
@@ -46,6 +52,17 @@ export function DexLiquidityCard({ row }: { row: DexLiquidityRow }) {
 					<div className="text-zinc-500 text-xs">
 						{protocolLabel(row.protocol)}
 					</div>
+				</div>
+				<div className="flex items-center justify-center pl-2">
+					<div
+						x-data="sparkline"
+						data-type="area"
+						data-gap="2"
+						data-opacity="0.5"
+						data-colors="#aba4a6"
+						data-length="10"
+						data-points={dataPoints.join(",")}
+					></div>
 				</div>
 			</div>
 		</div>
@@ -108,14 +125,26 @@ export async function DexLiquidityFragment(
 				className="space-y-4"
 			>
 				<div className="flex flex-col divide-y divide-zinc-900">
-					{lastRows.map((r, index) => (
-						<div
-							key={`${r.protocol}-${r.market_id}-${index}`}
-							x-show={`isVisible(${index + 1})`}
-						>
-							<DexLiquidityCard row={r} />
-						</div>
-					))}
+					{lastRows.map((r, index) => {
+						const poolHistory = rows
+							.filter(
+								(item) =>
+									item.protocol === r.protocol &&
+									item.market_id === r.market_id,
+							)
+							.sort(
+								(a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime(),
+							)
+							.map((item) => item.supplied_usd);
+						return (
+							<div
+								key={`${r.protocol}-${r.market_id}-${index}`}
+								x-show={`isVisible(${index + 1})`}
+							>
+								<DexLiquidityCard row={r} dataPoints={poolHistory} />
+							</div>
+						);
+					})}
 				</div>
 				<PaginationControls />
 			</div>
