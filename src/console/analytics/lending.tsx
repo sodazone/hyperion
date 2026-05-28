@@ -146,16 +146,14 @@ export async function MoneyMarketHealthFragment(
 					<Kpi
 						title="Total Supplied"
 						qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
-						period={periodLabel}
-						deltaPct={periodDeltaSuppliedPct}
+						delta={{ period: periodLabel, pct: periodDeltaSuppliedPct }}
 					/>
 				</div>
 				<div className="pl-6">
 					<Kpi
 						title="Total Borrowed"
 						qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
-						period={periodLabel}
-						deltaPct={periodDeltaBorrowedPct}
+						delta={{ period: periodLabel, pct: periodDeltaBorrowedPct }}
 					/>
 				</div>
 			</div>
