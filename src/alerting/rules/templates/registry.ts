@@ -1,5 +1,5 @@
 import { ExchangeLiquidityRule } from "./defi/liquidity/dex.rule";
-import { MoneyMarketHealthRule } from "./defi/liquidity/mm.rule";
+import { MoneyMarketHealthRule } from "./defi/liquidity/lending.rule";
 import { OpenGovRule } from "./opengov/rule";
 import { TransfersRule } from "./transfers/rule";
 import { WatchedRule } from "./watched/rule";
