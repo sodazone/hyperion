@@ -43,6 +43,5 @@ export interface MoneyMarketHealthRow {
 	borrowed_usd: number;
 	utilization: number | null;
 	solvency_ratio: number | null;
-	bad_debt_usd: number;
 	is_paused: boolean;
 }

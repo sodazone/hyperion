@@ -112,7 +112,6 @@ SELECT
   arg_max(supplied_usd, ts) AS supplied_usd,
   arg_max(utilization, ts) AS utilization,
   arg_max(solvency_ratio, ts) AS solvency_ratio,
-  arg_max(bad_debt_usd, ts) AS bad_debt_usd,
   arg_max(is_paused, ts) AS is_paused
 FROM money_market_health_snapshots
 WHERE ts >= ${startExpr}

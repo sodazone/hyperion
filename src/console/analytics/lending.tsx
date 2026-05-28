@@ -4,7 +4,7 @@ import { formatNumberSI } from "@/utils/amounts";
 import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
-import { formatPct, protocolLabel } from "./format";
+import { formatPct } from "./format";
 import { Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
 import { parseDashboardParamsForDefi } from "./params";
@@ -12,7 +12,6 @@ import { parseDashboardParamsForDefi } from "./params";
 const ROWS_PER_PAGE = 5;
 
 export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
-	const hasBadDebt = row.bad_debt_usd > 0;
 	const isSolvent = row.solvency_ratio === null || row.solvency_ratio >= 0.99;
 
 	return (
@@ -66,18 +65,6 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 						{row.solvency_ratio ? row.solvency_ratio.toFixed(2) : "—"}
 					</span>
 				</div>
-
-				<div className="flex flex-col items-end min-w-20">
-					<span className="text-zinc-500 text-xs">Bad Debt</span>
-					<span
-						className={`font-mono ${hasBadDebt ? "text-pink-300 font-bold" : "text-zinc-500"}`}
-					>
-						${formatNumberSI(row.bad_debt_usd, 2)}
-					</span>
-					<div className="text-zinc-500 text-xs">
-						{protocolLabel(row.protocol)}
-					</div>
-				</div>
 			</div>
 		</div>
 	);
@@ -114,17 +101,14 @@ export async function MoneyMarketHealthFragment(
 	}
 
 	const lastRows = Array.from(uniquePoolsMap.values()).sort((a, b) => {
-		if (a.bad_debt_usd > 0 !== b.bad_debt_usd > 0) {
-			return a.bad_debt_usd > 0 ? -1 : 1;
-		}
 		return b.supplied_usd - a.supplied_usd;
 	});
 
 	let currentTotalSupplied = 0;
-	let currentTotalBadDebt = 0;
+	let currentTotalBorrowed = 0;
 	for (const r of lastRows) {
 		currentTotalSupplied += r.supplied_usd;
-		currentTotalBadDebt += r.bad_debt_usd;
+		currentTotalBorrowed += r.borrowed_usd;
 	}
 
 	const uniqueBaselineMap = new Map<string, MoneyMarketHealthRow>();
@@ -137,14 +121,22 @@ export async function MoneyMarketHealthFragment(
 	}
 
 	let baselineTotalSupplied = 0;
+	let baselineTotalBorrowed = 0;
 	for (const r of uniqueBaselineMap.values()) {
 		baselineTotalSupplied += r.supplied_usd;
+		baselineTotalBorrowed += r.borrowed_usd;
 	}
 
-	const periodDeltaUsd = currentTotalSupplied - baselineTotalSupplied;
-	const periodDeltaPct =
+	const periodDeltaSuppliedUsd = currentTotalSupplied - baselineTotalSupplied;
+	const periodDeltaSuppliedPct =
 		baselineTotalSupplied > 0
-			? (periodDeltaUsd / baselineTotalSupplied) * 100
+			? (periodDeltaSuppliedUsd / baselineTotalSupplied) * 100
+			: 0;
+
+	const periodDeltaBorrowedUsd = currentTotalBorrowed - baselineTotalBorrowed;
+	const periodDeltaBorrowedPct =
+		baselineTotalBorrowed > 0
+			? (periodDeltaBorrowedUsd / baselineTotalBorrowed) * 100
 			: 0;
 
 	return render(
@@ -154,18 +146,14 @@ export async function MoneyMarketHealthFragment(
 					title="Total Supplied"
 					qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
 					period={periodLabel}
-					deltaPct={periodDeltaPct}
+					deltaPct={periodDeltaSuppliedPct}
 				/>
-				{currentTotalBadDebt > 0 && (
-					<div className="flex flex-col gap-1 min-w-50">
-						<span className="text-xs text-zinc-400 font-medium">
-							Total Bad Debt
-						</span>
-						<span className="text-2xl font-bold bg-red-950/20 text-red-400 font-mono tracking-tight">
-							${formatNumberSI(currentTotalBadDebt, 2)}
-						</span>
-					</div>
-				)}
+				<Kpi
+					title="Total Borrowed"
+					qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
+					period={periodLabel}
+					deltaPct={periodDeltaBorrowedPct}
+				/>
 			</div>
 
 			<div
