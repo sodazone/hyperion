@@ -174,7 +174,6 @@ export class AnalyticsDB {
 				utilization: r.utilization === null ? null : Number(r.utilization),
 				solvency_ratio:
 					r.solvency_ratio === null ? null : Number(r.solvency_ratio),
-				bad_debt_usd: Number(r.bad_debt_usd),
 				is_paused: Boolean(r.is_paused),
 			}),
 		);

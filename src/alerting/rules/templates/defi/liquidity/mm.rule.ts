@@ -10,7 +10,7 @@ export interface MoneyMarketAlertPayload extends AlertPayload {
 	kind: "money-market-health";
 	protocol: string;
 	marketId: string;
-	reason: "insolvency" | "bad-debt" | "utilization" | "paused";
+	reason: "insolvency" | "utilization" | "paused";
 	details: string;
 }
 
@@ -75,8 +75,8 @@ export const MoneyMarketHealthRule: RuleDefinition<
 
 		if (
 			config.alertOnBadDebt &&
-			lending.health?.badDebtUSD &&
-			lending.health.badDebtUSD > 0
+			lending.health?.tokenDeficitUSD &&
+			lending.health.tokenDeficitUSD > 0
 		) {
 			if (!marketState.hasAlertedBadDebt) {
 				marketState.hasAlertedBadDebt = true;
@@ -84,8 +84,8 @@ export const MoneyMarketHealthRule: RuleDefinition<
 				return {
 					matched: true,
 					data: {
-						reason: "bad-debt",
-						details: `Insolvency leak: $${lending.health.badDebtUSD.toLocaleString()} bad debt.`,
+						reason: "insolvency",
+						details: `Protocol insolvency: $${lending.health.tokenDeficitUSD.toLocaleString()} token deficit.`,
 					},
 				};
 			}
@@ -128,8 +128,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
 		const headers: Record<MoneyMarketAlertPayload["reason"], string> = {
-			insolvency: "Solvency Invariant Failure",
-			"bad-debt": "Protocol Bad Debt Detected",
+			insolvency: "Insolvency",
 			utilization: "Capital Liquidity Crunch",
 			paused: "Protocol Market Paused",
 		};

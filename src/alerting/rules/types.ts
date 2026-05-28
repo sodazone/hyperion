@@ -112,7 +112,7 @@ export type MoneyMarketPayload = {
 	supplyCap?: string;
 	health?: {
 		solvencyRatio: number;
-		badDebtUSD?: number;
+		tokenDeficitUSD?: number;
 	};
 };
 

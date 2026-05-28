@@ -47,7 +47,7 @@ export function mapDefiLiquidity(
 			health: payload.lending.health
 				? {
 						solvencyRatio: payload.lending.health.solvencyRatio,
-						badDebtUSD: payload.lending.health.badDebtUSD,
+						tokenDeficitUSD: payload.lending.health.tokenDeficitUSD,
 					}
 				: undefined,
 		};
