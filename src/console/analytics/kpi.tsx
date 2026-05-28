@@ -16,7 +16,7 @@ export function Kpi({
 		<div className="flex flex-col gap-1">
 			<span className="text-xs text-zinc-400 font-medium">{title}</span>
 
-			<span className="text-2xl font-bold text-zinc-100 font-mono tracking-tight">
+			<span className="text-lg font-bold text-zinc-100 font-mono tracking-tight">
 				${qty}
 			</span>
 
