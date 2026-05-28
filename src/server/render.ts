@@ -4,6 +4,8 @@ import {
 	renderToReadableStream,
 } from "react-dom/server";
 
+export const empty = new Response("", { status: 200 });
+
 export async function render(
 	children: ReactNode,
 	opts?: RenderToReadableStreamOptions,
