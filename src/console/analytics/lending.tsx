@@ -141,19 +141,23 @@ export async function MoneyMarketHealthFragment(
 
 	return render(
 		<div className="space-y-6">
-			<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row gap-4">
-				<Kpi
-					title="Total Supplied"
-					qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
-					period={periodLabel}
-					deltaPct={periodDeltaSuppliedPct}
-				/>
-				<Kpi
-					title="Total Borrowed"
-					qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
-					period={periodLabel}
-					deltaPct={periodDeltaBorrowedPct}
-				/>
+			<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row">
+				<div className="pr-6">
+					<Kpi
+						title="Total Supplied"
+						qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
+						period={periodLabel}
+						deltaPct={periodDeltaSuppliedPct}
+					/>
+				</div>
+				<div className="pl-6">
+					<Kpi
+						title="Total Borrowed"
+						qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
+						period={periodLabel}
+						deltaPct={periodDeltaBorrowedPct}
+					/>
+				</div>
 			</div>
 
 			<div
