@@ -14,9 +14,11 @@ const ROWS_PER_PAGE = 5;
 export function DexLiquidityCard({
 	row,
 	dataPoints,
+	period,
 }: {
 	row: DexLiquidityRow;
 	dataPoints: number[];
+	period: string;
 }) {
 	const isPositive = row.tvl_change_usd >= 0;
 
@@ -53,16 +55,19 @@ export function DexLiquidityCard({
 						{protocolLabel(row.protocol)}
 					</div>
 				</div>
-				<div className="flex items-center justify-center pl-2">
-					<div
-						x-data="sparkline"
-						data-type="area"
-						data-gap="2"
-						data-opacity="0.5"
-						data-colors="#aba4a6"
-						data-length="10"
-						data-points={dataPoints.join(",")}
-					></div>
+				<div className="flex flex-col items-end min-w-20">
+					<span className="text-zinc-500 text-xs">TVL {period}</span>
+					<div className="flex items-center justify-center pl-2 pt-1.5">
+						<div
+							x-data="sparkline"
+							data-type="area"
+							data-gap="2"
+							data-opacity="0.5"
+							data-colors="#aba4a6"
+							data-min-length="10"
+							data-points={dataPoints.join(",")}
+						></div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -141,7 +146,11 @@ export async function DexLiquidityFragment(
 								key={`${r.protocol}-${r.market_id}-${index}`}
 								x-show={`isVisible(${index + 1})`}
 							>
-								<DexLiquidityCard row={r} dataPoints={poolHistory} />
+								<DexLiquidityCard
+									row={r}
+									dataPoints={poolHistory}
+									period={periodLabel}
+								/>
 							</div>
 						);
 					})}
