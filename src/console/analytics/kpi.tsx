@@ -11,7 +11,7 @@ export function Kpi({
 }) {
 	const isPositive = deltaPct >= 0;
 	return (
-		<div className="flex flex-col gap-1 w-fit min-w-50">
+		<div className="flex flex-col gap-1">
 			<span className="text-xs text-zinc-400 font-medium">{title}</span>
 
 			<span className="text-2xl font-bold text-zinc-100 font-mono tracking-tight">
