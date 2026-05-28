@@ -26,7 +26,7 @@ export function DexLiquidityCard({
 		<div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 py-2 gap-2">
 			{/* Left */}
 			<div className="flex flex-col gap-0.5 min-w-37.5">
-				<div className="text-zinc-100 font-semibold">{row.label}</div>
+				<div className="text-zinc-100 font-semibold text-sm">{row.label}</div>
 				<div className="text-xs text-zinc-500">
 					<span className="flex gap-1 items-center font-mono truncate">
 						<span className="truncate">{truncMid(row.market_id)}</span>
@@ -117,11 +117,13 @@ export async function DexLiquidityFragment(
 		<div className="flex flex-col p-4 space-y-4">
 			<h3 className="text-zinc-200 text-sm font-semibold">Liquidity Pools</h3>
 			<div className="space-y-6">
-				<Kpi
-					title="Total TVL"
-					qty={`${formatNumberSI(currentTotalTvl, 2)}`}
-					delta={{ period: periodLabel, pct: periodDeltaPct }}
-				/>
+				<div className="px-2">
+					<Kpi
+						title="Total TVL"
+						qty={`${formatNumberSI(currentTotalTvl, 2)}`}
+						delta={{ period: periodLabel, pct: periodDeltaPct }}
+					/>
+				</div>
 				<div
 					x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
 					className="space-y-4"

@@ -19,7 +19,7 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 			{/* Left */}
 			<div className="flex flex-col gap-0.5 min-w-37.5">
 				<div className="flex items-center gap-2">
-					<div className="text-zinc-100 font-semibold">{row.label}</div>
+					<div className="text-zinc-100 font-semibold text-sm">{row.label}</div>
 					{row.is_paused && (
 						<span className="px-1 py-0.5 text-[10px] bg-red-950/40 text-red-400 font-semibold rounded uppercase">
 							Paused
@@ -139,7 +139,7 @@ export async function MoneyMarketHealthFragment(
 		<div className="flex flex-col p-4 space-y-4">
 			<h3 className="text-zinc-200 text-sm font-semibold">Lending</h3>
 			<div className="space-y-6">
-				<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row">
+				<div className="flex divide-x divide-zinc-900 px-2">
 					<div className="pr-6">
 						<Kpi
 							title="Total Supplied"
