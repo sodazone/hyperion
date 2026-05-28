@@ -122,8 +122,7 @@ export async function DexLiquidityFragment(
 			<Kpi
 				title="Total TVL"
 				qty={`${formatNumberSI(currentTotalTvl, 2)}`}
-				period={periodLabel}
-				deltaPct={periodDeltaPct}
+				delta={{ period: periodLabel, pct: periodDeltaPct }}
 			/>
 			<div
 				x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
