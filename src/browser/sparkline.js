@@ -35,7 +35,9 @@ export function sparkline() {
 				points: dataset.points || null,
 				labels: dataset.labels || null,
 				format: dataset.format || null,
-				length: this.parseIntWithDefault(dataset.length, null),
+				// Extracted to min/max independent properties
+				minLength: this.parseIntWithDefault(dataset.minLength, null),
+				maxLength: this.parseIntWithDefault(dataset.maxLength, null),
 			};
 
 			defaultOpts.svg = document.createElementNS(
@@ -65,12 +67,15 @@ export function sparkline() {
 				.split(",")
 				.map((item) => parseInt(item, 10));
 
-			if (this.opts.length !== null && this.opts.length > 0) {
-				const targetLen = this.opts.length;
-				if (parsedPoints.length > targetLen) {
-					parsedPoints = parsedPoints.slice(-targetLen);
-				} else if (parsedPoints.length < targetLen) {
-					const paddingNeeded = targetLen - parsedPoints.length;
+			if (this.opts.maxLength !== null && this.opts.maxLength > 0) {
+				if (parsedPoints.length > this.opts.maxLength) {
+					parsedPoints = parsedPoints.slice(-this.opts.maxLength);
+				}
+			}
+
+			if (this.opts.minLength !== null && this.opts.minLength > 0) {
+				if (parsedPoints.length < this.opts.minLength) {
+					const paddingNeeded = this.opts.minLength - parsedPoints.length;
 					parsedPoints = [...Array(paddingNeeded).fill(0), ...parsedPoints];
 				}
 			}
@@ -122,6 +127,7 @@ export function sparkline() {
 		},
 
 		bar() {
+			if (this.opts.points.length === 0) return;
 			const columnWidth =
 				this.opts.gap / this.opts.points.length +
 				this.opts.width / this.opts.points.length -

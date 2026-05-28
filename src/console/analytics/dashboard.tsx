@@ -126,7 +126,7 @@ export function Dashboard({
 
 			{/* Money Market Health */}
 			<div className="flex flex-col p-4 space-y-4">
-				<h3 className="text-zinc-200 text-sm font-semibold">Money Markets</h3>
+				<h3 className="text-zinc-200 text-sm font-semibold">Lending</h3>
 				<div
 					x-ref="moneyMarketHealth"
 					hx-get="/console/dashboard/fragments/mm-health"

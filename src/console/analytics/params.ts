@@ -56,6 +56,18 @@ export function parseDashboardParams(req: Bun.BunRequest) {
 	};
 }
 
+function toShorthandLabel(value: number, unit: string): string {
+	const unitLower = unit.toLowerCase();
+
+	if (unitLower.startsWith("hour")) return `${value}h`;
+	if (unitLower.startsWith("day")) return `${value}D`;
+	if (unitLower.startsWith("week")) return `${value}W`;
+	if (unitLower.startsWith("month")) return `${value}M`;
+	if (unitLower.startsWith("year")) return `${value}Y`;
+
+	return `${value} ${unit}`;
+}
+
 export function parseDashboardParamsForDefi(req: Bun.BunRequest) {
 	const { lookback, bucket, network: _network } = parseDashboardParams(req);
 
@@ -64,7 +76,7 @@ export function parseDashboardParamsForDefi(req: Bun.BunRequest) {
 		network = "urn:ocn:ethereum:1284";
 	}
 
-	const periodLabel = `${lookback} ${bucket}${lookback > 1 ? "s" : ""}`;
+	const periodLabel = toShorthandLabel(lookback, bucket ?? "hour");
 	return {
 		bucket,
 		lookback,
