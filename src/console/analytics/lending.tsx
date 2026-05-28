@@ -45,6 +45,13 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 				</div>
 
 				<div className="flex flex-col items-end min-w-20">
+					<span className="text-zinc-500 text-xs">Borrowed</span>
+					<span className="text-zinc-100 font-mono">
+						${formatNumberSI(row.borrowed_usd, 2)}
+					</span>
+				</div>
+
+				<div className="flex flex-col items-end min-w-20">
 					<span className="text-zinc-500 text-xs">Utilization</span>
 					<span className="text-zinc-100 font-mono">
 						{formatPct(row.utilization)}
