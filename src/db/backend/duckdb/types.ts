@@ -40,6 +40,7 @@ export interface MoneyMarketHealthRow {
 	label: string;
 
 	supplied_usd: number;
+	borrowed_usd: number;
 	utilization: number | null;
 	solvency_ratio: number | null;
 	bad_debt_usd: number;

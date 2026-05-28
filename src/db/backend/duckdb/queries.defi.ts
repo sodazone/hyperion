@@ -108,6 +108,7 @@ SELECT
   protocol,
   market_id,
   any_value(label) AS label,
+  arg_max(borrowed_usd, ts) AS borrowed_usd,
   arg_max(supplied_usd, ts) AS supplied_usd,
   arg_max(utilization, ts) AS utilization,
   arg_max(solvency_ratio, ts) AS solvency_ratio,
