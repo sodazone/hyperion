@@ -23,8 +23,8 @@ import {
 } from "@/console/alerting/public/pages";
 import { LatestAlertsFragment } from "@/console/analytics/alerts.latest";
 import { TopExchangesFragment } from "@/console/analytics/cex.top";
-import { DexLiquidityFragment } from "@/console/analytics/dex.liquidity";
-import { MoneyMarketHealthFragment } from "@/console/analytics/mm.health";
+import { DexLiquidityFragment } from "@/console/analytics/dex";
+import { MoneyMarketHealthFragment } from "@/console/analytics/lending";
 import { DashboardPage } from "@/console/analytics/pages";
 import { CrosschainSolvencyFragment } from "@/console/analytics/xc.solvency";
 import {
