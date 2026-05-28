@@ -115,7 +115,7 @@ export async function DexLiquidityFragment(
 
 	return render(
 		<div className="flex flex-col p-4 space-y-4">
-			<h3 className="text-zinc-200 text-sm font-semibold">DEX Pools</h3>
+			<h3 className="text-zinc-200 text-sm font-semibold">Liquidity Pools</h3>
 			<div className="space-y-6">
 				<Kpi
 					title="Total TVL"
