@@ -41,8 +41,8 @@ export function createDefiAnalytics({
 				`
 			INSERT INTO money_market_health_snapshots (
 				ts, subscription_id, network_id, protocol, market_id, label,
-				supplied_usd, utilization, solvency_ratio, bad_debt_usd, is_paused
-			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				supplied_usd, borrowed_usd, utilization, solvency_ratio, bad_debt_usd, is_paused
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 				[
 					timestamp,
@@ -52,6 +52,7 @@ export function createDefiAnalytics({
 					p.marketId,
 					p.label,
 					safeNumber(p.suppliedUSD, 0),
+					safeNumber(p.lending.borrowedUSD, 0),
 					safeNumber(p.lending.utilization, null),
 					safeNumber(p.lending.health?.solvencyRatio, null),
 					safeNumber(p.lending.health?.badDebtUSD, 0),
@@ -93,6 +94,7 @@ export function createDefiAnalytics({
           market_id       TEXT,
           label           TEXT,
           supplied_usd    DOUBLE,
+          borrowed_usd    DOUBLE,
           utilization     DOUBLE,
           solvency_ratio  DOUBLE,
           bad_debt_usd    DOUBLE,

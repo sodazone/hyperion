@@ -170,6 +170,7 @@ export class AnalyticsDB {
 				label: r.label,
 
 				supplied_usd: Number(r.supplied_usd),
+				borrowed_usd: Number(r.borrowed_usd),
 				utilization: r.utilization === null ? null : Number(r.utilization),
 				solvency_ratio:
 					r.solvency_ratio === null ? null : Number(r.solvency_ratio),
