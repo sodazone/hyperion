@@ -1,5 +1,5 @@
 import type { DexLiquidityRow } from "@/db/backend/duckdb/types";
-import { render } from "@/server/render";
+import { empty, render } from "@/server/render";
 import { formatNumberSI } from "@/utils/amounts";
 import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
@@ -88,11 +88,7 @@ export async function DexLiquidityFragment(
 	})) as DexLiquidityRow[];
 
 	if (!rows || rows.length === 0) {
-		return render(
-			<div className="px-4 py-6 text-sm text-zinc-500">
-				No exchange data yet.
-			</div>,
-		);
+		return empty;
 	}
 
 	const latestRow = rows[rows.length - 1];
@@ -118,43 +114,46 @@ export async function DexLiquidityFragment(
 	);
 
 	return render(
-		<div className="space-y-6">
-			<Kpi
-				title="Total TVL"
-				qty={`${formatNumberSI(currentTotalTvl, 2)}`}
-				delta={{ period: periodLabel, pct: periodDeltaPct }}
-			/>
-			<div
-				x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
-				className="space-y-4"
-			>
-				<div className="flex flex-col divide-y divide-zinc-900">
-					{lastRows.map((r, index) => {
-						const poolHistory = rows
-							.filter(
-								(item) =>
-									item.protocol === r.protocol &&
-									item.market_id === r.market_id,
-							)
-							.sort(
-								(a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime(),
-							)
-							.map((item) => item.supplied_usd);
-						return (
-							<div
-								key={`${r.protocol}-${r.market_id}-${index}`}
-								x-show={`isVisible(${index + 1})`}
-							>
-								<DexLiquidityCard
-									row={r}
-									dataPoints={poolHistory}
-									period={periodLabel}
-								/>
-							</div>
-						);
-					})}
+		<div className="flex flex-col p-4 space-y-4">
+			<h3 className="text-zinc-200 text-sm font-semibold">DEX Pools</h3>
+			<div className="space-y-6">
+				<Kpi
+					title="Total TVL"
+					qty={`${formatNumberSI(currentTotalTvl, 2)}`}
+					delta={{ period: periodLabel, pct: periodDeltaPct }}
+				/>
+				<div
+					x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
+					className="space-y-4"
+				>
+					<div className="flex flex-col divide-y divide-zinc-900">
+						{lastRows.map((r, index) => {
+							const poolHistory = rows
+								.filter(
+									(item) =>
+										item.protocol === r.protocol &&
+										item.market_id === r.market_id,
+								)
+								.sort(
+									(a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime(),
+								)
+								.map((item) => item.supplied_usd);
+							return (
+								<div
+									key={`${r.protocol}-${r.market_id}-${index}`}
+									x-show={`isVisible(${index + 1})`}
+								>
+									<DexLiquidityCard
+										row={r}
+										dataPoints={poolHistory}
+										period={periodLabel}
+									/>
+								</div>
+							);
+						})}
+					</div>
+					<PaginationControls />
 				</div>
-				<PaginationControls />
 			</div>
 		</div>,
 	);

@@ -1,5 +1,5 @@
 import type { MoneyMarketHealthRow } from "@/db/backend/duckdb/types";
-import { render } from "@/server/render";
+import { empty, render } from "@/server/render";
 import { formatNumberSI } from "@/utils/amounts";
 import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
@@ -84,11 +84,7 @@ export async function MoneyMarketHealthFragment(
 	})) as MoneyMarketHealthRow[];
 
 	if (!rows || rows.length === 0) {
-		return render(
-			<div className="px-4 py-6 text-sm text-zinc-500">
-				No lending health data yet.
-			</div>,
-		);
+		return empty;
 	}
 
 	const uniquePoolsMap = new Map<string, MoneyMarketHealthRow>();
@@ -140,39 +136,42 @@ export async function MoneyMarketHealthFragment(
 			: 0;
 
 	return render(
-		<div className="space-y-6">
-			<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row">
-				<div className="pr-6">
-					<Kpi
-						title="Total Supplied"
-						qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
-						delta={{ period: periodLabel, pct: periodDeltaSuppliedPct }}
-					/>
+		<div className="flex flex-col p-4 space-y-4">
+			<h3 className="text-zinc-200 text-sm font-semibold">Lending</h3>
+			<div className="space-y-6">
+				<div className="flex flex-col divide-x divide-zinc-900 sm:flex-row">
+					<div className="pr-6">
+						<Kpi
+							title="Total Supplied"
+							qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
+							delta={{ period: periodLabel, pct: periodDeltaSuppliedPct }}
+						/>
+					</div>
+					<div className="pl-6">
+						<Kpi
+							title="Total Borrowed"
+							qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
+							delta={{ period: periodLabel, pct: periodDeltaBorrowedPct }}
+						/>
+					</div>
 				</div>
-				<div className="pl-6">
-					<Kpi
-						title="Total Borrowed"
-						qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
-						delta={{ period: periodLabel, pct: periodDeltaBorrowedPct }}
-					/>
-				</div>
-			</div>
 
-			<div
-				x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
-				className="space-y-4"
-			>
-				<div className="flex flex-col divide-y divide-zinc-900">
-					{lastRows.map((r, index) => (
-						<div
-							key={`${r.protocol}-${r.market_id}-${index}`}
-							x-show={`isVisible(${index + 1})`}
-						>
-							<MoneyMarketHealthCard row={r} />
-						</div>
-					))}
+				<div
+					x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
+					className="space-y-4"
+				>
+					<div className="flex flex-col divide-y divide-zinc-900">
+						{lastRows.map((r, index) => (
+							<div
+								key={`${r.protocol}-${r.market_id}-${index}`}
+								x-show={`isVisible(${index + 1})`}
+							>
+								<MoneyMarketHealthCard row={r} />
+							</div>
+						))}
+					</div>
+					<PaginationControls />
 				</div>
-				<PaginationControls />
 			</div>
 		</div>,
 	);
