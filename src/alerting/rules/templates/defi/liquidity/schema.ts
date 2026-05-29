@@ -29,7 +29,7 @@ export const schemas = {
 			help: "Ignore pools with a TVL below this USD amount.",
 		}),
 	}),
-	mm: z.object({
+	lending: z.object({
 		level,
 		networks,
 		minSolvencyRatio: z.number().min(0).meta({
@@ -44,14 +44,14 @@ export const schemas = {
 			unit: "%",
 			help: "Alert if capital utilization (borrowed funds / supplied funds) exceeds this ceiling.",
 		}),
-		alertOnBadDebt: z.boolean().meta({
-			label: "Alert on Bad Debt",
-			help: "Instantly trigger high-severity notifications if the pool accumulates uncollateralized or unrecoverable debt.",
+		alertOnProtocolDeficit: z.boolean().meta({
+			label: "Alert on Protocol Deficit",
+			help: "Triggers if physical reserves fall below protocol liabilities, signaling unbacked deficit.",
 		}),
 	}),
 };
 
 export type Configs = {
 	dex: z.infer<typeof schemas.dex>;
-	mm: z.infer<typeof schemas.mm>;
+	lending: z.infer<typeof schemas.lending>;
 };

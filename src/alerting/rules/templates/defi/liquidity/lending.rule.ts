@@ -15,21 +15,21 @@ export interface MoneyMarketAlertPayload extends AlertPayload {
 }
 
 interface MarketState {
-	hasAlertedBadDebt: boolean;
+	hasAlertedDeficit: boolean;
 }
 
 export const MoneyMarketHealthRule: RuleDefinition<
 	DefiLiquidityEvent,
 	{ reason: MoneyMarketAlertPayload["reason"]; details: string },
-	Configs["mm"]
+	Configs["lending"]
 > = {
 	id: ruleName,
 	title: "Money Market Health",
 	description:
 		"Monitors solvency, bad debt, and utilization crunches for lending protocols.",
-	schema: schemas.mm,
+	schema: schemas.lending,
 	defaults: {
-		alertOnBadDebt: true,
+		alertOnProtocolDeficit: true,
 		minSolvencyRatio: 1.05,
 		maxUtilization: 0.95,
 	},
@@ -60,7 +60,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 
 		const ns = `${ruleName}:${payload.protocol}:${payload.marketId}`;
 		const marketState = (state.get(ns, STATE_KEY) ?? {
-			hasAlertedBadDebt: false,
+			hasAlertedDeficit: false,
 		}) as MarketState;
 
 		if (lending.isPaused) {
@@ -68,18 +68,18 @@ export const MoneyMarketHealthRule: RuleDefinition<
 				matched: true,
 				data: {
 					reason: "paused",
-					details: "Market operations are PAUSED on-chain.",
+					details: "Market operations are paused.",
 				},
 			};
 		}
 
 		if (
-			config.alertOnBadDebt &&
+			config.alertOnProtocolDeficit &&
 			lending.health?.tokenDeficitUSD &&
 			lending.health.tokenDeficitUSD > 0
 		) {
-			if (!marketState.hasAlertedBadDebt) {
-				marketState.hasAlertedBadDebt = true;
+			if (!marketState.hasAlertedDeficit) {
+				marketState.hasAlertedDeficit = true;
 				state.set(ns, STATE_KEY, marketState);
 				return {
 					matched: true,
@@ -90,7 +90,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 				};
 			}
 		} else {
-			marketState.hasAlertedBadDebt = false;
+			marketState.hasAlertedDeficit = false;
 		}
 		state.set(ns, STATE_KEY, marketState);
 
