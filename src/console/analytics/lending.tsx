@@ -57,7 +57,7 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 							{formatPct(row.utilization)}
 						</span>
 					) : (
-						<span className="text-zinc-600">—</span>
+						<span className="text-zinc-800">—</span>
 					)}
 				</div>
 
@@ -70,7 +70,7 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 							{row.solvency_ratio.toFixed(2)}
 						</span>
 					) : (
-						<span className="text-zinc-600">—</span>
+						<span className="text-zinc-800">—</span>
 					)}
 				</div>
 			</div>

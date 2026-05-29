@@ -79,7 +79,6 @@ export function AlertCard({ alert }: { alert: Alert }) {
             py-2
             shadow-md
             transition-colors
-            target:ring-2 target:ring-teal-500/30
           "
 		>
 			<div className="flex justify-between items-start">
