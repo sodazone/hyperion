@@ -68,6 +68,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 	const actors = alert.payload?.actors ?? [];
 	return (
 		<div
+			id={`alert-${alert.id}`}
 			key={alert.id}
 			className="
             flex flex-col gap-3
@@ -78,6 +79,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
             py-2
             shadow-md
             transition-colors
+            target:ring-2 target:ring-teal-500/30
           "
 		>
 			<div className="flex justify-between items-start">
@@ -123,7 +125,12 @@ export function AlertCard({ alert }: { alert: Alert }) {
 			<div className="flex justify-between items-center text-xs">
 				<NetworkGroup networks={alert.networks} />
 				<div className="inline-flex items-center overflow-hidden text-xs leading-none gap-2">
-					<span className="text-zinc-700 pr-4">#{alert.id}</span>
+					<a
+						href={`#alert-${alert.id}`}
+						className="text-zinc-700 hover:text-zinc-400 font-mono pr-4 transition-colors group flex items-center gap-1"
+					>
+						#{alert.id}
+					</a>
 					<span className="w-4 h-4 text-zinc-700">{RuleIcons[alert.name]}</span>
 					<span className="font-mono text-zinc-500">{alert.name}</span>
 				</div>
