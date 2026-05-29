@@ -26,7 +26,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 	id: ruleName,
 	title: "Money Market Health",
 	description:
-		"Monitors solvency, bad debt, and utilization crunches for lending protocols.",
+		"Monitors solvency and utilization crunches for lending protocols.",
 	schema: schemas.lending,
 	defaults: {
 		alertOnProtocolDeficit: true,
