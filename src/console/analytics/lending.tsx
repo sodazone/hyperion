@@ -21,7 +21,7 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 				<div className="flex items-center gap-2">
 					<div className="text-zinc-100 font-semibold text-sm">{row.label}</div>
 					{row.is_paused && (
-						<span className="px-1 py-0.5 text-[10px] bg-red-950/40 text-red-400 font-semibold rounded uppercase">
+						<span className="px-1 py-0.5 text-[10px] bg-amber-950/40 text-amber-500 font-semibold rounded uppercase">
 							Paused
 						</span>
 					)}
@@ -52,18 +52,26 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 
 				<div className="flex flex-col items-end min-w-20">
 					<span className="text-zinc-500 text-xs">Utilization</span>
-					<span className="text-zinc-100 font-mono">
-						{formatPct(row.utilization)}
-					</span>
+					{row.utilization != null ? (
+						<span className="text-zinc-100 font-mono">
+							{formatPct(row.utilization)}
+						</span>
+					) : (
+						<span className="text-zinc-600">—</span>
+					)}
 				</div>
 
 				<div className="flex flex-col items-end min-w-20">
 					<span className="text-zinc-500 text-xs">Solvency</span>
-					<span
-						className={`font-mono ${isSolvent ? "text-cyan-200" : "text-pink-300 font-bold"}`}
-					>
-						{row.solvency_ratio ? row.solvency_ratio.toFixed(2) : "—"}
-					</span>
+					{row.solvency_ratio != null ? (
+						<span
+							className={`font-mono ${isSolvent ? "text-cyan-200" : "text-pink-300 font-bold"}`}
+						>
+							{row.solvency_ratio.toFixed(2)}
+						</span>
+					) : (
+						<span className="text-zinc-600">—</span>
+					)}
 				</div>
 			</div>
 		</div>
