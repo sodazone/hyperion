@@ -185,45 +185,36 @@ export function sparkline() {
 			const coords = this.getLineCoords();
 			if (coords.length === 0) return;
 
+			const spacing = 3;
 			const mainColor = this.opts.colors[0];
-			const gradientId = `spark-grad-${Math.random().toString(36).substring(2, 9)}`;
+			const patternId = `spark-dot-${Math.random().toString(36).substring(2, 9)}`;
 
 			const defs = document.createElementNS(
 				"http://www.w3.org/2000/svg",
 				"defs",
 			);
-			const gradient = document.createElementNS(
-				"http://www.w3.org/2000/svg",
-				"linearGradient",
-			);
-			gradient.setAttribute("id", gradientId);
-			gradient.setAttribute("x1", "0");
-			gradient.setAttribute("y1", "0");
-			gradient.setAttribute("x2", "0");
-			gradient.setAttribute("y2", "1");
 
-			const stopTop = document.createElementNS(
+			const pattern = document.createElementNS(
 				"http://www.w3.org/2000/svg",
-				"stop",
+				"pattern",
 			);
-			stopTop.setAttribute("offset", "0%");
-			stopTop.setAttribute("stop-color", mainColor);
-			stopTop.setAttribute(
-				"stop-opacity",
-				(this.opts.opacity * 0.4).toString(),
-			);
+			pattern.setAttribute("id", patternId);
+			pattern.setAttribute("width", spacing);
+			pattern.setAttribute("height", spacing);
+			pattern.setAttribute("patternUnits", "userSpaceOnUse");
 
-			const stopBottom = document.createElementNS(
+			const dot = document.createElementNS(
 				"http://www.w3.org/2000/svg",
-				"stop",
+				"circle",
 			);
-			stopBottom.setAttribute("offset", "100%");
-			stopBottom.setAttribute("stop-color", mainColor);
-			stopBottom.setAttribute("stop-opacity", "0");
+			dot.setAttribute("cx", "1.5");
+			dot.setAttribute("cy", "1.5");
+			dot.setAttribute("r", "0.75");
+			dot.setAttribute("fill", mainColor);
+			dot.setAttribute("opacity", (this.opts.opacity * 0.4).toString());
 
-			gradient.appendChild(stopTop);
-			gradient.appendChild(stopBottom);
-			defs.appendChild(gradient);
+			pattern.appendChild(dot);
+			defs.appendChild(pattern);
 			this.opts.svg.appendChild(defs);
 
 			const first = coords[0];
@@ -239,7 +230,7 @@ export function sparkline() {
 				"path",
 			);
 			areaPath.setAttribute("d", pathData);
-			areaPath.setAttribute("fill", `url(#${gradientId})`);
+			areaPath.setAttribute("fill", `url(#${patternId})`);
 			this.opts.svg.appendChild(areaPath);
 
 			const lineStr = coords.map((c) => `${c.x},${c.y}`).join(" ");
