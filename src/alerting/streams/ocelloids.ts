@@ -61,7 +61,7 @@ const subIds = {
 	defiEvents:
 		Bun.env.OC_DEFI_EVENTS_SUB_ID || "hyperion:defi-events-all-networks",
 	defiLiquidity:
-		Bun.env.OC_DEFI_EVENTS_SUB_ID || "hyperion:liquidity-all-networks",
+		Bun.env.OC_DEFI_LIQUIDTY_SUB_ID || "hyperion:liquidity-all-networks",
 };
 
 function sleep(ms: number, signal: AbortSignal) {
