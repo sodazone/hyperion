@@ -23,6 +23,7 @@ export function mockEvent(overrides: MockOverrides = {}): IssuanceEvent {
 
 		payload: {
 			subscriptionId,
+			protocol: "hydration",
 			reserve: String(reserve),
 			remote: String(remote),
 
