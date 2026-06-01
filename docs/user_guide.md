@@ -34,6 +34,7 @@ The console is live at https://hyperion.soda.zone/
 - [Rule Templates](#rule-templates)
   - [Asset Movement Rule](#asset-movement-rule)
   - [Crosschain Invariant Rule](#crosschain-invariant-rule)
+  - [DEX Liquidity Rule](#dex-liquidity-rule)
  
 # Access
 
