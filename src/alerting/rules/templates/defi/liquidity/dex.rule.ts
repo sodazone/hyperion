@@ -110,7 +110,7 @@ export const ExchangeLiquidityRule: RuleDefinition<
 
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
-		const direction = data.driftPercent < 0 ? "↘" : "↗";
+		const direction = data.driftPercent < 0 ? "down" : "up";
 		return {
 			timestamp: Date.now(),
 			level: config.level,
@@ -118,9 +118,9 @@ export const ExchangeLiquidityRule: RuleDefinition<
 			remark: `TVL: $${payload.suppliedUSD.toLocaleString()}`,
 			networks: makeNetworks(event),
 			message: [
-				["t", `Exchange TVL Shift ${direction} on ${payload.protocol}`],
+				["t", `DEX TVL ${direction} on ${payload.protocol}`],
+				["t", `${(data.driftPercent * 100).toFixed(2)}%`],
 				["t", `Market: ${payload.marketId}`],
-				["t", `Shift: ${(data.driftPercent * 100).toFixed(2)}%`],
 			],
 			payload: {
 				kind: "exchange-liquidity",

@@ -85,7 +85,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 					matched: true,
 					data: {
 						reason: "insolvency",
-						details: `Protocol insolvency: $${lending.health.tokenDeficitUSD.toLocaleString()} token deficit.`,
+						details: `$${lending.health.tokenDeficitUSD.toLocaleString()} token deficit.`,
 					},
 				};
 			}
@@ -103,7 +103,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 				matched: true,
 				data: {
 					reason: "insolvency",
-					details: `Solvency ratio critical: ${lending.health.solvencyRatio.toFixed(3)}`,
+					details: `ratio ${lending.health.solvencyRatio.toFixed(3)}`,
 				},
 			};
 		}
@@ -117,7 +117,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 				matched: true,
 				data: {
 					reason: "utilization",
-					details: `Liquidity freeze: Market utilization hit ${(lending.utilization * 100).toFixed(2)}%`,
+					details: `${(lending.utilization * 100).toFixed(2)}%`,
 				},
 			};
 		}
@@ -129,19 +129,19 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		const payload = event.payload;
 		const headers: Record<MoneyMarketAlertPayload["reason"], string> = {
 			insolvency: "Insolvency",
-			utilization: "Capital Liquidity Crunch",
-			paused: "Protocol Market Paused",
+			utilization: "Utilization",
+			paused: "Market Paused",
 		};
 
 		return {
 			timestamp: Date.now(),
 			level: config.level,
 			name: ruleName,
-			remark: `Protocol: ${payload.protocol} | Market: ${payload.marketId}`,
+			remark: `${payload.marketId} (${payload.protocol})`,
 			networks: makeNetworks(event),
 			message: [
 				["t", `${headers[data.reason]} on ${payload.protocol}`],
-				["t", `Condition: ${data.details}`],
+				["t", data.details],
 			],
 			payload: {
 				kind: "money-market-health",
