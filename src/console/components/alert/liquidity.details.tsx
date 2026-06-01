@@ -35,7 +35,7 @@ function ReasonBadge({ reason }: { reason: string }) {
 
 export function MoneyMarketDetails({ payload }: { payload: any }) {
 	return (
-		<div className="flex flex-col gap-3 px-3 py-1.5 rounded-md bg-zinc-800/20 w-full">
+		<div className="flex flex-col gap-2 px-3 py-1.5 rounded-md bg-zinc-800/20 w-full">
 			<DetailRow label="Protocol">
 				<span className="text-zinc-100 font-medium">{payload.protocol}</span>
 			</DetailRow>
@@ -67,7 +67,7 @@ export function MoneyMarketDetails({ payload }: { payload: any }) {
 
 export function DexDetails({ payload }: { payload: any }) {
 	return (
-		<div className="flex flex-col gap-3 px-3 py-1.5 rounded-md bg-zinc-800/20 w-full">
+		<div className="flex flex-col gap-2 px-3 py-1.5 rounded-md bg-zinc-800/20 w-full">
 			<DetailRow label="Protocol">
 				<span className="text-zinc-100 font-medium">{payload.protocol}</span>
 			</DetailRow>
@@ -76,7 +76,7 @@ export function DexDetails({ payload }: { payload: any }) {
 				<span className="font-mono text-xs text-zinc-400 truncate">
 					{truncMid(payload.poolId)}
 				</span>
-				<CopyButton title="Copy Pool ID" text={payload.poolId} />
+				<CopyButton title="Copy Pool Address" text={payload.poolId} />
 			</DetailRow>
 
 			<DetailRow label="Reason">
