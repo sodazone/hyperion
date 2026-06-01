@@ -298,6 +298,44 @@ Default `0.02` ~2% difference
 **Minimum Consecutive Deficit (`minConsecutive`)**  
 Default `3`
 
+## DEX Liquidity Rule
+
+The **DEX Liquidity** rule monitors changes in the Total Value Locked (TVL) of liquidity pools and generates alerts when unusual liquidity inflows, withdrawals, or sustained movements are detected.
+
+### How It Works
+
+For each monitored liquidity pool the system tracks:
+
+- **Current TVL** — total value of assets locked in the pool
+- **TVL change** — percentage change since the previous observation
+
+The monitor evaluates both sudden and progressive TVL movements.
+
+An alert is generated when:
+
+- TVL drops below the configured **Drop Threshold**
+- TVL increases above the configured **Spike Threshold**
+- TVL continues moving in the same direction by more than the configured **Step Threshold** after a previous alert
+
+Pools with TVL below the configured minimum liquidity floor are ignored to reduce noise from small or inactive pools.
+
+### Configuration
+
+**Networks (optional)**  
+Limit monitoring to specific networks. If empty, all supported networks are monitored.
+
+**Drop Threshold**  
+Triggers an alert when a pool loses at least this percentage of TVL in a single update. Default `0.15` (15%)
+
+**Spike Threshold**  
+Triggers an alert when a pool gains at least this percentage of TVL in a single update. Default `0.50` (50%)
+
+**Step Threshold**  
+Triggers follow-up alerts when TVL continues changing in the same direction after an initial alert. Default `0.10` (10%)
+
+**Minimum Liquidity Floor**  
+Ignore pools with TVL below this USD value. Default `0`
+
 --- 
 
 Happy monitoring!
