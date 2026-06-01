@@ -18,7 +18,7 @@
 		"clean": "rm public/styles.min.css public/js/main.js"
 	},
 	"dependencies": {
-		"@duckdb/node-api": "^1.4.4-r.1",
+		"@duckdb/node-api": "^1.4.4-r.3",
 		"@scure/base": "^2.0.0",
 		"@sodazone/ocelloids-client": "^4.0.5",
 		"alpinejs": "^3.15.8",
