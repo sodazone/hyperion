@@ -66,7 +66,7 @@ export function DexLiquidityCard({
 				</div>
 
 				<div className="flex flex-col items-end min-w-20">
-					<span className="text-zinc-500 text-xs">TVL ({period})</span>
+					<span className="text-zinc-500 text-xs">TVL {period}</span>
 					<div className="flex items-center justify-center pl-2 pt-1.5">
 						<div
 							x-data="sparkline"

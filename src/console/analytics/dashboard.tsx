@@ -68,7 +68,7 @@ export function Dashboard({
 
 					<div className="flex py-1 font-mono divide-x divide-zinc-900 mb-6">
 						<div className="pr-6">
-							<div className="text-xs text-zinc-500">Volume</div>
+							<div className="text-xs text-zinc-400">Volume</div>
 							<div
 								id="kpi-volume"
 								className="text-sm font-semibold text-zinc-100"
@@ -78,14 +78,14 @@ export function Dashboard({
 						</div>
 
 						<div className="px-6">
-							<div className="text-xs text-zinc-500">Net Flow</div>
+							<div className="text-xs text-zinc-400">Net Flow</div>
 							<div id="kpi-net" className="text-sm font-semibold text-zinc-100">
 								<span className="text-zinc-600">–</span>
 							</div>
 						</div>
 
 						<div className="pl-6">
-							<div className="text-xs text-zinc-500">Z-Score</div>
+							<div className="text-xs text-zinc-400">Z-Score</div>
 							<div
 								id="kpi-zscore"
 								className="text-sm font-semibold text-zinc-100"

@@ -23,7 +23,7 @@ export function Kpi({
 			{delta === undefined ? (
 				<span className="text-zinc-500 text-xs">{description ?? ""}</span>
 			) : (
-				<div className="flex items-center gap-1 text-xs font-semibold">
+				<div className="flex items-center gap-1 text-xs">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="12"
@@ -41,9 +41,12 @@ export function Kpi({
 							fill="currentColor"
 						/>
 					</svg>
-					<span className="font-mono">
-						{Math.abs(delta.pct).toFixed(2)}% {delta.period}
-					</span>
+					<div className="flex gap-2">
+						<span className="font-mono font-semibold">
+							{Math.abs(delta.pct).toFixed(2)}%
+						</span>
+						<span className="text-zinc-500">{delta.period}</span>
+					</div>
 				</div>
 			)}
 		</div>

@@ -107,8 +107,6 @@ export async function MoneyMarketHealthFragment(
 		return empty;
 	}
 
-	console.log(volumeRows);
-
 	const uniquePoolsMap = new Map<string, MoneyMarketHealthRow>();
 	for (const row of rows) {
 		const key = `${row.protocol}:${row.market_id}`;
