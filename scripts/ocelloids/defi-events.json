@@ -1,0 +1,14 @@
+{
+	"id": "hyperion:defi-events-all-networks",
+	"agent": "defi",
+	"public": false,
+	"args": {
+		"networks": "*",
+		"topic": "event"
+	},
+	"channels": [
+		{
+			"type": "websocket"
+		}
+	]
+}
