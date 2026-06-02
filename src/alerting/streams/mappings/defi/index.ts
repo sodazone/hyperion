@@ -1,5 +1,7 @@
 import type { defi, Message } from "@sodazone/ocelloids-client";
 import type {
+	DefiEvent,
+	DefiEventAsset,
 	DefiLiquidityEvent,
 	LiquidityAsset,
 	MoneyMarketPayload,
@@ -80,5 +82,122 @@ export function mapDefiLiquidity(
 			assets: mappedAssets,
 			lending: mappedLending,
 		},
+	};
+}
+
+export function mapDefiEvent(
+	message: Message<defi.DefiSubscriptionPayload>,
+): DefiEvent | null {
+	if (!message || !message.payload) {
+		return null;
+	}
+
+	const raw = message.payload;
+
+	if (raw.type !== "event") {
+		return null;
+	}
+
+	const basePayload = {
+		id: raw.id,
+		marketId: raw.marketId,
+	};
+
+	const origin = {
+		chainURN: message.metadata.networkId,
+		blockHash: raw.blockHash ?? undefined,
+		blockNumber: raw.blockNumber ?? undefined,
+		txHash: raw.txHash ?? undefined,
+		timestamp: message.metadata.blockTimestamp ?? message.metadata.timestamp,
+		protocol: raw.protocol,
+	};
+
+	switch (raw.name) {
+		case "swap": {
+			return {
+				type: "defi-event",
+				origin,
+				payload: {
+					...basePayload,
+					name: "swap",
+					data: {
+						origin: raw.data.origin,
+						in: mapToDefiEventAsset(raw.data.in),
+						out: mapToDefiEventAsset(raw.data.out),
+					},
+				},
+			};
+		}
+
+		case "mint":
+		case "burn": {
+			return {
+				type: "defi-event",
+				origin,
+				payload: {
+					...basePayload,
+					name: raw.name,
+					data: {
+						provider: raw.data.provider,
+						assets: Array.isArray(raw.data.assets)
+							? raw.data.assets.map(mapToDefiEventAsset)
+							: [],
+					},
+				},
+			};
+		}
+
+		case "borrow":
+		case "repay":
+		case "withdraw":
+		case "supply": {
+			return {
+				type: "defi-event",
+				origin,
+				payload: {
+					...basePayload,
+					name: raw.name,
+					data: {
+						provider: raw.data.provider,
+						assets: Array.isArray(raw.data.assets)
+							? raw.data.assets.map(mapToDefiEventAsset)
+							: [],
+					},
+				},
+			};
+		}
+
+		case "liquidate": {
+			return {
+				type: "defi-event",
+				origin,
+				payload: {
+					...basePayload,
+					name: "liquidate",
+					data: {
+						origin: raw.data.origin,
+						counterparty: raw.data.counterparty,
+						debt: mapToDefiEventAsset(raw.data.debt),
+						collateral: mapToDefiEventAsset(raw.data.collateral),
+					},
+				},
+			};
+		}
+
+		default:
+			console.warn("[mapDefiEvent] Unsupported event name encountered", raw);
+			return null;
+	}
+}
+
+function mapToDefiEventAsset(sourceAsset: any): DefiEventAsset {
+	return {
+		assetId: sourceAsset?.assetId ?? sourceAsset?.address ?? "unknown",
+		symbol: sourceAsset?.symbol ?? "UNKNOWN",
+		amount: sourceAsset?.amount?.toString() ?? "0",
+		amountUSD:
+			sourceAsset?.amountUSD !== undefined
+				? Number(sourceAsset.amountUSD)
+				: undefined,
 	};
 }

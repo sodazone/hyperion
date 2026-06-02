@@ -9,10 +9,11 @@ import type {
 	CEXFlowQueryParams,
 	TopExchangesQueryParams,
 } from "./queries.cex";
-import type { DefiQueryParams } from "./queries.defi";
+import type { DefiQueryParams, DefiVolumeQueryParams } from "./queries.defi";
 import { createWriteQueue } from "./queue";
 import type {
 	CrosschainSolvencyRow,
+	DefiVolumeRow,
 	DexLiquidityRow,
 	MoneyMarketHealthRow,
 } from "./types";
@@ -150,6 +151,28 @@ export class AnalyticsDB {
 				supplied_usd: Number(r.supplied_usd),
 				tvl_change_usd: Number(r.tvl_change_usd),
 				total_aggregate_tvl_usd: Number(r.total_aggregate_tvl_usd),
+			}),
+		);
+	}
+
+	async defiVolumeSeries(
+		params: DefiVolumeQueryParams,
+	): Promise<DefiVolumeRow[]> {
+		const result = await this.conn.runAndReadAll(Queries.defi.volume(params));
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): DefiVolumeRow => ({
+				ts: String(r.timestamp),
+				protocol: String(r.protocol),
+				market_id: String(r.market_id),
+
+				swap_volume_usd: Number(r.swap_volume_usd),
+				supply_volume_usd: Number(r.supply_volume_usd),
+				borrow_volume_usd: Number(r.borrow_volume_usd),
+				repay_volume_usd: Number(r.repay_volume_usd),
+				withdraw_volume_usd: Number(r.withdraw_volume_usd),
+				liquidation_volume_usd: Number(r.liquidation_volume_usd),
 			}),
 		);
 	}

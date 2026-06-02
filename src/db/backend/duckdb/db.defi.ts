@@ -1,5 +1,5 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
-import type { AnyEvent, DefiLiquidityEvent } from "@/alerting";
+import type { AnyEvent, DefiEvent, DefiLiquidityEvent } from "@/alerting";
 import { safeNumber } from "./utils";
 
 export function createDefiAnalytics({
@@ -9,6 +9,120 @@ export function createDefiAnalytics({
 	conn: DuckDBConnection;
 	enqueueWrite: (w: () => Promise<void>) => Promise<void>;
 }) {
+	async function ingestDefiEvent(event: DefiEvent) {
+		if (event.type !== "defi-event") return;
+
+		const { origin } = event;
+		const p = event.payload;
+		const timestamp = new Date(origin.timestamp ?? Date.now()).toISOString();
+
+		const insertRow = async (
+			eventType: string,
+			direction: "IN" | "OUT" | "COLLATERAL" | "DEBT" | "NONE",
+			assetId: string,
+			symbol: string,
+			amountStr: string,
+			amountUSD?: number,
+		) => {
+			await conn.run(
+				`
+					INSERT INTO defi_volume_events (
+						ts, event_id, tx_hash, network_id, protocol, market_id,
+						event_type, direction, asset_id, symbol, amount, amount_usd
+					) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+					`,
+				[
+					timestamp,
+					p.id,
+					origin.txHash ?? null,
+					origin.chainURN,
+					origin.protocol ?? null,
+					p.marketId,
+					eventType,
+					direction,
+					assetId,
+					symbol,
+					safeNumber(amountStr, 0),
+					safeNumber(amountUSD, null),
+				],
+			);
+		};
+
+		switch (p.name) {
+			case "swap":
+				await insertRow(
+					"swap",
+					"IN",
+					p.data.in.assetId,
+					p.data.in.symbol,
+					p.data.in.amount,
+					p.data.in.amountUSD,
+				);
+				await insertRow(
+					"swap",
+					"OUT",
+					p.data.out.assetId,
+					p.data.out.symbol,
+					p.data.out.amount,
+					p.data.out.amountUSD,
+				);
+				break;
+
+			case "mint":
+			case "burn":
+				if (Array.isArray(p.data.assets)) {
+					for (const asset of p.data.assets) {
+						await insertRow(
+							p.name,
+							"NONE",
+							asset.assetId,
+							asset.symbol,
+							asset.amount,
+							asset.amountUSD,
+						);
+					}
+				}
+				break;
+
+			case "borrow":
+			case "repay":
+			case "supply":
+			case "withdraw":
+				if (Array.isArray(p.data.assets)) {
+					for (const asset of p.data.assets) {
+						await insertRow(
+							p.name,
+							"NONE",
+							asset.assetId,
+							asset.symbol,
+							asset.amount,
+							asset.amountUSD,
+						);
+					}
+				}
+				break;
+
+			case "liquidate":
+				await insertRow(
+					"liquidate",
+					"DEBT",
+					p.data.debt.assetId,
+					p.data.debt.symbol,
+					p.data.debt.amount,
+					p.data.debt.amountUSD,
+				);
+				await insertRow(
+					"liquidate",
+					"COLLATERAL",
+					p.data.collateral.assetId,
+					p.data.collateral.symbol,
+					p.data.collateral.amount,
+					p.data.collateral.amountUSD,
+				);
+				break;
+		}
+	}
+
 	async function ingestDefiLiquidity(event: DefiLiquidityEvent) {
 		if (event.type !== "defi-liquidity") return;
 
@@ -63,10 +177,34 @@ export function createDefiAnalytics({
 
 	return {
 		ingest(event: AnyEvent) {
-			if (event.type !== "defi-liquidity") return;
-			enqueueWrite(() => ingestDefiLiquidity(event));
+			if (event.type === "defi-liquidity") {
+				enqueueWrite(() => ingestDefiLiquidity(event));
+			} else if (event.type === "defi-event") {
+				enqueueWrite(() => ingestDefiEvent(event));
+			}
 		},
 		createSchema: async () => {
+			await conn.run(`
+				CREATE TABLE IF NOT EXISTS defi_volume_events (
+					ts           TIMESTAMP,
+					event_id     TEXT,
+					tx_hash      TEXT,
+					network_id   TEXT,
+					protocol     TEXT,
+					market_id    TEXT,
+					event_type   TEXT,
+					direction    TEXT,
+					asset_id     TEXT,
+					symbol       TEXT,
+					amount       DOUBLE,
+					amount_usd   DOUBLE,
+					PRIMARY KEY (ts, event_id, asset_id, direction)
+				);
+
+				CREATE INDEX IF NOT EXISTS idx_volume_lookups
+				ON defi_volume_events(protocol, market_id, ts DESC);
+			`);
+
 			await conn.run(`
         CREATE TABLE IF NOT EXISTS dex_liquidity_snapshots (
           ts              TIMESTAMP,

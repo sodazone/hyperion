@@ -7,6 +7,19 @@ export type DexLiquidityRow = {
 	cumulative_tvl_usd: number;
 };
 
+export type DefiVolumeRow = {
+	timestamp: Date;
+	protocol: string;
+	market_id: string;
+	swap_volume_usd: number;
+	supply_volume_usd: number;
+	borrow_volume_usd: number;
+	repay_volume_usd: number;
+	withdraw_volume_usd: number;
+	liquidation_volume_usd: number;
+	total_volume_usd: number;
+};
+
 export type MoneyMarketHealthRow = {
 	timestamp: Date;
 	protocol: string;
@@ -26,6 +39,74 @@ export type DefiQueryParams = {
 	marketId?: string;
 	limit?: number;
 };
+
+export type DefiVolumeQueryParams = DefiQueryParams & {
+	type: "dex" | "lending";
+};
+
+const VOLUME_FILTERS: Record<string, string> = {
+	dex: "AND event_type = 'swap' AND direction = 'IN'",
+	lending: "AND event_type != 'swap'",
+} as const;
+
+export function generateDefiVolumeQuery({
+	bucket = "day",
+	lookback = 30,
+	network,
+	protocol,
+	marketId,
+	limit,
+	type = "dex",
+}: DefiVolumeQueryParams) {
+	const isDay = bucket === "day";
+	const castExpr = isDay ? "CAST(ts AS DATE)" : "DATE_TRUNC('hour', ts)";
+	const startExpr = isDay
+		? `CURRENT_DATE - INTERVAL '${lookback} days'`
+		: `NOW() - INTERVAL '${lookback} hours'`;
+
+	const networkFilter = network ? `AND network_id = '${network}'` : "";
+	const protocolFilter = protocol ? `AND protocol = '${protocol}'` : "";
+	const marketFilter = marketId ? `AND market_id = '${marketId}'` : "";
+	const limitClause = limit ? `LIMIT ${limit}` : "";
+	const eventTypeFilter = VOLUME_FILTERS[type];
+
+	return `
+WITH aggregated_volume AS (
+  SELECT
+    ${castExpr} AS timestamp,
+    protocol,
+    market_id,
+    SUM(CASE WHEN event_type = 'swap' THEN amount_usd ELSE 0 END)AS swap_volume_usd,
+    SUM(CASE WHEN event_type = 'supply' THEN amount_usd ELSE 0 END) AS supply_volume_usd,
+    SUM(CASE WHEN event_type = 'borrow' THEN amount_usd ELSE 0 END) AS borrow_volume_usd,
+    SUM(CASE WHEN event_type = 'repay' THEN amount_usd ELSE 0 END) AS repay_volume_usd,
+    SUM(CASE WHEN event_type = 'withdraw' THEN amount_usd ELSE 0 END) AS withdraw_volume_usd,
+    SUM(CASE WHEN event_type = 'liquidate' AND direction = 'DEBT' THEN amount_usd ELSE 0 END) AS liquidation_volume_usd
+  FROM defi_volume_events
+  WHERE
+    ts >= ${startExpr}
+    ${networkFilter}
+    ${protocolFilter}
+    ${marketFilter}
+    ${eventTypeFilter}
+  GROUP BY 1, 2, 3
+)
+
+SELECT
+  timestamp,
+  protocol,
+  market_id,
+  swap_volume_usd,
+  supply_volume_usd,
+  borrow_volume_usd,
+  repay_volume_usd,
+  withdraw_volume_usd,
+  liquidation_volume_usd,
+FROM aggregated_volume
+ORDER BY timestamp ASC
+${limitClause};
+`;
+}
 
 export function generateDexLiquidityQuery({
 	bucket = "day",
@@ -131,4 +212,5 @@ ORDER BY supplied_usd DESC, timestamp ASC;
 export const DefiQueries = {
 	dex_liquidity: generateDexLiquidityQuery,
 	money_market_health: generateMoneyMarketHealthQuery,
+	volume: generateDefiVolumeQuery,
 };

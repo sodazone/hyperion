@@ -31,6 +31,19 @@ export interface DexLiquidityRow {
 	total_aggregate_tvl_usd: number;
 }
 
+export type DefiVolumeRow = {
+	ts: string;
+	protocol: string;
+	market_id: string;
+
+	swap_volume_usd: number;
+	supply_volume_usd: number;
+	borrow_volume_usd: number;
+	repay_volume_usd: number;
+	withdraw_volume_usd: number;
+	liquidation_volume_usd: number;
+};
+
 export interface MoneyMarketHealthRow {
 	ts: string;
 	subscription_id: string;

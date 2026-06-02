@@ -134,6 +134,55 @@ export type DefiLiquidityEvent = BaseEvent<
 	}
 >;
 
+export type DefiEventAsset = {
+	assetId: string;
+	symbol: string;
+	amount: string;
+	amountUSD?: number;
+};
+
+export type MoneyMarketActions = "borrow" | "repay" | "withdraw" | "supply";
+
+export type DefiEvent = BaseEvent<
+	"defi-event",
+	{
+		id: string;
+		marketId: string;
+	} & (
+		| {
+				name: "swap";
+				data: {
+					origin: string;
+					in: DefiEventAsset;
+					out: DefiEventAsset;
+				};
+		  }
+		| {
+				name: "mint" | "burn";
+				data: {
+					provider: string;
+					assets: DefiEventAsset[];
+				};
+		  }
+		| {
+				name: MoneyMarketActions;
+				data: {
+					provider: string;
+					assets: DefiEventAsset[];
+				};
+		  }
+		| {
+				name: "liquidate";
+				data: {
+					origin: string;
+					counterparty: string;
+					debt: DefiEventAsset;
+					collateral: DefiEventAsset;
+				};
+		  }
+	)
+>;
+
 export type IssuanceEvent = BaseEvent<
 	"issuance",
 	{
@@ -161,6 +210,7 @@ export interface EventMap {
 	issuance: IssuanceEvent;
 	opengov: OpenGovEvent;
 	liquidity: DefiLiquidityEvent;
+	defiEvent: DefiEvent;
 }
 
 export type StateValue = unknown;

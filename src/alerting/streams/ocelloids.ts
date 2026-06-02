@@ -8,12 +8,14 @@ import {
 	type OcelloidsClientApi,
 } from "@sodazone/ocelloids-client";
 import type {
+	DefiEvent,
 	DefiLiquidityEvent,
 	IssuanceEvent,
 	OpenGovEvent,
 	TransferEvent,
 } from "../rules";
 import {
+	mapDefiEvent,
 	mapDefiLiquidity,
 	mapIssuance,
 	mapJourney,
@@ -39,9 +41,7 @@ export type StreamsClient = {
 		emit: (msg: DefiLiquidityEvent) => void,
 	) => Promise<() => void>;
 
-	subscribeDefiEvents: (
-		emit: (msg: TransferEvent) => void,
-	) => Promise<() => void>;
+	subscribeDefiEvents: (emit: (msg: DefiEvent) => void) => Promise<() => void>;
 
 	subscribeTransfers: (
 		emit: (msg: TransferEvent) => void,
@@ -205,9 +205,10 @@ export async function createOcelloidsClient({
 					return defi.subscribeWithReplay(
 						subIds.defiEvents,
 						{
-							onMessage: ({ payload }) => {
+							onMessage: (msg) => {
 								onMessage();
-								emit(mapTransfer(payload));
+								const event = mapDefiEvent(msg);
+								if (event) emit(event);
 							},
 							onError,
 							onClose,
