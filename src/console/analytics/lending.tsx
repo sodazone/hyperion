@@ -4,7 +4,7 @@ import { formatNumberSI } from "@/utils/amounts";
 import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
-import { formatPct } from "./format";
+import { formatPct, protocolLabel } from "./format";
 import { Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
 import { parseDashboardParamsForDefi } from "./params";
@@ -72,6 +72,9 @@ export function MoneyMarketHealthCard({ row }: { row: MoneyMarketHealthRow }) {
 					) : (
 						<span className="text-zinc-800">—</span>
 					)}
+					<span className="text-zinc-500 text-xs">
+						{protocolLabel(row.protocol)}
+					</span>
 				</div>
 			</div>
 		</div>

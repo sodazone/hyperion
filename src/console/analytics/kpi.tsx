@@ -33,7 +33,7 @@ export function Kpi({
 						role="img"
 						aria-hidden="true"
 						className={`transform transition-transform duration-200 ${
-							delta.pct >= 0 ? "rotate-180 text-pink-400" : "text-cyan-400"
+							delta.pct < 0 ? "rotate-180 text-pink-400" : "text-cyan-400"
 						}`}
 					>
 						<path

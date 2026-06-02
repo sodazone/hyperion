@@ -68,7 +68,12 @@ calculated AS (
     market_id,
     label,
     supplied_usd,
-    supplied_usd - LAG(supplied_usd, 1, supplied_usd) OVER (PARTITION BY protocol, market_id ORDER BY timestamp) AS tvl_change_usd
+    supplied_usd
+      - FIRST_VALUE(supplied_usd) OVER (
+          PARTITION BY protocol, market_id
+          ORDER BY timestamp
+          ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+        ) AS tvl_change_usd
   FROM bucketed_states
 )
 
@@ -81,7 +86,7 @@ SELECT
   tvl_change_usd,
   SUM(supplied_usd) OVER (PARTITION BY timestamp) AS total_aggregate_tvl_usd
 FROM calculated
-ORDER BY supplied_usd DESC, timestamp ASC;
+ORDER BY timestamp ASC, supplied_usd DESC;
 `;
 }
 
