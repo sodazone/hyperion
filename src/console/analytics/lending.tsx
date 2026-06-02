@@ -88,14 +88,12 @@ export async function MoneyMarketHealthFragment(
 	const { network, bucket, lookback, periodLabel } =
 		parseDashboardParamsForDefi(req);
 
-	// 1. Fetch State Snapshots
 	const rows = await ctx.db.analytics.moneyMarketHealthSeries({
 		network,
 		bucket,
 		lookback,
 	});
 
-	// 2. Fetch Aggregated Action Volumes
 	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
 		network,
 		bucket,
@@ -259,7 +257,6 @@ export async function MoneyMarketHealthFragment(
 					</div>
 
 					<div className="flex flex-wrap gap-8 md:gap-12">
-						{/* Transactional Action Stream Flow Metrics */}
 						<Kpi
 							title="Supply Volume"
 							qty={`${formatNumberSI(volumeSupplyTotal, 2)}`}

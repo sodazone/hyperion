@@ -91,14 +91,12 @@ export async function DexLiquidityFragment(
 	const { network, bucket, lookback, periodLabel } =
 		parseDashboardParamsForDefi(req);
 
-	// 1. Fetch TVL series data
 	const rows = await ctx.db.analytics.dexLiquiditySeries({
 		network,
 		bucket,
 		lookback,
 	});
 
-	// 2. Fetch volume series data
 	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
 		network,
 		bucket,
@@ -110,7 +108,7 @@ export async function DexLiquidityFragment(
 		return empty;
 	}
 
-	// 3. Aggregate volumes over the lookback window & track volumes per timestamp
+	// Aggregate volumes over the lookback window & track volumes per timestamp
 	const poolVolumeMap = new Map<string, number>();
 	const volumeByTimestampMap = new Map<string, number>();
 	let totalAggregateVolumeUsd = 0;
@@ -133,7 +131,7 @@ export async function DexLiquidityFragment(
 		}
 	}
 
-	// 4. Calculate TVL Deltas
+	// Calculate TVL Deltas
 	const latestRow = rows[rows.length - 1];
 	const earliestRow = rows[0];
 
@@ -144,7 +142,7 @@ export async function DexLiquidityFragment(
 	const periodDeltaPct =
 		baselineTotalTvl > 0 ? (periodDeltaUsd / baselineTotalTvl) * 100 : 0;
 
-	// 5. Calculate Volume Deltas (Latest time-bucket volume vs Earliest time-bucket volume)
+	// Calculate Volume Deltas (Latest time-bucket volume vs Earliest time-bucket volume)
 	const sortedVolumeTimestamps = Array.from(volumeByTimestampMap.keys()).sort(
 		(a, b) => new Date(a).getTime() - new Date(b).getTime(),
 	);
@@ -162,7 +160,7 @@ export async function DexLiquidityFragment(
 			? (volumeDeltaUsd / baselineBucketVolume) * 100
 			: 0;
 
-	// 6. Deduplicate pool records to get latest TVL snapshot state
+	// Deduplicate pool records to get latest TVL snapshot state
 	const uniquePoolsMap = new Map<string, DexLiquidityRow>();
 	for (const row of rows) {
 		const key = `${row.protocol}:${row.market_id}`;
@@ -179,7 +177,7 @@ export async function DexLiquidityFragment(
 		<div className="flex flex-col p-4 space-y-4">
 			<h3 className="text-zinc-200 text-sm font-semibold">Liquidity Pools</h3>
 			<div className="space-y-6">
-				{/* KPI Panel Row */}
+				{/* KPIs */}
 				<div className="px-2 flex flex-wrap gap-8 md:gap-12">
 					<Kpi
 						title="Total TVL"
