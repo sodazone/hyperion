@@ -88,15 +88,26 @@ export async function MoneyMarketHealthFragment(
 	const { network, bucket, lookback, periodLabel } =
 		parseDashboardParamsForDefi(req);
 
-	const rows = (await ctx.db.analytics.moneyMarketHealthSeries({
+	// 1. Fetch State Snapshots
+	const rows = await ctx.db.analytics.moneyMarketHealthSeries({
 		network,
 		bucket,
 		lookback,
-	})) as MoneyMarketHealthRow[];
+	});
+
+	// 2. Fetch Aggregated Action Volumes
+	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
+		network,
+		bucket,
+		lookback,
+		type: "lending",
+	});
 
 	if (!rows || rows.length === 0) {
 		return empty;
 	}
+
+	console.log(volumeRows);
 
 	const uniquePoolsMap = new Map<string, MoneyMarketHealthRow>();
 	for (const row of rows) {
@@ -134,35 +145,142 @@ export async function MoneyMarketHealthFragment(
 		baselineTotalBorrowed += r.borrowed_usd;
 	}
 
-	const periodDeltaSuppliedUsd = currentTotalSupplied - baselineTotalSupplied;
 	const periodDeltaSuppliedPct =
 		baselineTotalSupplied > 0
-			? (periodDeltaSuppliedUsd / baselineTotalSupplied) * 100
+			? ((currentTotalSupplied - baselineTotalSupplied) /
+					baselineTotalSupplied) *
+				100
 			: 0;
 
-	const periodDeltaBorrowedUsd = currentTotalBorrowed - baselineTotalBorrowed;
 	const periodDeltaBorrowedPct =
 		baselineTotalBorrowed > 0
-			? (periodDeltaBorrowedUsd / baselineTotalBorrowed) * 100
+			? ((currentTotalBorrowed - baselineTotalBorrowed) /
+					baselineTotalBorrowed) *
+				100
 			: 0;
+
+	let volumeSupplyTotal = 0;
+	let volumeBorrowTotal = 0;
+	let volumeRepayTotal = 0;
+	let volumeLiquidateTotal = 0;
+
+	const volTimelineMap = new Map<
+		string,
+		{ supply: number; borrow: number; repay: number; liquidate: number }
+	>();
+
+	if (volumeRows && volumeRows.length > 0) {
+		for (const volRow of volumeRows) {
+			const s = Number(volRow.supply_volume_usd ?? 0);
+			const b = Number(volRow.borrow_volume_usd ?? 0);
+			const r = Number(volRow.repay_volume_usd ?? 0);
+			const l = Number(volRow.liquidation_volume_usd ?? 0);
+
+			volumeSupplyTotal += s;
+			volumeBorrowTotal += b;
+			volumeRepayTotal += r;
+			volumeLiquidateTotal += l;
+
+			const tsKey = String(volRow.ts);
+			const currentBucket = volTimelineMap.get(tsKey) || {
+				supply: 0,
+				borrow: 0,
+				repay: 0,
+				liquidate: 0,
+			};
+
+			currentBucket.supply += s;
+			currentBucket.borrow += b;
+			currentBucket.repay += r;
+			currentBucket.liquidate += l;
+			volTimelineMap.set(tsKey, currentBucket);
+		}
+	}
+
+	// Extract lookback window baseline vs latest delta changes for volumes
+	const sortedVolumeTimestamps = Array.from(volTimelineMap.keys()).sort(
+		(a, b) => new Date(a).getTime() - new Date(b).getTime(),
+	);
+
+	let deltaVolSupplyPct = 0;
+	let deltaVolBorrowPct = 0;
+	let deltaVolRepayPct = 0;
+	let deltaVolLiquidatePct = 0;
+
+	if (sortedVolumeTimestamps.length > 0) {
+		const first = sortedVolumeTimestamps[0] ?? "";
+		const last =
+			sortedVolumeTimestamps[sortedVolumeTimestamps.length - 1] ?? "";
+		const earliestBucket = volTimelineMap.get(first);
+		const latestBucket = volTimelineMap.get(last);
+		const bucketsFound =
+			earliestBucket !== undefined && latestBucket !== undefined;
+
+		deltaVolSupplyPct =
+			bucketsFound && earliestBucket.supply > 0
+				? ((latestBucket.supply - earliestBucket.supply) /
+						earliestBucket.supply) *
+					100
+				: 0;
+		deltaVolBorrowPct =
+			bucketsFound && earliestBucket.borrow > 0
+				? ((latestBucket.borrow - earliestBucket.borrow) /
+						earliestBucket.borrow) *
+					100
+				: 0;
+		deltaVolRepayPct =
+			bucketsFound && earliestBucket.repay > 0
+				? ((latestBucket.repay - earliestBucket.repay) / earliestBucket.repay) *
+					100
+				: 0;
+		deltaVolLiquidatePct =
+			bucketsFound && earliestBucket.liquidate > 0
+				? ((latestBucket.liquidate - earliestBucket.liquidate) /
+						earliestBucket.liquidate) *
+					100
+				: 0;
+	}
 
 	return render(
 		<div className="flex flex-col p-4 space-y-4">
-			<h3 className="text-zinc-200 text-sm font-semibold">Lending</h3>
+			<h3 className="text-zinc-200 text-sm font-semibold">Lending Overview</h3>
 			<div className="space-y-6">
-				<div className="flex divide-x divide-zinc-900 px-2">
-					<div className="pr-6">
+				{/* KPIs */}
+				<div className="flex flex-col gap-6 px-2">
+					<div className="flex flex-wrap gap-8 md:gap-12">
 						<Kpi
 							title="Total Supplied"
 							qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
 							delta={{ period: periodLabel, pct: periodDeltaSuppliedPct }}
 						/>
-					</div>
-					<div className="pl-6">
 						<Kpi
 							title="Total Borrowed"
 							qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
 							delta={{ period: periodLabel, pct: periodDeltaBorrowedPct }}
+						/>
+					</div>
+
+					<div className="flex flex-wrap gap-8 md:gap-12">
+						{/* Transactional Action Stream Flow Metrics */}
+						<Kpi
+							title="Supply Volume"
+							qty={`${formatNumberSI(volumeSupplyTotal, 2)}`}
+							delta={{ period: periodLabel, pct: deltaVolSupplyPct }}
+						/>
+						<Kpi
+							title="Borrow Volume"
+							qty={`${formatNumberSI(volumeBorrowTotal, 2)}`}
+							delta={{ period: periodLabel, pct: deltaVolBorrowPct }}
+						/>
+						<Kpi
+							title="Repay Volume"
+							qty={`${formatNumberSI(volumeRepayTotal, 2)}`}
+							delta={{ period: periodLabel, pct: deltaVolRepayPct }}
+						/>
+						<Kpi
+							title="Liquidation"
+							qty={`${formatNumberSI(volumeLiquidateTotal, 2)}`}
+							delta={{ period: periodLabel, pct: deltaVolLiquidatePct }}
 						/>
 					</div>
 				</div>

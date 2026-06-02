@@ -189,6 +189,9 @@ export function createMonitor({
 					subManager.addDependency(dep);
 				}
 			}
+
+			// TODO: dettached deps
+			subManager.addDependency({ kind: "defi-events" });
 		},
 		rules: {
 			update: updateInstance,
