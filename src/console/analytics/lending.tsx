@@ -155,37 +155,32 @@ export async function MoneyMarketHealthFragment(
 				100
 			: 0;
 
-	let volumeSupplyTotal = 0;
 	let volumeBorrowTotal = 0;
 	let volumeRepayTotal = 0;
 	let volumeLiquidateTotal = 0;
 
 	const volTimelineMap = new Map<
 		string,
-		{ supply: number; borrow: number; repay: number; liquidate: number }
+		{ borrow: number; repay: number; liquidate: number }
 	>();
 
 	if (volumeRows && volumeRows.length > 0) {
 		for (const volRow of volumeRows) {
-			const s = Number(volRow.supply_volume_usd ?? 0);
 			const b = Number(volRow.borrow_volume_usd ?? 0);
 			const r = Number(volRow.repay_volume_usd ?? 0);
 			const l = Number(volRow.liquidation_volume_usd ?? 0);
 
-			volumeSupplyTotal += s;
 			volumeBorrowTotal += b;
 			volumeRepayTotal += r;
 			volumeLiquidateTotal += l;
 
 			const tsKey = String(volRow.ts);
 			const currentBucket = volTimelineMap.get(tsKey) || {
-				supply: 0,
 				borrow: 0,
 				repay: 0,
 				liquidate: 0,
 			};
 
-			currentBucket.supply += s;
 			currentBucket.borrow += b;
 			currentBucket.repay += r;
 			currentBucket.liquidate += l;
@@ -198,7 +193,6 @@ export async function MoneyMarketHealthFragment(
 		(a, b) => new Date(a).getTime() - new Date(b).getTime(),
 	);
 
-	let deltaVolSupplyPct = 0;
 	let deltaVolBorrowPct = 0;
 	let deltaVolRepayPct = 0;
 	let deltaVolLiquidatePct = 0;
@@ -212,12 +206,6 @@ export async function MoneyMarketHealthFragment(
 		const bucketsFound =
 			earliestBucket !== undefined && latestBucket !== undefined;
 
-		deltaVolSupplyPct =
-			bucketsFound && earliestBucket.supply > 0
-				? ((latestBucket.supply - earliestBucket.supply) /
-						earliestBucket.supply) *
-					100
-				: 0;
 		deltaVolBorrowPct =
 			bucketsFound && earliestBucket.borrow > 0
 				? ((latestBucket.borrow - earliestBucket.borrow) /
@@ -257,11 +245,6 @@ export async function MoneyMarketHealthFragment(
 					</div>
 
 					<div className="flex flex-wrap gap-8 md:gap-12">
-						<Kpi
-							title="Supply Volume"
-							qty={`${formatNumberSI(volumeSupplyTotal, 2)}`}
-							delta={{ period: periodLabel, pct: deltaVolSupplyPct }}
-						/>
 						<Kpi
 							title="Borrow Volume"
 							qty={`${formatNumberSI(volumeBorrowTotal, 2)}`}

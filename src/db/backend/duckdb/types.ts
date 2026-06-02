@@ -37,7 +37,6 @@ export type DefiVolumeRow = {
 	market_id: string;
 
 	swap_volume_usd: number;
-	supply_volume_usd: number;
 	borrow_volume_usd: number;
 	repay_volume_usd: number;
 	withdraw_volume_usd: number;

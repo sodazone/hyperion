@@ -168,7 +168,6 @@ export class AnalyticsDB {
 				market_id: String(r.market_id),
 
 				swap_volume_usd: Number(r.swap_volume_usd),
-				supply_volume_usd: Number(r.supply_volume_usd),
 				borrow_volume_usd: Number(r.borrow_volume_usd),
 				repay_volume_usd: Number(r.repay_volume_usd),
 				withdraw_volume_usd: Number(r.withdraw_volume_usd),

@@ -18,7 +18,7 @@ export function createDefiAnalytics({
 
 		const insertRow = async (
 			eventType: string,
-			direction: "IN" | "OUT" | "COLLATERAL" | "DEBT" | "NONE",
+			direction: "in" | "out" | "collateral" | "debt" | "none",
 			assetId: string,
 			symbol: string,
 			amountStr: string,
@@ -52,7 +52,7 @@ export function createDefiAnalytics({
 			case "swap":
 				await insertRow(
 					"swap",
-					"IN",
+					"in",
 					p.data.in.assetId,
 					p.data.in.symbol,
 					p.data.in.amount,
@@ -60,7 +60,7 @@ export function createDefiAnalytics({
 				);
 				await insertRow(
 					"swap",
-					"OUT",
+					"out",
 					p.data.out.assetId,
 					p.data.out.symbol,
 					p.data.out.amount,
@@ -74,7 +74,7 @@ export function createDefiAnalytics({
 					for (const asset of p.data.assets) {
 						await insertRow(
 							p.name,
-							"NONE",
+							"none",
 							asset.assetId,
 							asset.symbol,
 							asset.amount,
@@ -92,7 +92,7 @@ export function createDefiAnalytics({
 					for (const asset of p.data.assets) {
 						await insertRow(
 							p.name,
-							"NONE",
+							"none",
 							asset.assetId,
 							asset.symbol,
 							asset.amount,
@@ -105,7 +105,7 @@ export function createDefiAnalytics({
 			case "liquidate":
 				await insertRow(
 					"liquidate",
-					"DEBT",
+					"debt",
 					p.data.debt.assetId,
 					p.data.debt.symbol,
 					p.data.debt.amount,
@@ -113,7 +113,7 @@ export function createDefiAnalytics({
 				);
 				await insertRow(
 					"liquidate",
-					"COLLATERAL",
+					"collateral",
 					p.data.collateral.assetId,
 					p.data.collateral.symbol,
 					p.data.collateral.amount,
