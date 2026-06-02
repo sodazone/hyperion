@@ -99,6 +99,7 @@ export function createAuthApi() {
 			return member;
 		} catch (error) {
 			console.error("Error authenticating user:", error);
+			req.cookies.delete(StytchSessionToken);
 			return null;
 		}
 	}
