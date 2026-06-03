@@ -35,6 +35,7 @@ The console is live at https://hyperion.soda.zone/
   - [Asset Movement Rule](#asset-movement-rule)
   - [Crosschain Invariant Rule](#crosschain-invariant-rule)
   - [DEX Liquidity Rule](#dex-liquidity-rule)
+  - [Money Market Health Rule](#money-market-health-rule)
  
 # Access
 
@@ -336,6 +337,33 @@ Triggers follow-up alerts when TVL continues changing in the same direction afte
 
 **Minimum Liquidity Floor**  
 Ignore pools with TVL below this USD value. Default `0`
+
+## Money Market Health Rule
+
+The **Money Market Health** rule monitors the solvency and utilization of lending protocols and generates alerts when markets show signs of liquidity stress or balance sheet deterioration.
+
+### How It Works
+
+For each monitored money market the system tracks:
+
+- **Solvency Ratio** — protocol assets relative to liabilities
+- **Pool Utilization** — proportion of supplied liquidity currently borrowed
+
+An alert is generated when:
+
+- Solvency falls below the configured **Minimum Solvency Ratio**
+- Utilization exceeds the configured **Maximum Pool Utilization**
+
+### Configuration
+
+**Networks (optional)**  
+Limit monitoring to specific networks. If empty, all supported networks are monitored.
+
+**Minimum Solvency Ratio**  
+Triggers an alert when a market's solvency ratio falls below this threshold. Default `0.98` (98%)
+
+**Maximum Pool Utilization**  
+Triggers an alert when utilization exceeds this threshold. Default `0.95` (95%)
 
 --- 
 
