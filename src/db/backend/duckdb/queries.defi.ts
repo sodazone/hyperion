@@ -45,7 +45,7 @@ export type DefiVolumeQueryParams = DefiQueryParams & {
 };
 
 const VOLUME_FILTERS: Record<string, string> = {
-	dex: "AND event_type = 'swap' AND direction = 'IN'",
+	dex: "AND event_type = 'swap' AND direction = 'in'",
 	lending: "AND event_type != 'swap'",
 } as const;
 
@@ -80,7 +80,7 @@ WITH aggregated_volume AS (
     SUM(CASE WHEN event_type = 'borrow' THEN amount_usd ELSE 0 END) AS borrow_volume_usd,
     SUM(CASE WHEN event_type = 'repay' THEN amount_usd ELSE 0 END) AS repay_volume_usd,
     SUM(CASE WHEN event_type = 'withdraw' THEN amount_usd ELSE 0 END) AS withdraw_volume_usd,
-    SUM(CASE WHEN event_type = 'liquidate' AND direction = 'DEBT' THEN amount_usd ELSE 0 END) AS liquidation_volume_usd
+    SUM(CASE WHEN event_type = 'liquidate' AND direction = 'debt' THEN amount_usd ELSE 0 END) AS liquidation_volume_usd
   FROM defi_volume_events
   WHERE
     ts >= ${startExpr}
