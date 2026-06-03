@@ -1,10 +1,30 @@
 import z from "zod";
-import { level, networks } from "../../common/schema";
+import { level } from "../../common/schema";
+
+const supportedNetworks = {
+	label: "Networks",
+	options: [
+		/*{
+			label: "Bifrost",
+			value: "urn:ocn:polkadot:2030",
+		},*/
+		{
+			label: "Hydration",
+			value: "urn:ocn:polkadot:2034",
+		},
+		{
+			label: "Moonbeam",
+			value: "urn:ocn:ethereum:1284",
+		},
+	],
+	multiple: true,
+	help: "Applies to all networks by default. If specified, only selected networks will be monitored.",
+};
 
 export const schemas = {
 	dex: z.object({
 		level,
-		networks,
+		networks: z.array(z.string()).optional().meta(supportedNetworks),
 		driftThresholdDrop: z.number().min(0).max(1).meta({
 			label: "Drop Threshold",
 			decimals: true,
@@ -31,7 +51,7 @@ export const schemas = {
 	}),
 	lending: z.object({
 		level,
-		networks,
+		networks: z.array(z.string()).optional().meta(supportedNetworks),
 		minSolvencyRatio: z.number().min(0).meta({
 			label: "Minimum Solvency Ratio",
 			decimals: true,

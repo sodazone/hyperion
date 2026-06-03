@@ -15,7 +15,7 @@ export const eventTypesMeta = {
 	help: "Filter which OpenGov event types trigger alerts.",
 };
 
-export const supportedNetworks = {
+const supportedNetworks = {
 	label: "Networks",
 	options: [
 		{
