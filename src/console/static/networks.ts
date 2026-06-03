@@ -60,6 +60,11 @@ export const NETWORK_INFOS: NetworkInfo[] = [
 	{ runtimeChain: "Polkadot Coretime", urn: "urn:ocn:polkadot:1005" },
 	{ runtimeChain: "Acala", urn: "urn:ocn:polkadot:2000" },
 	{ runtimeChain: "Moonbeam", urn: "urn:ocn:polkadot:2004" },
+	{
+		runtimeChain: "Moonbeam EVM",
+		urn: "urn:ocn:ethereum:1284",
+		icon: "moonbeam.svg",
+	},
 	{ runtimeChain: "Astar", urn: "urn:ocn:polkadot:2006" },
 	{ runtimeChain: "Bifrost", urn: "urn:ocn:polkadot:2030" },
 	{ runtimeChain: "Centrifuge", urn: "urn:ocn:polkadot:2031" },
