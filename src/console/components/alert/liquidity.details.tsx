@@ -19,7 +19,7 @@ function DetailRow({
 }
 
 function ReasonBadge({ reason }: { reason: string }) {
-	const isCritical = reason === "paused" || reason === "insolvency";
+	const isCritical = reason === "insolvency";
 	return (
 		<span
 			className={`px-1.5 py-0.5 text-xs font-mono font-medium rounded ${

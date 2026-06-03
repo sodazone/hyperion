@@ -13,7 +13,7 @@ export interface MoneyMarketAlertPayload extends AlertPayload {
 	kind: "money-market-health";
 	protocol: string;
 	marketId: string;
-	reason: "insolvency" | "utilization" | "paused";
+	reason: "insolvency" | "utilization";
 	details: string;
 }
 
@@ -59,10 +59,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		let matchedReason: MoneyMarketAlertPayload["reason"] | null = null;
 		let details = "";
 
-		if (lending.isPaused) {
-			matchedReason = "paused";
-			details = "Market operations are paused.";
-		} else if (
+		if (
 			config.minSolvencyRatio &&
 			lending.health?.solvencyRatio &&
 			lending.health.solvencyRatio < config.minSolvencyRatio
@@ -107,7 +104,6 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		const headers: Record<MoneyMarketAlertPayload["reason"], string> = {
 			insolvency: "Insolvency",
 			utilization: "Utilization",
-			paused: "Market Paused",
 		};
 
 		return {
