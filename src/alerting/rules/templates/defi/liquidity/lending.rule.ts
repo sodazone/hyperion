@@ -6,7 +6,7 @@ import { type Configs, schemas } from "./schema";
 
 const RULE_NAME = "money-market-health";
 
-const MAX_ALERTS_NUM = 3;
+const MAX_ALERTS_NUM = 1;
 const MAX_ALERTS_WINDOW_MS = 3_600_000;
 
 export interface MoneyMarketAlertPayload extends AlertPayload {
