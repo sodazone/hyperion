@@ -92,7 +92,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		});
 
 		if (!isAllowed) {
-			return { matched: false }; // Suppressed by rate limit
+			return { matched: false };
 		}
 
 		return {
