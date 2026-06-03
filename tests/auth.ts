@@ -28,7 +28,7 @@ export async function createTestJWT(sub: string) {
 
 	return await new jose.SignJWT({ sub })
 		.setProtectedHeader({ alg: "EdDSA", kid: privateJWK.kid })
-		.setIssuer("dev-api.ocelloids.net")
+		.setIssuer("api.ocelloids.net")
 		.setAudience("hyperion")
 		.setExpirationTime("2h")
 		.sign(key);
