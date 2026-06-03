@@ -1,4 +1,5 @@
 import type { Alert, AlertPayload } from "@/db";
+import { formatNumberSI } from "@/utils/amounts";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
 import { type Configs, schemas } from "./schema";
@@ -117,19 +118,16 @@ export const ExchangeLiquidityRule: RuleDefinition<
 			timestamp: Date.now(),
 			level: config.level,
 			name: RULE_NAME,
-			remark: `TVL: $${payload.suppliedUSD.toLocaleString()}`,
+			remark: `TVL: $${formatNumberSI(payload.suppliedUSD, 2)}`,
 			networks: makeNetworks(event),
 			message: [
 				["t", `DEX TVL ${direction} on ${payload.protocol}`],
 				["t", `${(data.driftPercent * 100).toFixed(2)}%`],
-				["t", `Market: ${payload.marketId}`],
 			],
 			payload: {
 				kind: "exchange-liquidity",
 				protocol: payload.protocol,
 				marketId: payload.marketId,
-				tvlUSD: payload.suppliedUSD,
-				driftPercent: data.driftPercent,
 			},
 		} as Alert<ExchangeAlertPayload>;
 	},

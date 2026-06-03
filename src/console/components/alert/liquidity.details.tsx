@@ -72,25 +72,12 @@ export function DexDetails({ payload }: { payload: any }) {
 				<span className="text-zinc-100 font-medium">{payload.protocol}</span>
 			</DetailRow>
 
-			<DetailRow label="Pool ID">
+			<DetailRow label="Pool">
 				<span className="font-mono text-xs text-zinc-400 truncate">
-					{truncMid(payload.poolId)}
+					{truncMid(payload.marketId)}
 				</span>
-				<CopyButton title="Copy Pool Address" text={payload.poolId} />
+				<CopyButton title="Copy Pool Address" text={payload.marketId} />
 			</DetailRow>
-
-			<DetailRow label="Reason">
-				<ReasonBadge reason={payload.reason} />
-			</DetailRow>
-
-			{payload.details && (
-				<div className="mt-1.5 pt-2 text-xs">
-					<div className="text-zinc-500 mb-1 font-medium">Condition</div>
-					<p className="font-mono text-zinc-400 whitespace-pre-wrap leading-relaxed">
-						{payload.details}
-					</p>
-				</div>
-			)}
 		</div>
 	);
 }

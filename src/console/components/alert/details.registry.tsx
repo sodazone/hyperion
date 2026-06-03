@@ -7,7 +7,7 @@ export const AlertDetailsRegistry: Record<
 	React.FC<{ payload: any }>
 > = {
 	"money-market-health": MoneyMarketDetails,
-	"dex-health": DexDetails,
+	"exchange-liquidity": DexDetails,
 	"xc-invariant": InvariantAlertDetails,
 	opengov: OpenGovAlertDetails,
 };
