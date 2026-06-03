@@ -47,7 +47,6 @@ const IssuanceSubscriptionMap = {
 		"hyperion:hydration-polkadot_xcm",
 		"hyperion:polkadot-bifrost_xcm",
 		"hyperion:bifrost-polkadot_xcm",
-		"hyperion:hydration-astar_xcm",
 		"hyperion:polkadot-moonbeam_xcm",
 		"hyperion:ethereum-polkadot_snowbridge",
 		"hyperion:kusama-polkadot_xcm",

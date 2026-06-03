@@ -62,8 +62,9 @@ export const CrosschainInvariantRule: RuleDefinition<
 			return { matched: false };
 		}
 
+		const subId = event.payload.subscriptionId;
 		const validSubsSet = SubscriptionLookup[config.issuanceNetwork];
-		if (!validSubsSet || !validSubsSet.has(event.payload.subscriptionId)) {
+		if (!validSubsSet || !validSubsSet.has(subId)) {
 			return { matched: false };
 		}
 
@@ -83,7 +84,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 			decimals: event.payload.inputs.remoteDecimals,
 		});
 
-		const scope = `${RULE_NAME}:${id}`;
+		const scope = `${RULE_NAME}:${id}:${subId}`;
 
 		const stateObj = (state.get(scope, SO_STATE_VAR) ?? {
 			consecutive: 0,
