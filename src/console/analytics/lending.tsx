@@ -148,7 +148,7 @@ export async function MoneyMarketHealthFragment(
 					<div className="flex flex-wrap gap-8 md:gap-12">
 						<Kpi
 							title="Total Supplied"
-							qty={`${formatNumberSI(healthMetrics.supplied_usd.total, 2)}`}
+							qty={`$${formatNumberSI(healthMetrics.supplied_usd.total, 2)}`}
 							delta={{
 								period: periodLabel,
 								pct: healthMetrics.supplied_usd.deltaPct,
@@ -156,7 +156,7 @@ export async function MoneyMarketHealthFragment(
 						/>
 						<Kpi
 							title="Total Borrowed"
-							qty={`${formatNumberSI(healthMetrics.borrowed_usd.total, 2)}`}
+							qty={`$${formatNumberSI(healthMetrics.borrowed_usd.total, 2)}`}
 							delta={{
 								period: periodLabel,
 								pct: healthMetrics.borrowed_usd.deltaPct,
@@ -168,7 +168,7 @@ export async function MoneyMarketHealthFragment(
 					<div className="flex flex-wrap gap-8 md:gap-12">
 						<Kpi
 							title="Borrow Volume"
-							qty={`${formatNumberSI(volumeMetrics.borrow_volume_usd.total, 2)}`}
+							qty={`$${formatNumberSI(volumeMetrics.borrow_volume_usd.total, 2)}`}
 							delta={{
 								period: periodLabel,
 								pct: volumeMetrics.borrow_volume_usd.deltaPct,
@@ -176,7 +176,7 @@ export async function MoneyMarketHealthFragment(
 						/>
 						<Kpi
 							title="Repay Volume"
-							qty={`${formatNumberSI(volumeMetrics.repay_volume_usd.total, 2)}`}
+							qty={`$${formatNumberSI(volumeMetrics.repay_volume_usd.total, 2)}`}
 							delta={{
 								period: periodLabel,
 								pct: volumeMetrics.repay_volume_usd.deltaPct,
@@ -184,7 +184,7 @@ export async function MoneyMarketHealthFragment(
 						/>
 						<Kpi
 							title="Liquidation"
-							qty={`${formatNumberSI(volumeMetrics.liquidation_volume_usd.total, 2)}`}
+							qty={`$${formatNumberSI(volumeMetrics.liquidation_volume_usd.total, 2)}`}
 							delta={{
 								period: periodLabel,
 								pct: volumeMetrics.liquidation_volume_usd.deltaPct,

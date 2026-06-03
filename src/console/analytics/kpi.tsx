@@ -129,7 +129,7 @@ export function Kpi({
 			<span className="text-xs text-zinc-400 font-medium">{title}</span>
 
 			<span className="text-lg font-bold text-zinc-100 font-mono tracking-tight">
-				${qty}
+				{qty}
 			</span>
 
 			{delta === undefined ? (

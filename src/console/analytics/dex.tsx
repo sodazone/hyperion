@@ -153,12 +153,12 @@ export async function DexLiquidityFragment(
 				<div className="px-2 flex flex-wrap gap-8 md:gap-12">
 					<Kpi
 						title="Total TVL"
-						qty={`${formatNumberSI(tvlKpi.total, 2)}`}
+						qty={`$${formatNumberSI(tvlKpi.total, 2)}`}
 						delta={{ period: periodLabel, pct: tvlKpi.deltaPct }}
 					/>
 					<Kpi
 						title="Trading Volume"
-						qty={`${formatNumberSI(volumeKpi.total, 2)}`}
+						qty={`$${formatNumberSI(volumeKpi.total, 2)}`}
 						delta={{ period: periodLabel, pct: volumeKpi.deltaPct }}
 					/>
 				</div>
