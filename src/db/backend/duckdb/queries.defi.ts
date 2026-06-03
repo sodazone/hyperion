@@ -1,36 +1,3 @@
-export type DexLiquidityRow = {
-	timestamp: Date;
-	protocol: string;
-	market_id: string;
-	supplied_usd: number;
-	tvl_change_usd: number;
-	cumulative_tvl_usd: number;
-};
-
-export type DefiVolumeRow = {
-	timestamp: Date;
-	protocol: string;
-	market_id: string;
-	swap_volume_usd: number;
-	supply_volume_usd: number;
-	borrow_volume_usd: number;
-	repay_volume_usd: number;
-	withdraw_volume_usd: number;
-	liquidation_volume_usd: number;
-	total_volume_usd: number;
-};
-
-export type MoneyMarketHealthRow = {
-	timestamp: Date;
-	protocol: string;
-	market_id: string;
-	supplied_usd: number;
-	utilization: number;
-	solvency_ratio: number;
-	bad_debt_usd: number;
-	is_paused: boolean;
-};
-
 export type DefiQueryParams = {
 	bucket?: "day" | "hour";
 	lookback?: number;
@@ -49,7 +16,7 @@ const VOLUME_FILTERS: Record<string, string> = {
 	lending: "AND event_type != 'swap'",
 } as const;
 
-export function generateDefiVolumeQuery({
+export function generateDefiVolumeSeriesQuery({
 	bucket = "day",
 	lookback = 30,
 	network,
@@ -102,6 +69,107 @@ SELECT
   liquidation_volume_usd,
 FROM aggregated_volume
 ORDER BY timestamp ASC
+${limitClause};
+`;
+}
+
+export function generateDefiVolumeQuery({
+	bucket = "hour",
+	lookback = 24,
+	network,
+	protocol,
+	marketId,
+	limit,
+	type = "dex",
+}: DefiVolumeQueryParams) {
+	const intervalUnit = bucket === "day" ? "days" : "hours";
+	const networkFilter = network ? `AND network_id = '${network}'` : "";
+	const protocolFilter = protocol ? `AND protocol = '${protocol}'` : "";
+	const marketFilter = marketId ? `AND market_id = '${marketId}'` : "";
+	const limitClause = limit ? `LIMIT ${limit}` : "";
+	const eventTypeFilter = VOLUME_FILTERS[type];
+
+	return `
+WITH volume_comparison AS (
+  SELECT
+    protocol,
+    market_id,
+    SUM(
+      CASE
+        WHEN ts >= NOW() - INTERVAL '${lookback} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'swap' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS current_swap_volume_usd,
+    SUM(
+      CASE
+        WHEN ts < NOW() - INTERVAL '${lookback} ${intervalUnit}'
+         AND ts >= NOW() - INTERVAL '${lookback * 2} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'swap' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS previous_swap_volume_usd,
+    SUM(
+      CASE
+        WHEN ts >= NOW() - INTERVAL '${lookback} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'borrow' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS current_borrow_volume_usd,
+    SUM(
+      CASE
+        WHEN ts < NOW() - INTERVAL '${lookback} ${intervalUnit}'
+         AND ts >= NOW() - INTERVAL '${lookback * 2} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'borrow' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS previous_borrow_volume_usd,
+    SUM(
+      CASE
+        WHEN ts >= NOW() - INTERVAL '${lookback} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'repay' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS current_repay_volume_usd,
+    SUM(
+      CASE
+        WHEN ts < NOW() - INTERVAL '${lookback} ${intervalUnit}'
+         AND ts >= NOW() - INTERVAL '${lookback * 2} ${intervalUnit}'
+        THEN CASE WHEN event_type = 'repay' THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS previous_repay_volume_usd,
+    SUM(
+      CASE
+        WHEN ts >= NOW() - INTERVAL '${lookback} ${intervalUnit}'
+        THEN CASE
+          WHEN event_type = 'liquidate' AND direction = 'debt'
+          THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS current_liquidation_volume_usd,
+    SUM(
+      CASE
+        WHEN ts < NOW() - INTERVAL '${lookback} ${intervalUnit}'
+         AND ts >= NOW() - INTERVAL '${lookback * 2} ${intervalUnit}'
+        THEN CASE
+          WHEN event_type = 'liquidate' AND direction = 'debt'
+          THEN amount_usd ELSE 0 END
+        ELSE 0
+      END
+    ) AS previous_liquidation_volume_usd
+  FROM defi_volume_events
+  WHERE
+    ts >= NOW() - INTERVAL '${lookback * 2} ${intervalUnit}'
+    ${networkFilter}
+    ${protocolFilter}
+    ${marketFilter}
+    ${eventTypeFilter}
+  GROUP BY 1, 2
+)
+SELECT *
+FROM volume_comparison
+ORDER BY current_swap_volume_usd DESC
 ${limitClause};
 `;
 }
@@ -211,4 +279,5 @@ export const DefiQueries = {
 	dex_liquidity: generateDexLiquidityQuery,
 	money_market_health: generateMoneyMarketHealthQuery,
 	volume: generateDefiVolumeQuery,
+	volume_series: generateDefiVolumeSeriesQuery,
 };

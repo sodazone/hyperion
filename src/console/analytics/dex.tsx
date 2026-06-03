@@ -97,7 +97,7 @@ export async function DexLiquidityFragment(
 		bucket,
 		lookback,
 	});
-	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
+	const volumeRows = await ctx.db.analytics.defiVolume({
 		network,
 		bucket,
 		lookback,
@@ -114,23 +114,29 @@ export async function DexLiquidityFragment(
 		{ dateKey: "ts" },
 	);
 
-	const volumeMetrics = calculateKpis(
-		volumeRows ?? [],
-		[{ key: "swap_volume_usd", mode: "volume" }],
-		{ dateKey: "ts" },
-	);
-
 	const { total_aggregate_tvl_usd: tvlKpi = EMPTY_KPI } = liquidityMetrics;
-	const { swap_volume_usd: volumeKpi = EMPTY_KPI } = volumeMetrics;
 
 	const poolVolumeMap = new Map<string, number>();
+	let currentTotalVolume = 0;
+	let previousTotalVolume = 0;
 	if (volumeRows) {
 		for (const volRow of volumeRows) {
 			const key = `${volRow.protocol}:${volRow.market_id}`;
-			const volAmount = Number(volRow.swap_volume_usd ?? 0);
-			poolVolumeMap.set(key, (poolVolumeMap.get(key) || 0) + volAmount);
+			const volAmount = Number(volRow.current_swap_volume_usd ?? 0);
+			poolVolumeMap.set(key, volAmount);
+			currentTotalVolume += volAmount;
+			previousTotalVolume += Number(volRow.previous_swap_volume_usd ?? 0);
 		}
 	}
+
+	const volumeKpi = {
+		total: currentTotalVolume,
+		deltaPct:
+			previousTotalVolume > 0
+				? ((currentTotalVolume - previousTotalVolume) / previousTotalVolume) *
+					100
+				: 0,
+	};
 
 	// Deduplicate pool records
 	const uniquePoolsMap = new Map<string, DexLiquidityRow>();

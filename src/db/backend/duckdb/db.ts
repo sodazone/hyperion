@@ -14,6 +14,7 @@ import { createWriteQueue } from "./queue";
 import type {
 	CrosschainSolvencyRow,
 	DefiVolumeRow,
+	DefiVolumeSeriesRow,
 	DexLiquidityRow,
 	MoneyMarketHealthRow,
 } from "./types";
@@ -157,12 +158,14 @@ export class AnalyticsDB {
 
 	async defiVolumeSeries(
 		params: DefiVolumeQueryParams,
-	): Promise<DefiVolumeRow[]> {
-		const result = await this.conn.runAndReadAll(Queries.defi.volume(params));
+	): Promise<DefiVolumeSeriesRow[]> {
+		const result = await this.conn.runAndReadAll(
+			Queries.defi.volume_series(params),
+		);
 		const rows = result.getRowObjectsJson() as any[];
 
 		return rows.map(
-			(r): DefiVolumeRow => ({
+			(r): DefiVolumeSeriesRow => ({
 				ts: String(r.timestamp),
 				protocol: String(r.protocol),
 				market_id: String(r.market_id),
@@ -172,6 +175,38 @@ export class AnalyticsDB {
 				repay_volume_usd: Number(r.repay_volume_usd),
 				withdraw_volume_usd: Number(r.withdraw_volume_usd),
 				liquidation_volume_usd: Number(r.liquidation_volume_usd),
+			}),
+		);
+	}
+
+	async defiVolume(params: DefiVolumeQueryParams): Promise<DefiVolumeRow[]> {
+		const result = await this.conn.runAndReadAll(Queries.defi.volume(params));
+
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): DefiVolumeRow => ({
+				protocol: String(r.protocol),
+				market_id: String(r.market_id),
+
+				current_swap_volume_usd: Number(r.current_swap_volume_usd),
+				previous_swap_volume_usd: Number(r.previous_swap_volume_usd),
+
+				current_borrow_volume_usd: Number(r.current_borrow_volume_usd),
+				previous_borrow_volume_usd: Number(r.previous_borrow_volume_usd),
+
+				current_repay_volume_usd: Number(r.current_repay_volume_usd),
+				previous_repay_volume_usd: Number(r.previous_repay_volume_usd),
+
+				current_withdraw_volume_usd: Number(r.current_withdraw_volume_usd),
+				previous_withdraw_volume_usd: Number(r.previous_withdraw_volume_usd),
+
+				current_liquidation_volume_usd: Number(
+					r.current_liquidation_volume_usd,
+				),
+				previous_liquidation_volume_usd: Number(
+					r.previous_liquidation_volume_usd,
+				),
 			}),
 		);
 	}
