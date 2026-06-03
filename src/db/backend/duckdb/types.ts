@@ -56,9 +56,6 @@ export type DefiVolumeRow = {
 	current_repay_volume_usd: number;
 	previous_repay_volume_usd: number;
 
-	current_withdraw_volume_usd: number;
-	previous_withdraw_volume_usd: number;
-
 	current_liquidation_volume_usd: number;
 	previous_liquidation_volume_usd: number;
 };

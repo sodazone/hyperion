@@ -198,9 +198,6 @@ export class AnalyticsDB {
 				current_repay_volume_usd: Number(r.current_repay_volume_usd),
 				previous_repay_volume_usd: Number(r.previous_repay_volume_usd),
 
-				current_withdraw_volume_usd: Number(r.current_withdraw_volume_usd),
-				previous_withdraw_volume_usd: Number(r.previous_withdraw_volume_usd),
-
 				current_liquidation_volume_usd: Number(
 					r.current_liquidation_volume_usd,
 				),
