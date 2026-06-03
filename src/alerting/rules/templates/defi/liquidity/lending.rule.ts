@@ -5,7 +5,7 @@ import { makeNetworks } from "../../common/helpers";
 import { type Configs, schemas } from "./schema";
 
 const RULE_NAME = "money-market-health";
-const STATE_KEY = "mm_health";
+
 const MAX_ALERTS_NUM = 3;
 const MAX_ALERTS_WINDOW_MS = 3_600_000;
 
@@ -33,7 +33,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 	},
 	autoDependencies: [{ kind: "defi-liquidity" }],
 
-	matcher: async (event, { config, global: { state } }) => {
+	matcher: async (event, { config, id }) => {
 		if (
 			event.type !== "defi-liquidity" ||
 			event.payload.category !== "money-market"
@@ -82,11 +82,9 @@ export const MoneyMarketHealthRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const scope = `${RULE_NAME}:${payload.protocol}:${payload.marketId}`;
+		const key = `${id}:${RULE_NAME}:${payload.protocol}:${payload.marketId}:${matchedReason}`;
 		const isAllowed = checkAndRecordRateLimit({
-			state,
-			scope,
-			key: `${STATE_KEY}:${matchedReason}`,
+			key,
 			limit: MAX_ALERTS_NUM,
 			windowMs: MAX_ALERTS_WINDOW_MS,
 		});
