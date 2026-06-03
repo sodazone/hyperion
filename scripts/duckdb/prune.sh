@@ -4,9 +4,9 @@ set -euo pipefail
 
 RETENTION_INTERVAL="40 DAYS"
 TABLES=(
-    #"defi_volume_events"
-    #"dex_liquidity_snapshots"
-    #"money_market_health_snapshots"
+    "defi_volume_events"
+    "dex_liquidity_snapshots"
+    "money_market_health_snapshots"
     "crosschain_solvency_snapshots"
     "transfers"
 )
