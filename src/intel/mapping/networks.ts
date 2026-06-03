@@ -35,6 +35,7 @@ const NetworkURNMap: Record<string, number> = {
 	"urn:ocn:ethereum:10": 0x0303, // Optimism
 	"urn:ocn:ethereum:42161": 0x0304, // Arbitrum
 	"urn:ocn:ethereum-classic:61": 0x0305, // Ethereum Classic
+	"urn:ocn:ethereum:1284": 0x0306, // Moonbeam
 
 	// ────────────────────────────────
 	// Test networks (0x0400–0x04FF)
