@@ -15,7 +15,6 @@ function makeCtx(configOverrides = {}) {
 		config: {
 			subscriptionId: "sub-1",
 			level: 2,
-			alertOnProtocolDeficit: true,
 			minSolvencyRatio: 1.05,
 			maxUtilization: 0.95,
 			...configOverrides,

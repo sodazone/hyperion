@@ -44,10 +44,6 @@ export const schemas = {
 			unit: "%",
 			help: "Alert if capital utilization (borrowed funds / supplied funds) exceeds this ceiling.",
 		}),
-		alertOnProtocolDeficit: z.boolean().meta({
-			label: "Alert on Protocol Deficit",
-			help: "Triggers if physical reserves fall below protocol liabilities, signaling unbacked deficit.",
-		}),
 	}),
 };
 

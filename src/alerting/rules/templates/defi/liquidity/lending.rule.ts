@@ -1,10 +1,13 @@
+import { checkAndRecordRateLimit } from "@/alerting/rules/alerting/limit";
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
 import { type Configs, schemas } from "./schema";
 
-const ruleName = "money-market-health";
+const RULE_NAME = "money-market-health";
 const STATE_KEY = "mm_health";
+const MAX_ALERTS_NUM = 3;
+const MAX_ALERTS_WINDOW_MS = 3_600_000;
 
 export interface MoneyMarketAlertPayload extends AlertPayload {
 	kind: "money-market-health";
@@ -14,22 +17,17 @@ export interface MoneyMarketAlertPayload extends AlertPayload {
 	details: string;
 }
 
-interface MarketState {
-	hasAlertedDeficit: boolean;
-}
-
 export const MoneyMarketHealthRule: RuleDefinition<
 	DefiLiquidityEvent,
 	{ reason: MoneyMarketAlertPayload["reason"]; details: string },
 	Configs["lending"]
 > = {
-	id: ruleName,
+	id: RULE_NAME,
 	title: "Money Market Health",
 	description:
 		"Monitors solvency and utilization crunches for lending protocols.",
 	schema: schemas.lending,
 	defaults: {
-		alertOnProtocolDeficit: true,
 		minSolvencyRatio: 0.98,
 		maxUtilization: 0.95,
 	},
@@ -58,71 +56,52 @@ export const MoneyMarketHealthRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const ns = `${ruleName}:${payload.protocol}:${payload.marketId}`;
-		const marketState = (state.get(ns, STATE_KEY) ?? {
-			hasAlertedDeficit: false,
-		}) as MarketState;
+		let matchedReason: MoneyMarketAlertPayload["reason"] | null = null;
+		let details = "";
 
 		if (lending.isPaused) {
-			return {
-				matched: true,
-				data: {
-					reason: "paused",
-					details: "Market operations are paused.",
-				},
-			};
-		}
-
-		if (
-			config.alertOnProtocolDeficit &&
-			lending.health?.tokenDeficitUSD &&
-			lending.health.tokenDeficitUSD > 0
-		) {
-			if (!marketState.hasAlertedDeficit) {
-				marketState.hasAlertedDeficit = true;
-				state.set(ns, STATE_KEY, marketState);
-				return {
-					matched: true,
-					data: {
-						reason: "insolvency",
-						details: `$${lending.health.tokenDeficitUSD.toLocaleString()} token deficit.`,
-					},
-				};
-			}
-		} else {
-			marketState.hasAlertedDeficit = false;
-		}
-		state.set(ns, STATE_KEY, marketState);
-
-		if (
+			matchedReason = "paused";
+			details = "Market operations are paused.";
+		} else if (
 			config.minSolvencyRatio &&
 			lending.health?.solvencyRatio &&
 			lending.health.solvencyRatio < config.minSolvencyRatio
 		) {
-			return {
-				matched: true,
-				data: {
-					reason: "insolvency",
-					details: `ratio ${lending.health.solvencyRatio.toFixed(3)}`,
-				},
-			};
-		}
-
-		if (
+			matchedReason = "insolvency";
+			details = `ratio ${lending.health.solvencyRatio.toFixed(3)}`;
+		} else if (
 			config.maxUtilization &&
 			lending.utilization !== undefined &&
 			lending.utilization > config.maxUtilization
 		) {
-			return {
-				matched: true,
-				data: {
-					reason: "utilization",
-					details: `${(lending.utilization * 100).toFixed(2)}%`,
-				},
-			};
+			matchedReason = "utilization";
+			details = `${(lending.utilization * 100).toFixed(2)}%`;
 		}
 
-		return { matched: false };
+		if (!matchedReason) {
+			return { matched: false };
+		}
+
+		const scope = `${RULE_NAME}:${payload.protocol}:${payload.marketId}`;
+		const isAllowed = checkAndRecordRateLimit({
+			state,
+			scope,
+			key: `${STATE_KEY}:${matchedReason}`,
+			limit: MAX_ALERTS_NUM,
+			windowMs: MAX_ALERTS_WINDOW_MS,
+		});
+
+		if (!isAllowed) {
+			return { matched: false }; // Suppressed by rate limit
+		}
+
+		return {
+			matched: true,
+			data: {
+				reason: matchedReason,
+				details,
+			},
+		};
 	},
 
 	alertTemplate: (event, { config }, data) => {
@@ -136,7 +115,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		return {
 			timestamp: Date.now(),
 			level: config.level,
-			name: ruleName,
+			name: RULE_NAME,
 			remark: `${payload.marketId} (${payload.protocol})`,
 			networks: makeNetworks(event),
 			message: [
