@@ -30,7 +30,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 	schema: schemas.lending,
 	defaults: {
 		alertOnProtocolDeficit: true,
-		minSolvencyRatio: 1.05,
+		minSolvencyRatio: 0.98,
 		maxUtilization: 0.95,
 	},
 	autoDependencies: [{ kind: "defi-liquidity" }],
