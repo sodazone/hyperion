@@ -1,3 +1,115 @@
+type KpiMode = "volume" | "state";
+
+export interface KpiConfig<T> {
+	key: keyof T;
+	mode: KpiMode;
+}
+
+export interface KpiOutput {
+	total: number;
+	deltaPct: number;
+}
+
+/**
+ * Computes total quantities and trend percentage deltas
+ * for both volume and state time series data.
+ */
+export function calculateKpis<
+	T extends Record<string, any>,
+	const C extends readonly KpiConfig<T>[],
+>(
+	series: T[],
+	configs: C,
+	options?: {
+		dateKey?: keyof T;
+		entityKey?: (row: T) => string;
+	},
+): Record<C[number]["key"] & string, KpiOutput> {
+	const dateKey = options?.dateKey ?? ("ts" as keyof T);
+	const entityKey = options?.entityKey;
+
+	const results = {} as Record<string, KpiOutput>;
+	for (const config of configs) {
+		results[config.key as string] = { total: 0, deltaPct: 0 };
+	}
+
+	if (!series || series.length === 0) {
+		return results;
+	}
+
+	// Enforce absolute chronological order
+	const sorted = [...series].sort(
+		(a, b) => new Date(a[dateKey]).getTime() - new Date(b[dateKey]).getTime(),
+	);
+
+	for (const { key, mode } of configs) {
+		if (mode === "volume") {
+			let totalSum = 0;
+			for (const item of sorted) {
+				totalSum += Number(item[key] ?? 0);
+			}
+
+			const midPoint = Math.ceil(sorted.length / 2);
+			const firstHalf = sorted.slice(0, midPoint);
+			const secondHalf = sorted.slice(midPoint);
+
+			let firstHalfSum = 0;
+			let secondHalfSum = 0;
+			for (const item of firstHalf) firstHalfSum += Number(item[key] ?? 0);
+			for (const item of secondHalf) secondHalfSum += Number(item[key] ?? 0);
+
+			results[key as string] = {
+				total: totalSum,
+				deltaPct:
+					firstHalfSum > 0
+						? ((secondHalfSum - firstHalfSum) / firstHalfSum) * 100
+						: 0,
+			};
+		} else {
+			let currentSum = 0;
+			let baselineSum = 0;
+
+			if (entityKey) {
+				const latestMap = new Map<string, T>();
+				const earliestMap = new Map<string, T>();
+
+				// Forward sweep for latest state entries
+				for (const item of sorted) {
+					latestMap.set(entityKey(item), item);
+				}
+				// Reverse sweep for earliest base entries
+				for (let i = sorted.length - 1; i >= 0; i--) {
+					const entry = sorted[i];
+					if (entry !== undefined) {
+						earliestMap.set(entityKey(entry), entry);
+					}
+				}
+
+				for (const item of latestMap.values())
+					currentSum += Number(item[key] ?? 0);
+				for (const item of earliestMap.values())
+					baselineSum += Number(item[key] ?? 0);
+			} else {
+				// Fallback
+				const last = sorted[sorted.length - 1];
+				const first = sorted[0];
+				currentSum = last ? Number(last[key] ?? 0) : 0;
+				baselineSum = first ? Number(first[key] ?? 0) : 0;
+			}
+
+			results[key as string] = {
+				total: currentSum,
+				deltaPct:
+					baselineSum > 0
+						? ((currentSum - baselineSum) / baselineSum) * 100
+						: 0,
+			};
+		}
+	}
+
+	return results;
+}
+
 export function Kpi({
 	qty,
 	title,

@@ -5,7 +5,7 @@ import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
 import { formatPct, protocolLabel } from "./format";
-import { Kpi } from "./kpi";
+import { calculateKpis, Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
 import { parseDashboardParamsForDefi } from "./params";
 
@@ -93,7 +93,6 @@ export async function MoneyMarketHealthFragment(
 		bucket,
 		lookback,
 	});
-
 	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
 		network,
 		bucket,
@@ -105,6 +104,29 @@ export async function MoneyMarketHealthFragment(
 		return empty;
 	}
 
+	const healthMetrics = calculateKpis(
+		rows,
+		[
+			{ key: "supplied_usd", mode: "state" },
+			{ key: "borrowed_usd", mode: "state" },
+		],
+		{
+			dateKey: "ts",
+			entityKey: (r) => `${r.protocol}:${r.market_id}`,
+		},
+	);
+
+	const volumeMetrics = calculateKpis(
+		volumeRows ?? [],
+		[
+			{ key: "borrow_volume_usd", mode: "volume" },
+			{ key: "repay_volume_usd", mode: "volume" },
+			{ key: "liquidation_volume_usd", mode: "volume" },
+		],
+		{ dateKey: "ts" },
+	);
+
+	// Sort layout cards
 	const uniquePoolsMap = new Map<string, MoneyMarketHealthRow>();
 	for (const row of rows) {
 		const key = `${row.protocol}:${row.market_id}`;
@@ -113,156 +135,65 @@ export async function MoneyMarketHealthFragment(
 			uniquePoolsMap.set(key, row);
 		}
 	}
-
-	const lastRows = Array.from(uniquePoolsMap.values()).sort((a, b) => {
-		return b.supplied_usd - a.supplied_usd;
-	});
-
-	let currentTotalSupplied = 0;
-	let currentTotalBorrowed = 0;
-	for (const r of lastRows) {
-		currentTotalSupplied += r.supplied_usd;
-		currentTotalBorrowed += r.borrowed_usd;
-	}
-
-	const uniqueBaselineMap = new Map<string, MoneyMarketHealthRow>();
-	for (let i = rows.length - 1; i >= 0; i--) {
-		const row = rows[i];
-		if (row) {
-			const key = `${row.protocol}:${row.market_id}`;
-			uniqueBaselineMap.set(key, row);
-		}
-	}
-
-	let baselineTotalSupplied = 0;
-	let baselineTotalBorrowed = 0;
-	for (const r of uniqueBaselineMap.values()) {
-		baselineTotalSupplied += r.supplied_usd;
-		baselineTotalBorrowed += r.borrowed_usd;
-	}
-
-	const periodDeltaSuppliedPct =
-		baselineTotalSupplied > 0
-			? ((currentTotalSupplied - baselineTotalSupplied) /
-					baselineTotalSupplied) *
-				100
-			: 0;
-
-	const periodDeltaBorrowedPct =
-		baselineTotalBorrowed > 0
-			? ((currentTotalBorrowed - baselineTotalBorrowed) /
-					baselineTotalBorrowed) *
-				100
-			: 0;
-
-	let volumeBorrowTotal = 0;
-	let volumeRepayTotal = 0;
-	let volumeLiquidateTotal = 0;
-
-	const volTimelineMap = new Map<
-		string,
-		{ borrow: number; repay: number; liquidate: number }
-	>();
-
-	if (volumeRows && volumeRows.length > 0) {
-		for (const volRow of volumeRows) {
-			const b = Number(volRow.borrow_volume_usd ?? 0);
-			const r = Number(volRow.repay_volume_usd ?? 0);
-			const l = Number(volRow.liquidation_volume_usd ?? 0);
-
-			volumeBorrowTotal += b;
-			volumeRepayTotal += r;
-			volumeLiquidateTotal += l;
-
-			const tsKey = String(volRow.ts);
-			const currentBucket = volTimelineMap.get(tsKey) || {
-				borrow: 0,
-				repay: 0,
-				liquidate: 0,
-			};
-
-			currentBucket.borrow += b;
-			currentBucket.repay += r;
-			currentBucket.liquidate += l;
-			volTimelineMap.set(tsKey, currentBucket);
-		}
-	}
-
-	// Extract lookback window baseline vs latest delta changes for volumes
-	const sortedVolumeTimestamps = Array.from(volTimelineMap.keys()).sort(
-		(a, b) => new Date(a).getTime() - new Date(b).getTime(),
+	const lastRows = Array.from(uniquePoolsMap.values()).sort(
+		(a, b) => b.supplied_usd - a.supplied_usd,
 	);
-
-	let deltaVolBorrowPct = 0;
-	let deltaVolRepayPct = 0;
-	let deltaVolLiquidatePct = 0;
-
-	if (sortedVolumeTimestamps.length > 0) {
-		const first = sortedVolumeTimestamps[0] ?? "";
-		const last =
-			sortedVolumeTimestamps[sortedVolumeTimestamps.length - 1] ?? "";
-		const earliestBucket = volTimelineMap.get(first);
-		const latestBucket = volTimelineMap.get(last);
-		const bucketsFound =
-			earliestBucket !== undefined && latestBucket !== undefined;
-
-		deltaVolBorrowPct =
-			bucketsFound && earliestBucket.borrow > 0
-				? ((latestBucket.borrow - earliestBucket.borrow) /
-						earliestBucket.borrow) *
-					100
-				: 0;
-		deltaVolRepayPct =
-			bucketsFound && earliestBucket.repay > 0
-				? ((latestBucket.repay - earliestBucket.repay) / earliestBucket.repay) *
-					100
-				: 0;
-		deltaVolLiquidatePct =
-			bucketsFound && earliestBucket.liquidate > 0
-				? ((latestBucket.liquidate - earliestBucket.liquidate) /
-						earliestBucket.liquidate) *
-					100
-				: 0;
-	}
 
 	return render(
 		<div className="flex flex-col p-4 space-y-4">
 			<h3 className="text-zinc-200 text-sm font-semibold">Lending Overview</h3>
 			<div className="space-y-6">
-				{/* KPIs */}
 				<div className="flex flex-col gap-6 px-2">
+					{/* KPIs State */}
 					<div className="flex flex-wrap gap-8 md:gap-12">
 						<Kpi
 							title="Total Supplied"
-							qty={`${formatNumberSI(currentTotalSupplied, 2)}`}
-							delta={{ period: periodLabel, pct: periodDeltaSuppliedPct }}
+							qty={`${formatNumberSI(healthMetrics.supplied_usd.total, 2)}`}
+							delta={{
+								period: periodLabel,
+								pct: healthMetrics.supplied_usd.deltaPct,
+							}}
 						/>
 						<Kpi
 							title="Total Borrowed"
-							qty={`${formatNumberSI(currentTotalBorrowed, 2)}`}
-							delta={{ period: periodLabel, pct: periodDeltaBorrowedPct }}
+							qty={`${formatNumberSI(healthMetrics.borrowed_usd.total, 2)}`}
+							delta={{
+								period: periodLabel,
+								pct: healthMetrics.borrowed_usd.deltaPct,
+							}}
 						/>
 					</div>
 
+					{/* KPIs Volume */}
 					<div className="flex flex-wrap gap-8 md:gap-12">
 						<Kpi
 							title="Borrow Volume"
-							qty={`${formatNumberSI(volumeBorrowTotal, 2)}`}
-							delta={{ period: periodLabel, pct: deltaVolBorrowPct }}
+							qty={`${formatNumberSI(volumeMetrics.borrow_volume_usd.total, 2)}`}
+							delta={{
+								period: periodLabel,
+								pct: volumeMetrics.borrow_volume_usd.deltaPct,
+							}}
 						/>
 						<Kpi
 							title="Repay Volume"
-							qty={`${formatNumberSI(volumeRepayTotal, 2)}`}
-							delta={{ period: periodLabel, pct: deltaVolRepayPct }}
+							qty={`${formatNumberSI(volumeMetrics.repay_volume_usd.total, 2)}`}
+							delta={{
+								period: periodLabel,
+								pct: volumeMetrics.repay_volume_usd.deltaPct,
+							}}
 						/>
 						<Kpi
 							title="Liquidation"
-							qty={`${formatNumberSI(volumeLiquidateTotal, 2)}`}
-							delta={{ period: periodLabel, pct: deltaVolLiquidatePct }}
+							qty={`${formatNumberSI(volumeMetrics.liquidation_volume_usd.total, 2)}`}
+							delta={{
+								period: periodLabel,
+								pct: volumeMetrics.liquidation_volume_usd.deltaPct,
+							}}
 						/>
 					</div>
 				</div>
 
+				{/* Markets */}
 				<div
 					x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
 					className="space-y-4"

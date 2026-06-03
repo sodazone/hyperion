@@ -5,11 +5,12 @@ import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
 import { monetaryDelta, protocolLabel } from "./format";
-import { Kpi } from "./kpi";
+import { calculateKpis, Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
 import { parseDashboardParamsForDefi } from "./params";
 
 const ROWS_PER_PAGE = 5;
+const EMPTY_KPI = { total: 0, deltaPct: 0 };
 
 export function DexLiquidityCard({
 	row,
@@ -96,7 +97,6 @@ export async function DexLiquidityFragment(
 		bucket,
 		lookback,
 	});
-
 	const volumeRows = await ctx.db.analytics.defiVolumeSeries({
 		network,
 		bucket,
@@ -108,59 +108,31 @@ export async function DexLiquidityFragment(
 		return empty;
 	}
 
-	// Aggregate volumes over the lookback window & track volumes per timestamp
-	const poolVolumeMap = new Map<string, number>();
-	const volumeByTimestampMap = new Map<string, number>();
-	let totalAggregateVolumeUsd = 0;
+	const liquidityMetrics = calculateKpis(
+		rows,
+		[{ key: "total_aggregate_tvl_usd", mode: "state" }],
+		{ dateKey: "ts" },
+	);
 
-	if (volumeRows && volumeRows.length > 0) {
+	const volumeMetrics = calculateKpis(
+		volumeRows ?? [],
+		[{ key: "swap_volume_usd", mode: "volume" }],
+		{ dateKey: "ts" },
+	);
+
+	const { total_aggregate_tvl_usd: tvlKpi = EMPTY_KPI } = liquidityMetrics;
+	const { swap_volume_usd: volumeKpi = EMPTY_KPI } = volumeMetrics;
+
+	const poolVolumeMap = new Map<string, number>();
+	if (volumeRows) {
 		for (const volRow of volumeRows) {
 			const key = `${volRow.protocol}:${volRow.market_id}`;
 			const volAmount = Number(volRow.swap_volume_usd ?? 0);
-
-			// Map absolute totals per pool for the cards
 			poolVolumeMap.set(key, (poolVolumeMap.get(key) || 0) + volAmount);
-			totalAggregateVolumeUsd += volAmount;
-
-			// Map totals per timestamp chunk to figure out lookback delta
-			const tsKey = String(volRow.ts);
-			volumeByTimestampMap.set(
-				tsKey,
-				(volumeByTimestampMap.get(tsKey) || 0) + volAmount,
-			);
 		}
 	}
 
-	// Calculate TVL Deltas
-	const latestRow = rows[rows.length - 1];
-	const earliestRow = rows[0];
-
-	const currentTotalTvl = latestRow?.total_aggregate_tvl_usd ?? 0;
-	const baselineTotalTvl = earliestRow?.total_aggregate_tvl_usd ?? 0;
-
-	const periodDeltaUsd = currentTotalTvl - baselineTotalTvl;
-	const periodDeltaPct =
-		baselineTotalTvl > 0 ? (periodDeltaUsd / baselineTotalTvl) * 100 : 0;
-
-	// Calculate Volume Deltas (Latest time-bucket volume vs Earliest time-bucket volume)
-	const sortedVolumeTimestamps = Array.from(volumeByTimestampMap.keys()).sort(
-		(a, b) => new Date(a).getTime() - new Date(b).getTime(),
-	);
-
-	const earliestVolumeTs = sortedVolumeTimestamps[0] ?? "";
-	const latestVolumeTs =
-		sortedVolumeTimestamps[sortedVolumeTimestamps.length - 1] ?? "";
-
-	const currentBucketVolume = volumeByTimestampMap.get(latestVolumeTs) || 0;
-	const baselineBucketVolume = volumeByTimestampMap.get(earliestVolumeTs) || 0;
-
-	const volumeDeltaUsd = currentBucketVolume - baselineBucketVolume;
-	const volumeDeltaPct =
-		baselineBucketVolume > 0
-			? (volumeDeltaUsd / baselineBucketVolume) * 100
-			: 0;
-
-	// Deduplicate pool records to get latest TVL snapshot state
+	// Deduplicate pool records
 	const uniquePoolsMap = new Map<string, DexLiquidityRow>();
 	for (const row of rows) {
 		const key = `${row.protocol}:${row.market_id}`;
@@ -181,16 +153,17 @@ export async function DexLiquidityFragment(
 				<div className="px-2 flex flex-wrap gap-8 md:gap-12">
 					<Kpi
 						title="Total TVL"
-						qty={`${formatNumberSI(currentTotalTvl, 2)}`}
-						delta={{ period: periodLabel, pct: periodDeltaPct }}
+						qty={`${formatNumberSI(tvlKpi.total, 2)}`}
+						delta={{ period: periodLabel, pct: tvlKpi.deltaPct }}
 					/>
 					<Kpi
 						title="Trading Volume"
-						qty={`${formatNumberSI(totalAggregateVolumeUsd, 2)}`}
-						delta={{ period: periodLabel, pct: volumeDeltaPct }}
+						qty={`${formatNumberSI(volumeKpi.total, 2)}`}
+						delta={{ period: periodLabel, pct: volumeKpi.deltaPct }}
 					/>
 				</div>
 
+				{/* Markets */}
 				<div
 					x-data={`pagination({totalItems: ${lastRows.length}, perPage: ${ROWS_PER_PAGE}})`}
 					className="space-y-4"
@@ -200,6 +173,7 @@ export async function DexLiquidityFragment(
 							const poolKey = `${r.protocol}:${r.market_id}`;
 							const totalPoolVolume = poolVolumeMap.get(poolKey) || 0;
 
+							// Filter history items for the sparkline
 							const poolHistory = rows
 								.filter(
 									(item) =>
@@ -210,6 +184,7 @@ export async function DexLiquidityFragment(
 									(a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime(),
 								)
 								.map((item) => item.supplied_usd);
+
 							return (
 								<div
 									key={`${r.protocol}-${r.market_id}-${index}`}
