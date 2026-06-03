@@ -5,7 +5,7 @@ import { CopyButton } from "../components/btn.copy";
 import type { PageContext } from "../types";
 import { truncMid } from "../util";
 import { monetaryDelta, protocolLabel } from "./format";
-import { calculateKpis, Kpi } from "./kpi";
+import { asDelta, calculateKpis, Kpi } from "./kpi";
 import { PaginationControls } from "./pagination";
 import { parseDashboardParamsForDefi } from "./params";
 
@@ -110,7 +110,7 @@ export async function DexLiquidityFragment(
 
 	const liquidityMetrics = calculateKpis(
 		rows,
-		[{ key: "total_aggregate_tvl_usd", mode: "state" }],
+		[{ key: "total_aggregate_tvl_usd" }],
 		{ dateKey: "ts" },
 	);
 
@@ -129,14 +129,7 @@ export async function DexLiquidityFragment(
 		}
 	}
 
-	const volumeKpi = {
-		total: currentTotalVolume,
-		deltaPct:
-			previousTotalVolume > 0
-				? ((currentTotalVolume - previousTotalVolume) / previousTotalVolume) *
-					100
-				: 0,
-	};
+	const volumeKpi = asDelta(currentTotalVolume, previousTotalVolume);
 
 	// Deduplicate pool records
 	const uniquePoolsMap = new Map<string, DexLiquidityRow>();
