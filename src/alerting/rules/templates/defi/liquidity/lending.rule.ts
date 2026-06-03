@@ -82,7 +82,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const key = `${id}:${RULE_NAME}:${payload.protocol}:${payload.marketId}:${matchedReason}`;
+		const key = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}:${matchedReason}`;
 		const isAllowed = checkAndRecordRateLimit({
 			key,
 			limit: MAX_ALERTS_NUM,

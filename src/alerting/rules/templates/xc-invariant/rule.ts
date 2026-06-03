@@ -9,7 +9,7 @@ import {
 	subscriptionIds,
 } from "./schema";
 
-const ruleName = "xc-invariant";
+const RULE_NAME = "xc-invariant";
 const SO_STATE_VAR = "so";
 
 const defaults = {
@@ -46,7 +46,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 	},
 	Config
 > = {
-	id: ruleName,
+	id: RULE_NAME,
 	title: "Crosschain Invariant",
 	description:
 		"Alerts when crosschain reserve and remote balances diverge beyond thresholds.",
@@ -83,9 +83,9 @@ export const CrosschainInvariantRule: RuleDefinition<
 			decimals: event.payload.inputs.remoteDecimals,
 		});
 
-		const ns = `${ruleName}:${id}`;
+		const scope = `${RULE_NAME}:${id}`;
 
-		const stateObj = (state.get(ns, SO_STATE_VAR) ?? {
+		const stateObj = (state.get(scope, SO_STATE_VAR) ?? {
 			consecutive: 0,
 		}) as { consecutive: number };
 
@@ -99,11 +99,11 @@ export const CrosschainInvariantRule: RuleDefinition<
 			stateObj.consecutive = 0;
 		}
 
-		state.set(ns, SO_STATE_VAR, stateObj);
+		state.set(scope, SO_STATE_VAR, stateObj);
 
 		if (stateObj.consecutive >= (config.minConsecutive ?? 1)) {
 			stateObj.consecutive = 0;
-			state.set(ns, SO_STATE_VAR, stateObj);
+			state.set(scope, SO_STATE_VAR, stateObj);
 
 			return {
 				matched: true,
@@ -135,7 +135,7 @@ export const CrosschainInvariantRule: RuleDefinition<
 		const alert: Alert<CrosschainInvariantPayload> = {
 			timestamp: Date.now(),
 			level: config.level,
-			name: ruleName,
+			name: RULE_NAME,
 			networks: [
 				{
 					network: reserveChain,

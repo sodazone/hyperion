@@ -3,7 +3,7 @@ import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
 import { type Configs, schemas } from "./schema";
 
-const ruleName = "exchange-liquidity";
+const RULE_NAME = "exchange-liquidity";
 const STATE_KEY = "dex_tvl";
 
 export interface ExchangeAlertPayload extends AlertPayload {
@@ -24,7 +24,7 @@ export const ExchangeLiquidityRule: RuleDefinition<
 	{ driftPercent: number },
 	Configs["dex"]
 > = {
-	id: ruleName,
+	id: RULE_NAME,
 	title: "DEX Liquidity",
 	description: "Alerts on TVL shocks or progressive liquidity drains/spikes.",
 	schema: schemas.dex,
@@ -36,7 +36,7 @@ export const ExchangeLiquidityRule: RuleDefinition<
 	},
 	autoDependencies: [{ kind: "defi-liquidity" }],
 
-	matcher: async (event, { config, global: { state } }) => {
+	matcher: async (event, { config, id, global: { state } }) => {
 		if (
 			event.type !== "defi-liquidity" ||
 			event.payload.category !== "exchange"
@@ -54,8 +54,9 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		const currentTvl = payload.suppliedUSD;
 		if (currentTvl < (config.minTvlUSD ?? 10000)) return { matched: false };
 
-		const ns = `${ruleName}:${payload.protocol}:${payload.marketId}`;
-		const marketState = (state.get(ns, STATE_KEY) ?? {
+		const scope = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}`;
+
+		const marketState = (state.get(scope, STATE_KEY) ?? {
 			lastTvl: currentTvl,
 			lastAlertedTvl: 0,
 		}) as MarketState;
@@ -101,7 +102,8 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		if (shouldAlert) {
 			marketState.lastAlertedTvl = currentTvl;
 		}
-		state.set(ns, STATE_KEY, marketState);
+
+		state.set(scope, STATE_KEY, marketState);
 
 		return shouldAlert
 			? { matched: true, data: { driftPercent: tickDrift } }
@@ -114,7 +116,7 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		return {
 			timestamp: Date.now(),
 			level: config.level,
-			name: ruleName,
+			name: RULE_NAME,
 			remark: `TVL: $${payload.suppliedUSD.toLocaleString()}`,
 			networks: makeNetworks(event),
 			message: [
