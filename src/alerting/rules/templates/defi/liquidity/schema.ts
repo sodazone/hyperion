@@ -42,6 +42,18 @@ export const schemas = {
 			unit: "USD",
 			help: "Ignore pools with a TVL below this USD amount.",
 		}),
+
+		windowMs: z.number().min(1_000).meta({
+			label: "Rolling Window",
+			unit: "ms",
+			help: "The lookback duration. Compares the current value against the oldest data point inside this timeframe.",
+		}),
+
+		minTicks: z.number().min(1).meta({
+			label: "Minimum Ticks",
+			unit: "count",
+			help: "The required number of data points inside the window before calculations trigger.",
+		}),
 	}),
 	lending: z.object({
 		level,

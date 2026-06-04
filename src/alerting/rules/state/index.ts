@@ -1,8 +1,8 @@
-import { FileStateStore } from "./file";
 import { InMemoryStateStore } from "./memory";
+import { SqliteStateStore } from "./sqlite";
 
 export function createStateStore(path: string) {
 	return path === ":memory:"
 		? new InMemoryStateStore()
-		: new FileStateStore(path);
+		: new SqliteStateStore(path);
 }

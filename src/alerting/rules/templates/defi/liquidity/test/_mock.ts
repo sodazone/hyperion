@@ -35,19 +35,21 @@ export function mockLendingEvent(
 }
 
 export function mockExchangeEvent(
-	overrides: {
-		protocol?: string;
-		marketId?: string;
-		type?: string;
-		category?: string;
-		suppliedUSD?: number;
-		chainURN?: string;
-	} = {},
+	overrides: Partial<{
+		protocol: string;
+		marketId: string;
+		type: string;
+		category: string;
+		suppliedUSD: number;
+		chainURN: string;
+		timestamp: number;
+	}> = {},
 ): DefiLiquidityEvent {
 	return {
 		type: (overrides.type ?? "defi-liquidity") as any,
 		origin: {
 			chainURN: overrides.chainURN ?? "urn:ocn:polkadot:1000",
+			timestamp: overrides.timestamp,
 		},
 		payload: {
 			category: overrides.category ?? "exchange",
