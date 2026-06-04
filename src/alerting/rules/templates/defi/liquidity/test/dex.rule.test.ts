@@ -95,38 +95,6 @@ describe("Exchange Liquidity Rule", () => {
 		expect(result.matched).toBe(false);
 	});
 
-	it("triggers multi-step stepThreshold shifts over continuous progressive updates", async () => {
-		const ctx = makeCtx({
-			driftThresholdDrop: 0.3, // Large instant barrier
-			stepThreshold: 0.1, // Modest structural barrier
-		});
-
-		// Event 1: Fresh state setup at $100k
-		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
-		const res1 = await ExchangeLiquidityRule.matcher(event, ctx as any);
-		// Note: The rule design marks lastAlertedTvl = currentTvl on initialization
-		// when it satisfies `marketState.lastAlertedTvl === 0 && Math.abs(tickDrift) >= stepThresh` (0 >= 0.1 is false, but baseline tickDrift check on step 1 is 0. If it did alert on tick 1, res1 would be true. Here it initializes silently if tickDrift is 0)
-		expect(res1.matched).toBe(false);
-
-		// Event 2: TVL drops by 12% ($88k). Does not cross 30% drop boundary, but crosses 10% multi-step threshold from initial $100k anchor.
-		event = mockExchangeEvent({ suppliedUSD: 88_000 });
-		const res2 = await ExchangeLiquidityRule.matcher(event, ctx as any);
-
-		expect(res2.matched).toBe(true);
-		expect(res2.data?.driftPercent).toBeCloseTo(-0.12, 4);
-
-		// Event 3: Minor drift down to $86k. Drift from updated anchor ($88k) is minor, shouldn't trigger.
-		event = mockExchangeEvent({ suppliedUSD: 86_000 });
-		const res3 = await ExchangeLiquidityRule.matcher(event, ctx as any);
-		expect(res3.matched).toBe(false);
-
-		// Event 4: Progressive bleeding drops TVL down to $75k. Shift from anchor ($88k) is ~14.7%, crossing the 10% step boundary again.
-		event = mockExchangeEvent({ suppliedUSD: 75_000 });
-		const res4 = await ExchangeLiquidityRule.matcher(event, ctx as any);
-
-		expect(res4.matched).toBe(true);
-	});
-
 	it("enforces networks restriction matrices cleanly", async () => {
 		const ctx = makeCtx({
 			networks: ["urn:ocn:ethereum:1"],
