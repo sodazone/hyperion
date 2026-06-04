@@ -162,8 +162,6 @@ export function createAuthApi() {
 				throw new Error("Invalid magic link");
 			}
 
-			console.log(authResp);
-
 			const ist = authResp.intermediate_session_token;
 			if (authResp.discovered_organizations.length > 0) {
 				const firstOrg = authResp.discovered_organizations[0];
