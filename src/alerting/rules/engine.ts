@@ -72,6 +72,9 @@ export class RuleEngine extends EventEmitter {
 			try {
 				if (inst.cooldownMs) {
 					const last = this.#lastAlertTimes[inst.id];
+					console.log(
+						`[Engine] Rule #${inst.id} executed ${last} checking cooldown ${now}`,
+					);
 					if (last && now - last < inst.cooldownMs) continue;
 				}
 
@@ -84,6 +87,9 @@ export class RuleEngine extends EventEmitter {
 				if (!result.matched) continue;
 
 				if (inst.cooldownMs) {
+					console.log(
+						`[Engine] Rule #${inst.id} executed ${now} to cooldown ${inst.cooldownMs}`,
+					);
 					this.#lastAlertTimes[inst.id] = now;
 				}
 
