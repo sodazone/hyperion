@@ -14,7 +14,7 @@ function makeCtx(configOverrides = {}) {
 			driftThresholdSpike: 0.5,
 			minTvlUSD: 10_000,
 			minTicks: 1,
-			windowMs: 1_000,
+			windowMs: 600_000,
 			...configOverrides,
 		},
 		global: { state },
@@ -49,13 +49,13 @@ describe("Exchange Liquidity Rule", () => {
 
 	it("fires instantly on severe TVL drop (liquidity crash shock)", async () => {
 		const ctx = makeCtx({ driftThresholdDrop: 0.15 });
+		const now = Date.now();
 
-		// Step 1: Establish baseline TVL state
-		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		let event = mockExchangeEvent({ suppliedUSD: 100_000, timestamp: now });
 		await ExchangeLiquidityRule.matcher(event, ctx as any);
 
-		// Step 2: Immediate 20% TVL loss (exceeds 15% drop threshold)
-		event = mockExchangeEvent({ suppliedUSD: 80_000 });
+		// Immediate 20% TVL loss (exceeds 15% drop threshold)
+		event = mockExchangeEvent({ suppliedUSD: 80_000, timestamp: now + 1000 });
 		const result = await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		expect(result.matched).toBe(true);
@@ -64,13 +64,13 @@ describe("Exchange Liquidity Rule", () => {
 
 	it("fires instantly on massive TVL pool spikes", async () => {
 		const ctx = makeCtx({ driftThresholdSpike: 0.5 });
+		const now = Date.now();
 
-		// Step 1: Base TVL state
-		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		let event = mockExchangeEvent({ suppliedUSD: 100_000, timestamp: now });
 		await ExchangeLiquidityRule.matcher(event, ctx as any);
 
-		// Step 2: Inflow spike of 60% (exceeds 50% spike threshold)
-		event = mockExchangeEvent({ suppliedUSD: 160_000 });
+		// Inflow spike of 60% (exceeds 50% spike threshold)
+		event = mockExchangeEvent({ suppliedUSD: 160_000, timestamp: now + 1000 });
 		const result = await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		expect(result.matched).toBe(true);
@@ -78,14 +78,15 @@ describe("Exchange Liquidity Rule", () => {
 	});
 
 	it("does NOT fire alerts on normal, non-disruptive organic TVL fluctuations", async () => {
-		const ctx = makeCtx({ stepThreshold: 0.1 });
+		const ctx = makeCtx({ driftThresholdDrop: 0.15 });
+		const now = Date.now();
 
 		// Base line setup
-		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		let event = mockExchangeEvent({ suppliedUSD: 100_000, timestamp: now });
 		await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		// Minor 3% normal fluctuation
-		event = mockExchangeEvent({ suppliedUSD: 103_000 });
+		event = mockExchangeEvent({ suppliedUSD: 103_000, timestamp: now + 1000 });
 		const result = await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		expect(result.matched).toBe(false);
@@ -95,17 +96,21 @@ describe("Exchange Liquidity Rule", () => {
 		const ctx = makeCtx({
 			networks: ["urn:ocn:ethereum:1"],
 		});
+		const now = Date.now();
 
-		// Large drop occurs, but on Polkadot Asset Hub while filter explicitly expects Ethereum Mainnet
+		// Large drop occurs, but on Polkadot Asset Hub
+		// while filter explicitly expects Ethereum Mainnet
 		const event = mockExchangeEvent({
 			chainURN: "urn:ocn:polkadot:1000",
 			suppliedUSD: 200_000,
+			timestamp: now,
 		});
-		await ExchangeLiquidityRule.matcher(event, ctx as any); // initialize
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		const shiftedEvent = mockExchangeEvent({
 			chainURN: "urn:ocn:polkadot:1000",
 			suppliedUSD: 100_000,
+			timestamp: now + 1000,
 		}); // severe drop
 
 		const result = await ExchangeLiquidityRule.matcher(
@@ -113,5 +118,59 @@ describe("Exchange Liquidity Rule", () => {
 			ctx as any,
 		);
 		expect(result.matched).toBe(false);
+	});
+
+	it("detects a step-by-step slow drain exploit over time via anchor matching", async () => {
+		const ctx = makeCtx({ driftThresholdDrop: 0.15, windowMs: 600_000 }); // 10 mins window
+		const startTime = Date.now();
+
+		let event = mockExchangeEvent({
+			suppliedUSD: 100_000,
+			timestamp: startTime,
+		});
+		let result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Siphon drop 1 (-8%).
+		event = mockExchangeEvent({
+			suppliedUSD: 92_000,
+			timestamp: startTime + 60_000,
+		}); // +1 min
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Siphon drop 2 (-17% total against anchor).
+		event = mockExchangeEvent({
+			suppliedUSD: 83_000,
+			timestamp: startTime + 120_000,
+		}); // +2 mins
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+		expect(result.data?.driftPercent).toBeCloseTo(-0.17, 4);
+	});
+
+	it("handles the ghost baseline edge case correctly after prolonged event silence", async () => {
+		const ctx = makeCtx({ driftThresholdDrop: 0.15, windowMs: 600_000 }); // 10 mins window
+		const startTime = Date.now();
+
+		let event = mockExchangeEvent({
+			suppliedUSD: 100_000,
+			timestamp: startTime,
+		});
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Simulate 5 days of silence. No liquidity shifts occur, so no events are received.
+		// Suddenly, a pool drain event hits. TVL drops down to $50k.
+		const fiveDaysInMs = 5 * 24 * 60 * 60 * 1000;
+		event = mockExchangeEvent({
+			suppliedUSD: 50_000,
+			timestamp: startTime + fiveDaysInMs,
+		});
+
+		const result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+		expect(result.data?.driftPercent).toBeCloseTo(-0.5, 4);
 	});
 });
