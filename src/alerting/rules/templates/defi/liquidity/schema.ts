@@ -44,15 +44,15 @@ export const schemas = {
 		}),
 
 		windowMs: z.number().min(1_000).meta({
-			label: "Security Evaluation Window",
+			label: "Rolling Window",
 			unit: "ms",
-			help: "The lookback duration used to establish the baseline anchor. For exploit monitoring, a short window (e.g., 300,000 to 600,000 ms) catches attacks immediately.",
+			help: "The lookback duration. Compares the current value against the oldest data point inside this timeframe.",
 		}),
 
 		minTicks: z.number().min(1).meta({
-			label: "Minimum Ingestion Ticks",
+			label: "Minimum Ticks",
 			unit: "count",
-			help: "The minimum number of updates required inside the time window before calculating drift. Prevents cold-start false alerts on node reboot.",
+			help: "The required number of data points inside the window before calculations trigger.",
 		}),
 	}),
 	lending: z.object({
