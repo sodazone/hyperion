@@ -331,9 +331,6 @@ Triggers an alert when a pool loses at least this percentage of TVL in a single 
 **Spike Threshold**  
 Triggers an alert when a pool gains at least this percentage of TVL in a single update. Default `0.50` (50%)
 
-**Step Threshold**  
-Triggers follow-up alerts when TVL continues changing in the same direction after an initial alert. Default `0.10` (10%)
-
 **Minimum Liquidity Floor**  
 Ignore pools with TVL below this USD value. Default `0`
 
