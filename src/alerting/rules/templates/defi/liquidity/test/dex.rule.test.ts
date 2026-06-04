@@ -13,6 +13,8 @@ function makeCtx(configOverrides = {}) {
 			driftThresholdDrop: 0.15,
 			driftThresholdSpike: 0.5,
 			minTvlUSD: 10_000,
+			minTicks: 1,
+			windowMs: 1_000,
 			...configOverrides,
 		},
 		global: { state },
