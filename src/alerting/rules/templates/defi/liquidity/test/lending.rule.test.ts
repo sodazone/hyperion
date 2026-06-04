@@ -1,15 +1,10 @@
 import { describe, expect, it } from "bun:test";
+import { InMemoryStateStore } from "@/alerting/rules/state/memory";
 import { MoneyMarketHealthRule } from "../lending.rule";
 import { mockLendingEvent } from "./_mock";
 
 function makeCtx(configOverrides = {}) {
-	const fakeState = new Map();
-
-	const stateApi = {
-		get: (ns: string, key: string) => fakeState.get(`${ns}:${key}`),
-		set: (ns: string, key: string, value: any) =>
-			fakeState.set(`${ns}:${key}`, value),
-	};
+	const state = new InMemoryStateStore();
 
 	return {
 		config: {
@@ -19,7 +14,7 @@ function makeCtx(configOverrides = {}) {
 			maxUtilization: 0.95,
 			...configOverrides,
 		},
-		global: { state: stateApi },
+		global: { state },
 		id: 1,
 	};
 }
