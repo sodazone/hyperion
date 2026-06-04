@@ -10,9 +10,8 @@ function makeCtx(configOverrides = {}) {
 		config: {
 			subscriptionId: "sub-1",
 			level: 1,
-			driftThresholdDrop: 0.15, // 15% instant drop
-			driftThresholdSpike: 0.5, // 50% instant spike
-			stepThreshold: 0.1, // 10% multi-step shift
+			driftThresholdDrop: 0.15,
+			driftThresholdSpike: 0.5,
 			minTvlUSD: 10_000,
 			...configOverrides,
 		},
