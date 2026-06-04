@@ -27,12 +27,11 @@ export const ExchangeLiquidityRule: RuleDefinition<
 > = {
 	id: RULE_NAME,
 	title: "DEX Liquidity",
-	description: "Alerts on TVL shocks or progressive liquidity drains/spikes.",
+	description: "Alerts on TVL liquidity drops and spikes.",
 	schema: schemas.dex,
 	defaults: {
 		driftThresholdDrop: 0.15,
 		driftThresholdSpike: 0.5,
-		stepThreshold: 0.1,
 		minTvlUSD: 0,
 	},
 	autoDependencies: [{ kind: "defi-liquidity" }],
@@ -67,14 +66,6 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		const tickDrift =
 			(currentTvl - marketState.lastTvl) / Math.max(marketState.lastTvl, 1);
 
-		const cumulativeCascadeShift =
-			marketState.lastAlertedTvl > 0
-				? (currentTvl - marketState.lastAlertedTvl) / marketState.lastAlertedTvl
-				: 0;
-
-		const stepThresh = config.stepThreshold ?? 0.1;
-
-		// instant
 		if (
 			tickDrift < 0 &&
 			Math.abs(tickDrift) >= (config.driftThresholdDrop ?? 0.15)
@@ -83,18 +74,6 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		} else if (
 			tickDrift > 0 &&
 			tickDrift >= (config.driftThresholdSpike ?? 0.5)
-		) {
-			shouldAlert = true;
-		}
-		// multi-step
-		else if (
-			marketState.lastAlertedTvl > 0 &&
-			Math.abs(cumulativeCascadeShift) >= stepThresh
-		) {
-			shouldAlert = true;
-		} else if (
-			marketState.lastAlertedTvl === 0 &&
-			Math.abs(tickDrift) >= stepThresh
 		) {
 			shouldAlert = true;
 		}

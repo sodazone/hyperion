@@ -317,7 +317,6 @@ An alert is generated when:
 
 - TVL drops below the configured **Drop Threshold**
 - TVL increases above the configured **Spike Threshold**
-- TVL continues moving in the same direction by more than the configured **Step Threshold** after a previous alert
 
 Pools with TVL below the configured minimum liquidity floor are ignored to reduce noise from small or inactive pools.
 

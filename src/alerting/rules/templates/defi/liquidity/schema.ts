@@ -37,12 +37,6 @@ export const schemas = {
 			unit: "%",
 			help: "Alerts if TVL spikes by this much in one update. Set higher to filter out normal whale deposits.",
 		}),
-		stepThreshold: z.number().min(0).max(1).meta({
-			label: "Step Threshold",
-			decimals: true,
-			unit: "%",
-			help: "Alerts if TVL continues drifting in either direction by this % from the last alert.",
-		}),
 		minTvlUSD: z.number().min(0).meta({
 			label: "Minimum Liquidity Floor",
 			unit: "USD",
