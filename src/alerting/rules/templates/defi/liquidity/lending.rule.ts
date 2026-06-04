@@ -24,8 +24,7 @@ export const MoneyMarketHealthRule: RuleDefinition<
 > = {
 	id: RULE_NAME,
 	title: "Money Market Health",
-	description:
-		"Monitors solvency and utilization crunches for lending protocols.",
+	description: "Monitors solvency and utilization risks for lending protocols.",
 	schema: schemas.lending,
 	defaults: {
 		minSolvencyRatio: 0.98,
