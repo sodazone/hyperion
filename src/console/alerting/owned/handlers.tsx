@@ -90,6 +90,7 @@ export const RuleUpsertHandler = withAuth<"/console/rules">(
 					config: parsed,
 					enabled,
 					channelIds,
+					cooldownMs: template.cooldownMs,
 				});
 
 				const inserted = db.alerting.rules.getRuleInstance({
