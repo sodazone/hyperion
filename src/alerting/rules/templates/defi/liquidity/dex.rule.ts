@@ -92,16 +92,21 @@ export const ExchangeLiquidityRule: RuleDefinition<
 
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
-		const direction = data.driftPercent < 0 ? "down" : "up";
+		const isDrop = data.driftPercent < 0;
+		const direction = isDrop ? "down" : "up";
+		const thresholdUsed = isDrop
+			? config.driftThresholdDrop
+			: config.driftThresholdSpike;
 		return {
 			timestamp: Date.now(),
 			level: config.level,
 			name: RULE_NAME,
-			remark: `TVL: $${formatNumberSI(payload.suppliedUSD, 2)}`,
+			remark: `TVL ${direction} ≥ ${(thresholdUsed * 100).toFixed(2)}%`,
 			networks: makeNetworks(event),
 			message: [
 				["t", `DEX TVL ${direction} on ${payload.protocol}`],
-				["t", `${(data.driftPercent * 100).toFixed(2)}%`],
+				["a", `${(data.driftPercent * 100).toFixed(2)}%`],
+				["a", `($${formatNumberSI(payload.suppliedUSD, 2)})`],
 			],
 			payload: {
 				kind: "exchange-liquidity",
