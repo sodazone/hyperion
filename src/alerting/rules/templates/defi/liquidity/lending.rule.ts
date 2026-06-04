@@ -1,4 +1,4 @@
-import { checkAndRecordRateLimit } from "@/alerting/rules/util/limit";
+import { checkAndRecordRateLimit } from "@/alerting/rules/utils/limit";
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
