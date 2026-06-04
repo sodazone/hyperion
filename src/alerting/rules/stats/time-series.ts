@@ -22,9 +22,20 @@ export function pushAndRollWindow(
 
 	const cutoff = newTick.timestampMs - windowTimeMs;
 
-	const updatedWindow = [...storedHistory, newTick]
-		.filter((tick) => tick.timestampMs > cutoff)
-		.sort((a, b) => a.timestampMs - b.timestampMs);
+	let filtered = storedHistory.filter((tick) => tick.timestampMs > cutoff);
+
+	// If everything expired because updates are infrequent (i.e. only on changes),
+	// retain the single newest historical tick to act as our baseline anchor.
+	if (filtered.length === 0 && storedHistory.length > 0) {
+		const lastKnownHistorical = storedHistory.sort(
+			(a, b) => b.timestampMs - a.timestampMs,
+		)[0];
+		if (lastKnownHistorical) filtered = [lastKnownHistorical];
+	}
+
+	const updatedWindow = [...filtered, newTick].sort(
+		(a, b) => a.timestampMs - b.timestampMs,
+	);
 
 	store.set(scope, storageKey, updatedWindow);
 	return updatedWindow;
