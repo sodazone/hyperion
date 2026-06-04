@@ -1,25 +1,21 @@
 import { expect, it } from "bun:test";
+import { InMemoryStateStore } from "@/alerting/rules/state/memory";
 import { CrosschainInvariantRule } from "../rule";
 import { mockEvent } from "./_mock";
 
 function makeCtx(configOverrides = {}) {
-	const fakeState = new Map();
-
-	const stateApi = {
-		get: (ns: string, key: string) => fakeState.get(`${ns}:${key}`),
-		set: (ns: string, key: string, value: any) =>
-			fakeState.set(`${ns}:${key}`, value),
-	};
+	const state = new InMemoryStateStore();
 
 	return {
 		config: {
-			subscriptionId: "sub-1",
+			subscriptionId: "hyperion:polkadot-hydration_xcm",
 			hThreshold: 0.01,
 			level: 1,
 			minConsecutive: 2,
+			issuanceNetwork: "urn:ocn:polkadot:2034",
 			...configOverrides,
 		},
-		global: { state: stateApi },
+		global: { state },
 		id: 1,
 	};
 }

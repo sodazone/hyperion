@@ -12,14 +12,14 @@ export function mockEvent(overrides: MockOverrides = {}): IssuanceEvent {
 	const {
 		reserve = "1000",
 		remote = "1000",
-		subscriptionId = "sub-1",
+		subscriptionId = "hyperion:polkadot-hydration_xcm",
 		reserveDecimals = 0,
 		remoteDecimals = 0,
 	} = overrides;
 
 	return {
 		type: "issuance",
-		origin: { chainURN: "test", timestamp: Date.now() },
+		origin: { chainURN: "urn:ocn:polkadot:2034", timestamp: Date.now() },
 
 		payload: {
 			subscriptionId,
@@ -28,7 +28,7 @@ export function mockEvent(overrides: MockOverrides = {}): IssuanceEvent {
 			remote: String(remote),
 
 			inputs: {
-				reserveChain: "urn:chain:1",
+				reserveChain: "urn:ocn:polkadot:2034",
 				remoteChain: "urn:chain:2",
 
 				reserveAddress: "0xreserve",
