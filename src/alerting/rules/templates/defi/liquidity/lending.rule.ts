@@ -1,4 +1,3 @@
-import { checkAndRecordRateLimit } from "@/alerting/rules/utils/limit";
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
 import { makeNetworks } from "../../common/helpers";
@@ -6,8 +5,7 @@ import { type Configs, schemas } from "./schema";
 
 const RULE_NAME = "money-market-health";
 
-const MAX_ALERTS_NUM = 1;
-const MAX_ALERTS_WINDOW_MS = 3_600_000;
+const COOL_DOWN_MS = 3_600_000;
 
 export interface MoneyMarketAlertPayload extends AlertPayload {
 	kind: "money-market-health";
@@ -30,9 +28,10 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		minSolvencyRatio: 0.98,
 		maxUtilization: 0.95,
 	},
+	cooldownMs: COOL_DOWN_MS,
 	autoDependencies: [{ kind: "defi-liquidity" }],
 
-	matcher: async (event, { config, id }) => {
+	matcher: async (event, { config }) => {
 		if (
 			event.type !== "defi-liquidity" ||
 			event.payload.category !== "money-market"
@@ -75,17 +74,6 @@ export const MoneyMarketHealthRule: RuleDefinition<
 		}
 
 		if (!matchedReason) {
-			return { matched: false };
-		}
-
-		const key = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}:${matchedReason}`;
-		const isAllowed = checkAndRecordRateLimit({
-			key,
-			limit: MAX_ALERTS_NUM,
-			windowMs: MAX_ALERTS_WINDOW_MS,
-		});
-
-		if (!isAllowed) {
 			return { matched: false };
 		}
 
