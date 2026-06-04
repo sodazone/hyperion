@@ -4,7 +4,7 @@ import { InMemoryStateStore } from "../state/memory";
 import type { StateStore } from "../types";
 import {
 	calculateDelta,
-	computeRollingMetric,
+	calculateRollingMetric,
 	pushAndRollWindow,
 	type TimeSeriesTick,
 } from "./time-series";
@@ -90,14 +90,14 @@ describe("TimeSeries Stream Engine Utilities", () => {
 		];
 
 		it("should default safely to zero on empty input streams", () => {
-			expect(computeRollingMetric([], "price", "mean")).toBe(0);
+			expect(calculateRollingMetric([], "price", "mean")).toBe(0);
 		});
 
 		it("should match standard pandas aggregation functions accurately", () => {
-			expect(computeRollingMetric(mockWindow, "price", "sum")).toBe(100);
-			expect(computeRollingMetric(mockWindow, "price", "max")).toBe(40);
-			expect(computeRollingMetric(mockWindow, "price", "min")).toBe(10);
-			expect(computeRollingMetric(mockWindow, "price", "mean")).toBe(25);
+			expect(calculateRollingMetric(mockWindow, "price", "sum")).toBe(100);
+			expect(calculateRollingMetric(mockWindow, "price", "max")).toBe(40);
+			expect(calculateRollingMetric(mockWindow, "price", "min")).toBe(10);
+			expect(calculateRollingMetric(mockWindow, "price", "mean")).toBe(25);
 		});
 
 		it("should handle missing or fallback keys dynamically using zero default assumptions", () => {
@@ -105,7 +105,7 @@ describe("TimeSeries Stream Engine Utilities", () => {
 				{ timestampMs: 1000, price: 10 },
 				{ timestampMs: 2000 },
 			];
-			expect(computeRollingMetric(skewedWindow, "price", "sum")).toBe(10);
+			expect(calculateRollingMetric(skewedWindow, "price", "sum")).toBe(10);
 		});
 	});
 });

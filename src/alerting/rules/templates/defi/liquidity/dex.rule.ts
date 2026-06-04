@@ -1,5 +1,5 @@
 import {
-	computeRollingMetric,
+	calculateRollingMetric,
 	pushAndRollWindow,
 	type TimeSeriesTick,
 } from "@/alerting/rules/stats/time-series";
@@ -74,7 +74,11 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		if (activeWindow.length <= config.minTicks) return { matched: false };
 
 		const historicalWindow = activeWindow.slice(0, -1);
-		const baselineTvl = computeRollingMetric(historicalWindow, "tvl", "anchor");
+		const baselineTvl = calculateRollingMetric(
+			historicalWindow,
+			"tvl",
+			"anchor",
+		);
 
 		if (baselineTvl === 0) return { matched: false };
 
