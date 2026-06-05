@@ -98,29 +98,37 @@ export type LiquidityAsset = {
 		mintCap?: string;
 		reserves: string;
 	};
-	role?: "liquid" | "collateral" | "debt";
+	role?: "liquid" | "collateral" | "debt" | "lst" | "staked";
 };
 
-export type MoneyMarketPayload = {
-	utilization?: number;
-	borrowedUSD?: number;
-	borrowAPR?: number;
-	supplyAPR?: number;
-	isPaused?: boolean;
-	canBorrow?: boolean;
-	borrowCap?: string;
-	supplyCap?: string;
-	health?: {
+export type LiquidStakingPayload = Partial<{
+	totalStaked: string;
+	stakingNetwork: string;
+	exchangeRate: number;
+	stakedAsset: LiquidityAsset;
+	liquidAsset: LiquidityAsset;
+}>;
+
+export type MoneyMarketPayload = Partial<{
+	utilization: number;
+	borrowedUSD: number;
+	borrowAPR: number;
+	supplyAPR: number;
+	isPaused: boolean;
+	canBorrow: boolean;
+	borrowCap: string;
+	supplyCap: string;
+	health: {
 		solvencyRatio: number;
 		tokenDeficitUSD?: number;
 	};
-};
+}>;
 
 export type DefiLiquidityEvent = BaseEvent<
 	"defi-liquidity",
 	{
 		type: "liquidity";
-		category: "exchange" | "money-market" | "stability";
+		category: "exchange" | "money-market" | "stability" | "liquid-staking";
 		networkId: string;
 		protocol: string;
 		marketId: string;
@@ -131,6 +139,7 @@ export type DefiLiquidityEvent = BaseEvent<
 
 		assets: LiquidityAsset[];
 		lending?: MoneyMarketPayload;
+		liquidStaking?: LiquidStakingPayload;
 	}
 >;
 
@@ -141,7 +150,13 @@ export type DefiEventAsset = {
 	amountUSD?: number;
 };
 
-export type MoneyMarketActions = "borrow" | "repay" | "withdraw" | "supply";
+export type MoneyMarketActions =
+	| "borrow"
+	| "repay"
+	| "withdraw"
+	| "supply"
+	| "lst_mint"
+	| "lst_redeem";
 
 export type DefiEvent = BaseEvent<
 	"defi-event",

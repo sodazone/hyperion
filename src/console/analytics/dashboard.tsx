@@ -130,6 +130,15 @@ export function Dashboard({
 				hx-include="#dashboard-filters"
 			></div>
 
+			{/* Staking Liquidity Protocols */}
+			<div
+				x-ref="slpLiquidity"
+				hx-get="/console/dashboard/fragments/slp-liquidity"
+				hx-trigger="load, refresh"
+				hx-target="this"
+				hx-include="#dashboard-filters"
+			></div>
+
 			{/* Crosschain Reserves */}
 			<div className="flex flex-col p-4 space-y-4">
 				<h3 className="text-zinc-200 text-sm font-semibold">

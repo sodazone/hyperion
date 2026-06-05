@@ -4,6 +4,7 @@ import type {
 	DefiEventAsset,
 	DefiLiquidityEvent,
 	LiquidityAsset,
+	LiquidStakingPayload,
 	MoneyMarketPayload,
 } from "@/alerting/rules";
 import { deriveMarketLabel } from "./labels";
@@ -35,6 +36,8 @@ export function mapDefiLiquidity(
 		}),
 	);
 
+	let label: string | undefined;
+
 	let mappedLending: MoneyMarketPayload | undefined;
 	if (payload.lending) {
 		mappedLending = {
@@ -55,15 +58,33 @@ export function mapDefiLiquidity(
 		};
 	}
 
+	let mappedStaking: LiquidStakingPayload | undefined;
+	if (payload.liquidStaking) {
+		const { liquidStaking } = payload;
+		const stakedAsset = mappedAssets.find((a) => a.role === "staked");
+		const liquidAsset = mappedAssets.find((a) => a.role === "lst");
+
+		label = liquidAsset?.symbol;
+		mappedStaking = {
+			exchangeRate: liquidStaking.exchangeRate,
+			stakingNetwork: liquidStaking.stakingNetwork,
+			totalStaked: liquidStaking.totalStaked,
+			liquidAsset,
+			stakedAsset,
+		};
+	}
+
 	const { metadata } = message;
 	const chainURN = metadata.networkId ?? payload.networkId;
 
-	const resolvedMarketLabel = deriveMarketLabel({
-		category: payload.category,
-		marketId: payload.marketId,
-		protocol: payload.protocol,
-		assets: mappedAssets,
-	});
+	const resolvedLabel =
+		label ??
+		deriveMarketLabel({
+			category: payload.category,
+			marketId: payload.marketId,
+			protocol: payload.protocol,
+			assets: mappedAssets,
+		});
 
 	return {
 		type: "defi-liquidity",
@@ -76,11 +97,12 @@ export function mapDefiLiquidity(
 			networkId: payload.networkId,
 			protocol: payload.protocol,
 			marketId: payload.marketId,
-			label: resolvedMarketLabel,
+			label: resolvedLabel,
 			subscriptionId: metadata.subscriptionId,
 			suppliedUSD: payload.suppliedUSD,
 			assets: mappedAssets,
 			lending: mappedLending,
+			liquidStaking: mappedStaking,
 		},
 	};
 }
@@ -129,6 +151,8 @@ export function mapDefiEvent(
 			};
 		}
 
+		case "lst_mint":
+		case "lst_redeem":
 		case "mint":
 		case "burn": {
 			return {

@@ -31,6 +31,7 @@ export function dashboard(initialNetwork, initialBucket) {
 					htmx.trigger(this.$refs.xcReserves, "refresh");
 					htmx.trigger(this.$refs.dexLiquidity, "refresh");
 					htmx.trigger(this.$refs.moneyMarketHealth, "refresh");
+					htmx.trigger(this.$refs.slpLiquidity, "refresh");
 					this.updateURL();
 				},
 			);

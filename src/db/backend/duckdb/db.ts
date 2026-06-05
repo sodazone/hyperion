@@ -16,6 +16,7 @@ import type {
 	DefiVolumeRow,
 	DefiVolumeSeriesRow,
 	DexLiquidityRow,
+	LiquidStakingRow,
 	MoneyMarketHealthRow,
 } from "./types";
 
@@ -143,7 +144,6 @@ export class AnalyticsDB {
 		return rows.map(
 			(r): DexLiquidityRow => ({
 				ts: String(r.timestamp),
-				subscription_id: String(r.subscription_id),
 				network_id: String(r.network_id),
 				protocol: String(r.protocol),
 				market_id: String(r.market_id),
@@ -175,6 +175,8 @@ export class AnalyticsDB {
 				repay_volume_usd: Number(r.repay_volume_usd),
 				withdraw_volume_usd: Number(r.withdraw_volume_usd),
 				liquidation_volume_usd: Number(r.liquidation_volume_usd),
+				lst_mint_volume_usd: Number(r.lst_mint_volume_usd),
+				lst_redeem_volume_usd: Number(r.lst_redeem_volume_usd),
 			}),
 		);
 	}
@@ -204,6 +206,14 @@ export class AnalyticsDB {
 				previous_liquidation_volume_usd: Number(
 					r.previous_liquidation_volume_usd,
 				),
+
+				current_lst_mint_volume_usd: Number(r.current_lst_mint_volume_usd),
+				previous_lst_mint_volume_usd: Number(r.previous_lst_mint_volume_usd),
+
+				current_lst_redeem_volume_usd: Number(r.current_lst_redeem_volume_usd),
+				previous_lst_redeem_volume_usd: Number(
+					r.previous_lst_redeem_volume_usd,
+				),
 			}),
 		);
 	}
@@ -217,7 +227,6 @@ export class AnalyticsDB {
 		return rows.map(
 			(r): MoneyMarketHealthRow => ({
 				ts: String(r.timestamp),
-				subscription_id: String(r.subscription_id),
 				network_id: String(r.network_id),
 				protocol: String(r.protocol),
 				market_id: String(r.market_id),
@@ -229,6 +238,31 @@ export class AnalyticsDB {
 				solvency_ratio:
 					r.solvency_ratio === null ? null : Number(r.solvency_ratio),
 				is_paused: Boolean(r.is_paused),
+			}),
+		);
+	}
+
+	async slpLiquiditySeries(params: DefiQueryParams) {
+		const result = await this.conn.runAndReadAll(
+			Queries.defi.liquid_staking(params),
+		);
+		const rows = result.getRowObjectsJson() as any[];
+
+		return rows.map(
+			(r): LiquidStakingRow => ({
+				ts: String(r.timestamp),
+				network_id: String(r.network_id),
+				protocol: String(r.protocol),
+				market_id: String(r.market_id),
+				label: r.label,
+				staking_network: r.staking_network,
+
+				supplied_usd: Number(r.supplied_usd),
+				backing_ratio: Number(r.backing_ratio),
+				exchange_rate: Number(r.exchange_rate),
+				total_staked: Number(r.total_staked),
+				tvl_change_usd: Number(r.tvl_change_usd),
+				total_aggregate_tvl_usd: Number(r.total_aggregate_tvl_usd),
 			}),
 		);
 	}
