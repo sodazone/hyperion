@@ -20,7 +20,6 @@ export interface CrosschainSolvencyRow {
 
 export interface DexLiquidityRow {
 	ts: string;
-	subscription_id: string;
 	network_id: string;
 	protocol: string;
 	market_id: string;
@@ -41,6 +40,8 @@ export type DefiVolumeSeriesRow = {
 	repay_volume_usd: number;
 	withdraw_volume_usd: number;
 	liquidation_volume_usd: number;
+	lst_mint_volume_usd: number;
+	lst_redeem_volume_usd: number;
 };
 
 export type DefiVolumeRow = {
@@ -58,11 +59,31 @@ export type DefiVolumeRow = {
 
 	current_liquidation_volume_usd: number;
 	previous_liquidation_volume_usd: number;
+
+	current_lst_mint_volume_usd: number;
+	previous_lst_mint_volume_usd: number;
+
+	current_lst_redeem_volume_usd: number;
+	previous_lst_redeem_volume_usd: number;
+};
+
+export type LiquidStakingRow = {
+	ts: string;
+	network_id: string;
+	protocol: string;
+	market_id: string;
+	label: string;
+	staking_network: string;
+	supplied_usd: number;
+	backing_ratio: number;
+	exchange_rate: number;
+	total_staked: number;
+	tvl_change_usd: number;
+	total_aggregate_tvl_usd: number;
 };
 
 export interface MoneyMarketHealthRow {
 	ts: string;
-	subscription_id: string;
 	network_id: string;
 	protocol: string;
 	market_id: string;

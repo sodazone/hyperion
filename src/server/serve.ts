@@ -26,6 +26,7 @@ import { TopExchangesFragment } from "@/console/analytics/cex.top";
 import { DexLiquidityFragment } from "@/console/analytics/dex";
 import { MoneyMarketHealthFragment } from "@/console/analytics/lending";
 import { DashboardPage } from "@/console/analytics/pages";
+import { LiquidStakingFragment } from "@/console/analytics/slp";
 import { CrosschainSolvencyFragment } from "@/console/analytics/xc.solvency";
 import {
 	WatchlistCategoryRowPage,
@@ -165,6 +166,8 @@ export async function serve({
 				CrosschainSolvencyFragment(ctx, req),
 			"/console/dashboard/fragments/dex-liquidity": async (req) =>
 				DexLiquidityFragment(ctx, req),
+			"/console/dashboard/fragments/slp-liquidity": async (req) =>
+				LiquidStakingFragment(ctx, req),
 			"/console/dashboard/fragments/mm-health": async (req) =>
 				MoneyMarketHealthFragment(ctx, req),
 			"/console/public/alerts": async (req) => AlertListPage(ctx, req),

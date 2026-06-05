@@ -135,12 +135,11 @@ export function createDefiAnalytics({
 			await conn.run(
 				`
 			INSERT INTO dex_liquidity_snapshots (
-				ts, subscription_id, network_id, protocol, market_id, label, supplied_usd
-			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?)
+				ts, network_id, protocol, market_id, label, supplied_usd
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?)
 		`,
 				[
 					timestamp,
-					p.subscriptionId,
 					p.networkId,
 					p.protocol,
 					p.marketId,
@@ -148,19 +147,16 @@ export function createDefiAnalytics({
 					safeNumber(p.suppliedUSD, 0),
 				],
 			);
-		}
-
-		if (p.category === "money-market" && p.lending) {
+		} else if (p.category === "money-market" && p.lending) {
 			await conn.run(
 				`
 			INSERT INTO money_market_health_snapshots (
-				ts, subscription_id, network_id, protocol, market_id, label,
+				ts, network_id, protocol, market_id, label,
 				supplied_usd, borrowed_usd, utilization, solvency_ratio, is_paused
-			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 				[
 					timestamp,
-					p.subscriptionId,
 					p.networkId,
 					p.protocol,
 					p.marketId,
@@ -170,6 +166,25 @@ export function createDefiAnalytics({
 					safeNumber(p.lending.utilization, null),
 					safeNumber(p.lending.health?.solvencyRatio, null),
 					p.lending.isPaused ?? false,
+				],
+			);
+		} else if (p.category === "liquid-staking" && p.liquidStaking) {
+			await conn.run(
+				`
+			INSERT INTO liquid_staking_snapshots (
+				ts, network_id, protocol, market_id, label, staking_network, supplied_usd, exchange_rate, total_staked
+			) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?)
+		`,
+				[
+					timestamp,
+					p.networkId,
+					p.protocol,
+					p.marketId,
+					p.label,
+					p.liquidStaking.stakingNetwork ?? "",
+					safeNumber(p.suppliedUSD, 0),
+					safeNumber(p.liquidStaking.exchangeRate, 0),
+					safeNumber(p.liquidStaking.totalStaked, 0),
 				],
 			);
 		}
@@ -208,7 +223,6 @@ export function createDefiAnalytics({
 			await conn.run(`
         CREATE TABLE IF NOT EXISTS dex_liquidity_snapshots (
           ts              TIMESTAMP,
-          subscription_id TEXT,
           network_id      TEXT,
           protocol        TEXT,
           market_id       TEXT,
@@ -225,7 +239,6 @@ export function createDefiAnalytics({
 			await conn.run(`
         CREATE TABLE IF NOT EXISTS money_market_health_snapshots (
           ts              TIMESTAMP,
-          subscription_id TEXT,
           network_id      TEXT,
           protocol        TEXT,
           market_id       TEXT,
@@ -242,6 +255,25 @@ export function createDefiAnalytics({
         CREATE INDEX IF NOT EXISTS idx_mm_health_lookup
         ON money_market_health_snapshots(protocol, market_id, ts DESC);
       `);
+
+			await conn.run(`
+							CREATE TABLE IF NOT EXISTS liquid_staking_snapshots (
+								ts              TIMESTAMP,
+								network_id      TEXT,
+								protocol        TEXT,
+								market_id       TEXT,
+								label           TEXT,
+								staking_network TEXT,
+								supplied_usd    DOUBLE,
+								exchange_rate   DOUBLE,
+								total_staked    DOUBLE,
+
+								PRIMARY KEY (ts, protocol, market_id)
+							);
+
+							CREATE INDEX IF NOT EXISTS idx_lst_lookup
+							ON liquid_staking_snapshots(protocol, market_id, ts DESC);
+						`);
 		},
 	};
 }

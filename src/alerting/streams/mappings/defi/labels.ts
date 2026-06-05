@@ -10,7 +10,7 @@ export function deriveMarketLabel(payload: {
 	category: string;
 	marketId: string;
 	protocol: string;
-	assets: any[];
+	assets: { symbol: string }[];
 }): string {
 	const lowerId = `${payload.protocol}${payload.marketId}`.toLowerCase();
 
@@ -25,7 +25,7 @@ export function deriveMarketLabel(payload: {
 	}
 
 	if (payload.category === "money-market") {
-		return symbols[0];
+		return symbols[0] ?? payload.marketId;
 	}
 
 	return symbols.join("/");
