@@ -12,7 +12,7 @@ export type DefiVolumeQueryParams = DefiQueryParams & {
 };
 
 const VOLUME_FILTERS: Record<string, string> = {
-	dex: "AND event_type = 'swap' AND direction = 'in'",
+	dex: "AND event_type = 'swap'",
 	lending:
 		"AND event_type IN ['borrow', 'repay', 'withdraw', 'supply', 'liquidate']",
 	"liquid-staking": "AND event_type IN ['lst_mint', 'lst_redeem']",
@@ -45,12 +45,12 @@ WITH aggregated_volume AS (
     ${castExpr} AS timestamp,
     protocol,
     market_id,
-    SUM(CASE WHEN event_type = 'swap' THEN amount_usd ELSE 0 END)AS swap_volume_usd,
+    SUM(CASE WHEN event_type = 'swap' AND direction = 'in' THEN amount_usd ELSE 0 END)AS swap_volume_usd,
     SUM(CASE WHEN event_type = 'borrow' THEN amount_usd ELSE 0 END) AS borrow_volume_usd,
     SUM(CASE WHEN event_type = 'repay' THEN amount_usd ELSE 0 END) AS repay_volume_usd,
     SUM(CASE WHEN event_type = 'withdraw' THEN amount_usd ELSE 0 END) AS withdraw_volume_usd,
     SUM(CASE WHEN event_type = 'liquidate' AND direction = 'debt' THEN amount_usd ELSE 0 END) AS liquidation_volume_usd
-    SUM(CASE WHEN event_type = 'lst_mint' THEN amount_usd ELSE 0 END) AS lst_mint_volume_usd,
+    SUM(CASE WHEN event_type = 'lst_mint' AND direction = 'in' THEN amount_usd ELSE 0 END) AS lst_mint_volume_usd,
     SUM(CASE WHEN event_type = 'lst_redeem' THEN amount_usd ELSE 0 END) AS lst_redeem_volume_usd,
   FROM defi_volume_events
   WHERE
@@ -78,6 +78,7 @@ ORDER BY timestamp ASC
 ${limitClause};
 `;
 }
+
 export function generateDefiVolumeQuery({
 	bucket = "hour",
 	lookback = 24,
@@ -95,10 +96,10 @@ export function generateDefiVolumeQuery({
 	const eventTypeFilter = VOLUME_FILTERS[type];
 
 	const metricsConfig = [
-		{ key: "swap", filter: "event_type = 'swap'" },
+		{ key: "swap", filter: "event_type = 'swap' AND direction = 'in'" },
 		{ key: "borrow", filter: "event_type = 'borrow'" },
 		{ key: "repay", filter: "event_type = 'repay'" },
-		{ key: "lst_mint", filter: "event_type = 'lst_mint'" },
+		{ key: "lst_mint", filter: "event_type = 'lst_mint' AND direction = 'in'" },
 		{ key: "lst_redeem", filter: "event_type = 'lst_redeem'" },
 		{
 			key: "liquidation",
