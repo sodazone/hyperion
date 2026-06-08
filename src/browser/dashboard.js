@@ -26,12 +26,12 @@ export function dashboard(initialNetwork, initialBucket) {
 			this.$watch(
 				() => [this.bucket, this.network],
 				() => {
-					this.loadChart();
 					htmx.trigger(this.$refs.topExchanges, "refresh");
 					htmx.trigger(this.$refs.xcReserves, "refresh");
 					htmx.trigger(this.$refs.dexLiquidity, "refresh");
 					htmx.trigger(this.$refs.moneyMarketHealth, "refresh");
 					htmx.trigger(this.$refs.slpLiquidity, "refresh");
+					this.loadChart();
 					this.updateURL();
 				},
 			);
