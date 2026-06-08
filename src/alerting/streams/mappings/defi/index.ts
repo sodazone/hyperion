@@ -150,8 +150,21 @@ export function mapDefiEvent(
 				},
 			};
 		}
-
-		case "lst_mint":
+		case "lst_mint": {
+			return {
+				type: "defi-event",
+				origin,
+				payload: {
+					...basePayload,
+					name: raw.name,
+					data: {
+						provider: raw.data.provider,
+						supplied: mapToDefiEventAsset(raw.data.supplied),
+						minted: mapToDefiEventAsset(raw.data.minted),
+					},
+				},
+			};
+		}
 		case "lst_redeem":
 		case "mint":
 		case "burn": {

@@ -150,13 +150,7 @@ export type DefiEventAsset = {
 	amountUSD?: number;
 };
 
-export type MoneyMarketActions =
-	| "borrow"
-	| "repay"
-	| "withdraw"
-	| "supply"
-	| "lst_mint"
-	| "lst_redeem";
+export type MoneyMarketActions = "borrow" | "repay" | "withdraw" | "supply";
 
 export type DefiEvent = BaseEvent<
 	"defi-event",
@@ -173,7 +167,15 @@ export type DefiEvent = BaseEvent<
 				};
 		  }
 		| {
-				name: "mint" | "burn";
+				name: "lst_mint";
+				data: {
+					provider: string;
+					supplied: DefiEventAsset;
+					minted: DefiEventAsset;
+				};
+		  }
+		| {
+				name: "mint" | "burn" | "lst_redeem";
 				data: {
 					provider: string;
 					assets: DefiEventAsset[];
