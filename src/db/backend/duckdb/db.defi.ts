@@ -88,6 +88,7 @@ export function createDefiAnalytics({
 			case "repay":
 			case "supply":
 			case "withdraw":
+			case "lst_redeem":
 				if (Array.isArray(p.data.assets)) {
 					for (const asset of p.data.assets) {
 						await insertRow(
@@ -102,7 +103,7 @@ export function createDefiAnalytics({
 				}
 				break;
 
-			case "liquidate":
+			case "liquidate": {
 				await insertRow(
 					"liquidate",
 					"debt",
@@ -120,6 +121,26 @@ export function createDefiAnalytics({
 					p.data.collateral.amountUSD,
 				);
 				break;
+			}
+			case "lst_mint": {
+				await insertRow(
+					"lst_mint",
+					"in",
+					p.data.supplied.assetId,
+					p.data.supplied.symbol,
+					p.data.supplied.amount,
+					p.data.supplied.amountUSD,
+				);
+				await insertRow(
+					"lst_mint",
+					"out",
+					p.data.minted.assetId,
+					p.data.minted.symbol,
+					p.data.minted.amount,
+					p.data.minted.amountUSD,
+				);
+				break;
+			}
 		}
 	}
 
