@@ -28,7 +28,7 @@ export function AlertSearchFilters({ path, filters }: Props) {
 					default: "*",
 					options: [
 						{ label: "All Networks", value: "*" },
-						...NetworkCache.all().map((n) => ({
+						...NetworkCache.hot().map((n) => ({
 							label: n.name,
 							value: n.id.toString(),
 						})),
