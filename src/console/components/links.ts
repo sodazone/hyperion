@@ -1,0 +1,203 @@
+const EXPLORERS: Record<
+	string,
+	{ type: string; url: string } | { type: string; url: string }[]
+> = {
+	"urn:ocn:polkadot:0": {
+		type: "subscan",
+		url: "https://polkadot.subscan.io",
+	},
+	"urn:ocn:polkadot:1000": {
+		type: "subscan",
+		url: "https://assethub-polkadot.subscan.io",
+	},
+	"urn:ocn:polkadot:1002": {
+		type: "subscan",
+		url: "https://bridgehub-polkadot.subscan.io",
+	},
+	"urn:ocn:polkadot:1005": {
+		type: "subscan",
+		url: "https://coretime-polkadot.subscan.io",
+	},
+	"urn:ocn:polkadot:2000": {
+		type: "subscan",
+		url: "https://acala.subscan.io",
+	},
+	"urn:ocn:polkadot:2004": [
+		{
+			type: "subscan",
+			url: "https://moonbeam.subscan.io",
+		},
+		{
+			type: "etherscan",
+			url: "https://moonscan.io",
+		},
+	],
+	"urn:ocn:polkadot:2006": {
+		type: "subscan",
+		url: "https://astar.subscan.io",
+	},
+	"urn:ocn:polkadot:2030": {
+		type: "subscan",
+		url: "https://bifrost.subscan.io",
+	},
+	"urn:ocn:polkadot:2031": {
+		type: "subscan",
+		url: "https://centrifuge.subscan.io",
+	},
+	"urn:ocn:polkadot:2034": {
+		type: "subscan",
+		url: "https://hydration.subscan.io",
+	},
+	"urn:ocn:polkadot:2035": {
+		type: "subscan",
+		url: "https://phala.subscan.io",
+	},
+	"urn:ocn:polkadot:3367": {
+		type: "statescan",
+		url: "https://nexus.statescan.io",
+	},
+	"urn:ocn:polkadot:3369": {
+		type: "subscan",
+		url: "https://mythos.subscan.io",
+	},
+	"urn:ocn:kusama:0": {
+		type: "subscan",
+		url: "https://kusama.subscan.io",
+	},
+	"urn:ocn:kusama:1000": {
+		type: "subscan",
+		url: "https://assethub-kusama.subscan.io",
+	},
+	"urn:ocn:kusama:1002": {
+		type: "subscan",
+		url: "https://bridgehub-kusama.subscan.io",
+	},
+	"urn:ocn:kusama:1005": {
+		type: "subscan",
+		url: "https://coretime-kusama.subscan.io",
+	},
+	"urn:ocn:ethereum:8453": {
+		type: "etherscan",
+		url: "https://basescan.org",
+	},
+	"urn:ocn:ethereum:56": {
+		type: "etherscan",
+		url: "https://bscscan.com",
+	},
+	"urn:ocn:ethereum:42161": {
+		type: "etherscan",
+		url: "https://arbiscan.io",
+	},
+	"urn:ocn:ethereum:42220": {
+		type: "etherscan",
+		url: "https://celoscan.io",
+	},
+	"urn:ocn:ethereum:137": {
+		type: "etherscan",
+		url: "https://polygonscan.com",
+	},
+	"urn:ocn:ethereum:1": {
+		type: "etherscan",
+		url: "https://etherscan.io",
+	},
+	"urn:ocn:ethereum:10": {
+		type: "etherscan",
+		url: "https://optimistic.etherscan.io",
+	},
+	"urn:ocn:solana:101": {
+		type: "solscan",
+		url: "https://solscan.io",
+	},
+	"urn:ocn:sui:0x35834a8a": {
+		type: "suivision",
+		url: "https://suivision.xyz",
+	},
+};
+
+const EXPLORER_VERBS: Record<string, Record<string, string>> = {
+	subscan: {
+		address: "address",
+		block: "block",
+		tx: "extrinsic",
+	},
+	statescan: {
+		address: "#/accounts",
+		block: "#/blocks",
+		tx: "#/extrinsics",
+	},
+	etherscan: {
+		address: "address",
+		block: "block",
+		tx: "tx",
+	},
+	solscan: {
+		address: "account",
+		block: "block",
+		tx: "tx",
+	},
+	suivision: {
+		address: "account",
+		block: "block",
+		tx: "txblock",
+	},
+};
+
+function resolveURL(
+	chainId: string,
+	verb: string,
+	param: string | any,
+	pref?: string,
+) {
+	const explorers = EXPLORERS[chainId];
+
+	const resolved = Array.isArray(explorers)
+		? pref == null
+			? explorers[0]
+			: (explorers.find((x) => x.type === pref) ?? explorers[0])
+		: explorers;
+
+	if (!resolved) return null;
+
+	const base = resolved.url;
+	const t = EXPLORER_VERBS[resolved.type];
+	const path = t !== undefined ? t[verb] : "";
+
+	if (resolved.type === "statescan" && verb === "tx") {
+		if (typeof param === "string") return null;
+		const { blockNumber, extrinsicIndex } = param;
+		return `${base}/${path}/${blockNumber}-${extrinsicIndex}`;
+	}
+
+	const value =
+		typeof param === "object" && "hash" in param ? param.hash : param;
+
+	return `${resolved.url}/${path}/${value ?? "#"}`;
+}
+
+export function getExplorerTxLink(chainId: string, tx: string, pref?: string) {
+	return resolveURL(chainId, "tx", tx, pref);
+}
+
+export function getExplorerBlockLink(
+	chainId: string,
+	blockNumber: string,
+	pref?: string,
+) {
+	return resolveURL(chainId, "block", blockNumber, pref);
+}
+
+const USE_FORMATTED_ADDRESS = ["urn:ocn:solana:101"];
+
+export function getExplorerAddressLink(
+	chainId: string,
+	address: string,
+	addressFormatted: string,
+	pref?: string,
+) {
+	return resolveURL(
+		chainId,
+		"address",
+		USE_FORMATTED_ADDRESS.includes(chainId) ? addressFormatted : address,
+		pref,
+	);
+}
