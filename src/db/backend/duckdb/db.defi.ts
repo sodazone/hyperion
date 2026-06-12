@@ -26,7 +26,7 @@ export function createDefiAnalytics({
 		) => {
 			await conn.run(
 				`
-					INSERT OR IGNORE defi_volume_events (
+					INSERT OR IGNORE INTO defi_volume_events (
 						ts, event_id, tx_hash, network_id, protocol, market_id,
 						event_type, direction, asset_id, symbol, amount, amount_usd
 					) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
