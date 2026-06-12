@@ -199,7 +199,12 @@ export async function createOcelloidsClient({
 				client: defi,
 				maxIdle: 60_000 * 5,
 				start: async ({ onMessage, onClose, onError }) => {
-					const lastSeenId = await pointers.load("d.e");
+					const stored = await pointers.load("d.e");
+					const lastSeenId =
+						stored && typeof stored === "string"
+							? `${stored.slice(0, 10)}0000000000000000`
+							: stored;
+
 					console.log("[defi-events] lastSeenId", lastSeenId);
 
 					return defi.subscribeWithReplay(

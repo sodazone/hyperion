@@ -26,7 +26,7 @@ export function createDefiAnalytics({
 		) => {
 			await conn.run(
 				`
-					INSERT INTO defi_volume_events (
+					INSERT OR IGNORE defi_volume_events (
 						ts, event_id, tx_hash, network_id, protocol, market_id,
 						event_type, direction, asset_id, symbol, amount, amount_usd
 					) VALUES (?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -234,7 +234,7 @@ export function createDefiAnalytics({
 					symbol       TEXT,
 					amount       DOUBLE,
 					amount_usd   DOUBLE,
-					PRIMARY KEY (ts, event_id, asset_id, direction)
+					PRIMARY KEY (event_id, asset_id, direction)
 				);
 
 				CREATE INDEX IF NOT EXISTS idx_volume_lookups
