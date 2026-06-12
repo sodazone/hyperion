@@ -1,11 +1,10 @@
 import type { Alert, AlertActor } from "@/db";
 import { NetworkMap } from "@/intel/mapping";
 import { dateFormatter } from "@/utils/dates";
-import { trunc, truncMid } from "../util";
 import { AlertDetailsRegistry } from "./alert/details.registry";
+import { AddressLink, BlockHashLink, TxHashLink } from "./alert.links";
 import { AlertMessage } from "./alert.message";
 import { SeverityBadge } from "./badge.severity";
-import { CopyButton } from "./btn.copy";
 import { NetworkGroup } from "./network.group";
 import { NetworkIcon } from "./network.icon";
 import { RuleIcons } from "./rule.icons";
@@ -32,10 +31,7 @@ function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 							{n.block_hash && (
 								<div className="flex items-center gap-2 text-sm">
 									<span className="text-zinc-500 w-16">Block</span>
-									<span className="font-mono truncate">
-										{trunc(n.block_hash)}
-									</span>
-									<CopyButton title="Copy Block Hash" text={n.block_hash} />
+									<BlockHashLink network={urn} hash={n.block_hash} />
 									{n.block_number && (
 										<span className="text-xs text-zinc-500 font-mono">
 											(#{n.block_number})
@@ -47,8 +43,7 @@ function NetworkContext({ networks }: { networks?: Alert["networks"] }) {
 							{n.tx_hash && (
 								<div className="flex items-center gap-2 text-sm">
 									<span className="text-zinc-500 w-16">Tx</span>
-									<span className="font-mono truncate">{trunc(n.tx_hash)}</span>
-									<CopyButton title="Copy Tx Hash" text={n.tx_hash} />
+									<TxHashLink network={urn} hash={n.tx_hash} />
 								</div>
 							)}
 						</div>
@@ -99,12 +94,7 @@ export function AlertCard({ alert }: { alert: Alert }) {
 						actors.map((a: AlertActor) => (
 							<div key={a.role} className="flex items-center gap-2">
 								<span className="text-zinc-500 w-16 capitalize">{a.role}</span>
-								<span className="flex gap-1 items-center font-mono">
-									<span className="truncate">
-										{truncMid(a.address_formatted)}
-									</span>
-									<CopyButton title="Copy Address" text={a.address_formatted} />
-								</span>
+								<AddressLink networks={alert.networks} actor={a} />
 								{a.labels && a.labels.length > 0 && (
 									<span className="text-zinc-500 text-xs truncate">
 										{a.labels.join(", ")}

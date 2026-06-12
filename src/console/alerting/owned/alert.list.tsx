@@ -1,5 +1,5 @@
+import { AlertCards } from "@/console/components/alert.card";
 import { AlertSearchFilters } from "@/console/components/alert.filters";
-import { AlertCards } from "@/console/components/card.alert";
 import { Paginated } from "@/console/components/paginated";
 import { TopBar } from "@/console/components/top.bar";
 import { withCursor } from "@/console/util";
