@@ -1,3 +1,8 @@
+import {
+	calculateRollingMetric,
+	pushAndRollWindow,
+	type TimeSeriesTick,
+} from "@/alerting/rules/stats/time-series";
 import type { Alert, AlertPayload } from "@/db";
 import { formatNumberSI } from "@/utils/amounts";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
@@ -15,11 +20,6 @@ export interface ExchangeAlertPayload extends AlertPayload {
 	driftPercent: number;
 }
 
-interface MarketState {
-	lastTvl: number;
-	lastAlertedTvl: number;
-}
-
 export const ExchangeLiquidityRule: RuleDefinition<
 	DefiLiquidityEvent,
 	{ driftPercent: number },
@@ -33,6 +33,8 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		driftThresholdDrop: 0.15,
 		driftThresholdSpike: 0.5,
 		minTvlUSD: 0,
+		windowMs: 600_000,
+		minTicks: 2,
 	},
 	autoDependencies: [{ kind: "defi-liquidity" }],
 
@@ -56,15 +58,32 @@ export const ExchangeLiquidityRule: RuleDefinition<
 
 		const scope = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}`;
 
-		const marketState = (state.get(scope, STATE_KEY) ?? {
-			lastTvl: currentTvl,
-			lastAlertedTvl: 0,
-		}) as MarketState;
+		const newTick: TimeSeriesTick = {
+			timestampMs: event.origin.timestamp ?? Date.now(),
+			tvl: currentTvl,
+		};
 
+		const activeWindow = pushAndRollWindow(
+			state,
+			scope,
+			STATE_KEY,
+			newTick,
+			config.windowMs,
+		);
+
+		if (activeWindow.length <= config.minTicks) return { matched: false };
+
+		const historicalWindow = activeWindow.slice(0, -1);
+		const baselineTvl = calculateRollingMetric(
+			historicalWindow,
+			"tvl",
+			"anchor",
+		);
+
+		if (baselineTvl === 0) return { matched: false };
+
+		const tickDrift = (currentTvl - baselineTvl) / baselineTvl;
 		let shouldAlert = false;
-
-		const tickDrift =
-			(currentTvl - marketState.lastTvl) / Math.max(marketState.lastTvl, 1);
 
 		if (
 			tickDrift < 0 &&
@@ -77,13 +96,6 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		) {
 			shouldAlert = true;
 		}
-
-		marketState.lastTvl = currentTvl;
-		if (shouldAlert) {
-			marketState.lastAlertedTvl = currentTvl;
-		}
-
-		state.set(scope, STATE_KEY, marketState);
 
 		return shouldAlert
 			? { matched: true, data: { driftPercent: tickDrift } }
