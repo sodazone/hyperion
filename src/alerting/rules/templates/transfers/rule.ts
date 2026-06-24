@@ -1,9 +1,10 @@
 import type { Alert, AlertPayload } from "@/db";
 import { CategoriesMap } from "@/intel/mapping";
-import type {
-	RuleDefinition,
-	TransferEvent,
-	TransferPayload,
+import {
+	type RuleDefinition,
+	type TransferEvent,
+	type TransferPayload,
+	TransferStatus,
 } from "../../types";
 import { makeNetworks } from "../common/helpers";
 import { toOwners } from "../common/owner";
@@ -55,7 +56,11 @@ export const TransfersRule: RuleDefinition<TransferEvent, LocalData, Config> = {
 	defaults,
 
 	matcher: async (event, { config, global: { db }, owner }) => {
-		if (event.type !== "transfer") return { matched: false };
+		if (
+			event.type !== "transfer" ||
+			event.payload.status !== TransferStatus.SUCCESS
+		)
+			return { matched: false };
 		if (!matchesNetwork(event, config)) return { matched: false };
 
 		const { from, to, totalUsd, assets } = event.payload as TransferPayload;
