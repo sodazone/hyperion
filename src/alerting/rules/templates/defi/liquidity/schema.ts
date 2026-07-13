@@ -15,6 +15,10 @@ const supportedNetworks = {
 		{
 			label: "Moonbeam",
 			value: "urn:ocn:ethereum:1284",
+    },
+    {
+			label: "Polkadot Asset Hub",
+			value: "urn:ocn:polkadot:1000",
 		},
 	],
 	multiple: true,
