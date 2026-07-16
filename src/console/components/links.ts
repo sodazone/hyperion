@@ -116,7 +116,7 @@ const EXPLORERS: Record<
 
 const EXPLORER_VERBS: Record<string, Record<string, string>> = {
 	subscan: {
-		address: "address",
+		address: "account",
 		block: "block",
 		tx: "extrinsic",
 	},
