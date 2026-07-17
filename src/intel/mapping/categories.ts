@@ -88,6 +88,12 @@ function createCategoriesMap() {
 	categories.add(0x000c, 0x0001, "Onchain Attestation");
 	categories.add(0x000c, 0x0002, "National Identity");
 
+	// Category 0x000D - Real World Assets & Treasury
+	categories.add(0x000d, 0x0000, "RWA & Treasury");
+	categories.add(0x000d, 0x0001, "Tokenized Government Debt");
+	categories.add(0x000d, 0x0002, "DAO Treasury");
+	categories.add(0x000d, 0x0003, "Corporate Treasury");
+
 	return categories;
 }
 
@@ -111,6 +117,7 @@ export const CAT = {
 	AUTOMATED: 0x000a,
 	COMPROMISED: 0x000b,
 	IDENTIFIED: 0x000c,
+	TREASURY: 0x000d,
 } as const;
 
 export const topLevelCategories = CategoriesMap.entries()
