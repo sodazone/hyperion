@@ -8,7 +8,6 @@ function createCategoriesMap() {
 	categories.add(0x0001, 0x0001, "Mandatory KYC and AML");
 	categories.add(0x0001, 0x0002, "Optional KYC and AML");
 	categories.add(0x0001, 0x0003, "Inactive");
-	categories.add(0x0001, 0x0004, "OTC");
 
 	// Category 0x0002 - DeFi Protocol
 	categories.add(0x0002, 0x0000, "DeFi Protocol");
@@ -92,7 +91,33 @@ function createCategoriesMap() {
 	categories.add(0x000d, 0x0000, "RWA & Treasury");
 	categories.add(0x000d, 0x0001, "Tokenized Government Debt");
 	categories.add(0x000d, 0x0002, "DAO Treasury");
-	categories.add(0x000d, 0x0003, "Corporate Treasury");
+  categories.add(0x000d, 0x0003, "Corporate Treasury");
+
+  // Category 0x000E - OTC
+	categories.add(0x000e, 0x0000, "OTC");
+	categories.add(0x000e, 0x0001, "Institutional Desk");
+	categories.add(0x000e, 0x0002, "P2P Platform");
+
+	// Category 0x000F - Vault & MPC
+	categories.add(0x000f, 0x0000, "Vault & MPC");
+	categories.add(0x000f, 0x0001, "Cold Storage Vault");
+	categories.add(0x000f, 0x0002, "MPC Multi-Sig Infrastructure");
+
+	// Category 0x0010 - Fiat Gateway
+	categories.add(0x0010, 0x0000, "Fiat Gateway");
+	categories.add(0x0010, 0x0001, "On-Ramp (Inbound Rail)");
+	categories.add(0x0010, 0x0002, "Off-Ramp (Outbound Rail)");
+	categories.add(0x0010, 0x0003, "Crypto ATM Operator");
+
+	// Category 0x0011 - Yield & Rewards
+	categories.add(0x0011, 0x0000, "Yield & Rewards");
+	categories.add(0x0011, 0x0001, "Reward Distributor (Payouts)");
+	categories.add(0x0011, 0x0002, "Yield Aggregator");
+	categories.add(0x0011, 0x0003, "Mining Pool");
+  categories.add(0x0011, 0x0004, "Staking Pool / Validator Node");
+
+  // Category 0x0012 - Prime Brokerage
+  categories.add(0x0012, 0x0000, "Prime Brokerage");
 
 	return categories;
 }
@@ -117,7 +142,12 @@ export const CAT = {
 	AUTOMATED: 0x000a,
 	COMPROMISED: 0x000b,
 	IDENTIFIED: 0x000c,
-	TREASURY: 0x000d,
+  TREASURY: 0x000d,
+  OTC: 0x000e,
+	VAULT_MPC: 0x000f,
+	FIAT_GATEWAY: 0x0010,
+  YIELD_REWARDS: 0x0011,
+	PRIME_BROKERAGE: 0x0012,
 } as const;
 
 export const topLevelCategories = CategoriesMap.entries()
