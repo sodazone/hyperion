@@ -8,74 +8,74 @@ const CATEGORY_STYLE: Record<
 > = {
 	// Threat & Security
 	[CAT.CYBERCRIME]: {
-		className: "border-amber-950/80 bg-amber-950/50",
+		className: "border-amber-950/80 bg-amber-950/40",
 	},
 	[CAT.COMPROMISED]: {
-		className: "border-amber-950/80 bg-amber-950/50",
+		className: "border-amber-950/80 bg-amber-950/40",
 	},
 	[CAT.HIGH_RISK]: {
-		className: "border-amber-950/80 bg-amber-950/50",
+		className: "border-amber-950/80 bg-amber-950/40",
 	},
 	[CAT.SANCTIONS]: {
-		className: "border-red-950/80 bg-red-950/50",
+		className: "border-red-950/80 bg-red-950/40",
 	},
 	[CAT.ANONYMIZING]: {
-		className: "border-orange-950/80 bg-orange-950/50",
+		className: "border-orange-950/80 bg-orange-950/40",
 	},
 
 	// DeFi, Yield & Assets
 	[CAT.DEFI]: {
-		className: "border-emerald-950/80 bg-emerald-950/50",
+		className: "border-emerald-950/80 bg-emerald-950/40",
 	},
 	[CAT.YIELD_REWARDS]: {
-		className: "border-emerald-950/80 bg-emerald-950/50",
+		className: "border-emerald-950/80 bg-emerald-950/40",
 	},
 	[CAT.RWA_TREASURY]: {
-		className: "border-emerald-950/80 bg-emerald-950/50",
+		className: "border-emerald-950/80 bg-emerald-950/40",
 	},
 
 	// Exchanges & Institutional
 	[CAT.EXCHANGE]: {
-		className: "border-blue-950/80 bg-blue-950/50",
+		className: "border-blue-950/80 bg-blue-950/40",
 	},
 	[CAT.FIAT_GATEWAY]: {
-		className: "border-blue-950/80 bg-blue-950/50",
+		className: "border-blue-950/80 bg-blue-950/40",
 	},
 	[CAT.OTC]: {
-		className: "border-slate-800 bg-slate-900/50",
+		className: "border-slate-800 bg-slate-900/40",
 	},
 	[CAT.PRIME_BROKERAGE]: {
-		className: "border-slate-800 bg-slate-900/50",
+		className: "border-slate-800 bg-slate-900/40",
 	},
 	[CAT.SERVICES]: {
-		className: "border-slate-800 bg-slate-900/50",
+		className: "border-slate-800 bg-slate-900/40",
 	},
 
 	// Infrastructure & Automation
 	[CAT.INFRASTRUCTURE]: {
-		className: "border-cyan-950/80 bg-cyan-950/50",
+		className: "border-cyan-950/80 bg-cyan-950/40",
 	},
 	[CAT.AUTOMATED]: {
-		className: "border-sky-950/80 bg-sky-950/50",
+		className: "border-sky-950/80 bg-sky-950/40",
 	},
 	[CAT.VAULT_MPC]: {
-		className: "border-zinc-800 bg-zinc-900/50",
+		className: "border-zinc-800 bg-zinc-900/40",
 	},
 
 	// Identity & Compliance
 	[CAT.IDENTIFIED]: {
-		className: "border-teal-950/80 bg-teal-950/50",
+		className: "border-teal-950/80 bg-teal-950/40",
 	},
 	[CAT.REGULATORY]: {
-		className: "border-teal-950/80 bg-teal-950/50",
+		className: "border-teal-950/80 bg-teal-950/40",
 	},
 
 	// Gaming & Entertainment
 	[CAT.GAMBLING]: {
-		className: "border-purple-950/80 bg-purple-950/50",
+		className: "border-purple-950/80 bg-purple-950/40",
 	},
 	[CAT.NFT_GAMING]: {
-		className: "border-indigo-950/80 bg-indigo-950/50",
+		className: "border-indigo-950/80 bg-indigo-950/40",
 	},
 };
 
