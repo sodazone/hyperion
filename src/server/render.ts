@@ -12,6 +12,9 @@ export async function render(
 ) {
 	const stream = await renderToReadableStream(children, opts);
 	return new Response(stream, {
-		headers: { "Content-Type": "text/html" },
+		headers: {
+			"Content-Type": "text/html; charset=utf-8",
+			Vary: "HX-Request",
+		},
 	});
 }
