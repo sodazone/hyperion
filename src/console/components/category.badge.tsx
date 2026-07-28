@@ -77,6 +77,10 @@ const CATEGORY_STYLE: Record<
 	[CAT.NFT_GAMING]: {
 		className: "border-indigo-950/80 bg-indigo-950/40",
 	},
+	// Token & Asset Classes
+	[CAT.TOKENS]: {
+		className: "border-teal-950/80 bg-teal-950/40",
+	},
 };
 
 const BASE_CLASS =

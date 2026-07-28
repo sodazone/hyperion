@@ -21,6 +21,7 @@ export const CAT = {
 	PRIME_BROKERAGE: 0x0012,
 	GAMBLING: 0x0013,
 	NFT_GAMING: 0x0014,
+	TOKENS: 0x0015,
 } as const;
 
 export const SUBCAT = {
@@ -163,6 +164,20 @@ export const SUBCAT = {
 		NFT_MARKETPLACE: 0x0001,
 		WEB3_GAME: 0x0002,
 		GUILD_TREASURY: 0x0003,
+	},
+	TOKENS: {
+		ROOT: 0x0000,
+		FIAT_STABLECOIN: 0x0001,
+		CRYPTO_STABLECOIN: 0x0002,
+		LIQUID_STAKING: 0x0003,
+		LIQUID_RESTAKING: 0x0004,
+		GOVERNANCE: 0x0005,
+		RWA_TOKEN: 0x0006,
+		WRAPPED_BRIDGED: 0x0007,
+		PRIVACY_TOKEN: 0x0008,
+		MEME_SPECULATIVE: 0x0009,
+		SECURITY_EQUITY: 0x000a,
+		UTILITY_SERVICE: 0x000b,
 	},
 } as const;
 
@@ -552,6 +567,44 @@ function createCategoriesMap() {
 		SUBCAT.NFT_GAMING.GUILD_TREASURY,
 		"Gaming Guild Treasury",
 	);
+
+	// Category 0x0015 - Tokens & Asset Classes
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.ROOT, "Token");
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.FIAT_STABLECOIN,
+		"Fiat-Backed Stablecoin",
+	);
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.CRYPTO_STABLECOIN,
+		"Crypto-Backed Stablecoin",
+	);
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.LIQUID_STAKING,
+		"Liquid Staking Token (LST)",
+	);
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.LIQUID_RESTAKING,
+		"Liquid Restaking Token (LRT)",
+	);
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.GOVERNANCE, "Governance Token");
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.RWA_TOKEN, "RWA Token");
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.WRAPPED_BRIDGED,
+		"Wrapped / Bridged Token",
+	);
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.PRIVACY_TOKEN, "Privacy Token");
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.MEME_SPECULATIVE, "Meme Token");
+	categories.add(
+		CAT.TOKENS,
+		SUBCAT.TOKENS.SECURITY_EQUITY,
+		"Security / Equity Token",
+	);
+	categories.add(CAT.TOKENS, SUBCAT.TOKENS.UTILITY_SERVICE, "Utility Token");
 
 	return categories;
 }
