@@ -14,6 +14,122 @@ export function DashboardIcon() {
 	);
 }
 
+export function ShieldAlertIcon({
+	className = "h-4 w-4",
+}: {
+	className?: string;
+}) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth="2"
+			role="img"
+			aria-hidden="true"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+			/>
+		</svg>
+	);
+}
+
+export function SlidersIcon({ className = "h-4 w-4" }: { className?: string }) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth="2"
+			role="img"
+			aria-hidden="true"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+			/>
+		</svg>
+	);
+}
+
+export function RadioIcon({ className = "h-4 w-4" }: { className?: string }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className={className}
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
+			<path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
+			<path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
+			<path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
+			<circle cx="12" cy="12" r="2" />
+		</svg>
+	);
+}
+
+export function BookmarkIcon({
+	className = "h-4 w-4",
+}: {
+	className?: string;
+}) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			strokeWidth="2"
+			role="img"
+			aria-hidden="true"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+			/>
+		</svg>
+	);
+}
+
+export function LoginIcon({ className = "h-4 w-4" }: { className?: string }) {
+	return (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			className={className}
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			role="img"
+			aria-hidden="true"
+		>
+			<path d="m10 17 5-5-5-5" />
+			<path d="M15 12H3" />
+			<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+		</svg>
+	);
+}
+
 export function ArrowInLeftCircleHalf({ size = 16 }: { size?: number }) {
 	return (
 		<svg
