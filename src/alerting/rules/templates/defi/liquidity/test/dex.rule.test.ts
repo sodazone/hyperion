@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { InMemoryStateStore } from "@/alerting/rules/state/memory";
-import { ExchangeLiquidityRule } from "../dex.rule";
+import { type ExchangeAlertPayload, ExchangeLiquidityRule } from "../dex.rule";
 import { mockExchangeEvent } from "./_mock";
 
 function makeCtx(configOverrides = {}) {
@@ -43,6 +43,31 @@ describe("Exchange Liquidity Rule", () => {
 		const result = await ExchangeLiquidityRule.matcher(event, ctx as any);
 
 		expect(result.matched).toBe(false);
+	});
+
+	it("updates state even when below minTvlUSD to prevent stale state false positives on recovery", async () => {
+		const ctx = makeCtx({ minTvlUSD: 10_000, driftThresholdDrop: 0.15 });
+
+		// Step 1: Establish high initial TVL ($100k)
+		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Step 2: TVL temporarily drops below minTvlUSD ($5k) -> bypassed, but lastTvl must update to 5,000
+		event = mockExchangeEvent({ suppliedUSD: 5_000 });
+		let result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Step 3: TVL recovers slightly to $12k.
+		// If lastTvl was stuck at 100,000, this would incorrectly trigger a -88% drop alert!
+		event = mockExchangeEvent({ suppliedUSD: 12_000 });
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Should NOT trigger a false drop alert (calculated against $5k, drift is positive +140%)
+		if (result.matched) {
+			expect(result.data?.driftPercent).toBeGreaterThan(0);
+		} else {
+			expect(result.matched).toBe(false);
+		}
 	});
 
 	it("fires instantly on severe TVL drop (liquidity crash shock)", async () => {
@@ -111,5 +136,32 @@ describe("Exchange Liquidity Rule", () => {
 			ctx as any,
 		);
 		expect(result.matched).toBe(false);
+	});
+
+	it("populates tvlUSD and driftPercent correctly in alertTemplate payload", async () => {
+		const ctx = makeCtx({ driftThresholdDrop: 0.15 });
+
+		const event = mockExchangeEvent({
+			suppliedUSD: 85_000,
+			protocol: "uniswap-v3",
+			marketId: "eth-usdc",
+		});
+		const matchData = { driftPercent: -0.15 };
+
+		const alert = await ExchangeLiquidityRule.alertTemplate?.(
+			event,
+			ctx as any,
+			matchData,
+		);
+
+		expect(alert).not.toBeUndefined();
+		expect(alert?.name).toBe("exchange-liquidity");
+		expect(alert?.payload as ExchangeAlertPayload).toEqual({
+			kind: "exchange-liquidity",
+			protocol: "uniswap-v3",
+			marketId: "eth-usdc",
+			tvlUSD: 85_000,
+			driftPercent: -0.15,
+		});
 	});
 });

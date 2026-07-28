@@ -40,45 +40,55 @@ export const ExchangeLiquidityRule: RuleDefinition<
 		if (
 			event.type !== "defi-liquidity" ||
 			event.payload.category !== "exchange"
-		)
+		) {
 			return { matched: false };
+		}
 
 		if (
 			config.networks?.length &&
 			!config.networks.includes(event.origin.chainURN)
-		)
+		) {
 			return { matched: false };
+		}
 
 		const payload = event.payload;
-
 		const currentTvl = payload.suppliedUSD;
-		if (currentTvl < (config.minTvlUSD ?? 10000)) return { matched: false };
 
 		const scope = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}`;
 
 		const marketState = (state.get(scope, STATE_KEY) ?? {
 			lastTvl: currentTvl,
-			lastAlertedTvl: 0,
+			lastAlertedTvl: currentTvl,
 		}) as MarketState;
+
+		const previousTvl = marketState.lastTvl;
+		marketState.lastTvl = currentTvl;
+
+		const minTvl = config.minTvlUSD ?? ExchangeLiquidityRule.defaults.minTvlUSD;
+
+		if (currentTvl < minTvl) {
+			state.set(scope, STATE_KEY, marketState);
+			return { matched: false };
+		}
+
+		const tickDrift =
+			previousTvl > 0 ? (currentTvl - previousTvl) / previousTvl : 0;
+
+		const dropThreshold =
+			config.driftThresholdDrop ??
+			ExchangeLiquidityRule.defaults.driftThresholdDrop;
+		const spikeThreshold =
+			config.driftThresholdSpike ??
+			ExchangeLiquidityRule.defaults.driftThresholdSpike;
 
 		let shouldAlert = false;
 
-		const tickDrift =
-			(currentTvl - marketState.lastTvl) / Math.max(marketState.lastTvl, 1);
-
-		if (
-			tickDrift < 0 &&
-			Math.abs(tickDrift) >= (config.driftThresholdDrop ?? 0.15)
-		) {
+		if (tickDrift < 0 && Math.abs(tickDrift) >= dropThreshold) {
 			shouldAlert = true;
-		} else if (
-			tickDrift > 0 &&
-			tickDrift >= (config.driftThresholdSpike ?? 0.5)
-		) {
+		} else if (tickDrift > 0 && tickDrift >= spikeThreshold) {
 			shouldAlert = true;
 		}
 
-		marketState.lastTvl = currentTvl;
 		if (shouldAlert) {
 			marketState.lastAlertedTvl = currentTvl;
 		}
@@ -112,6 +122,8 @@ export const ExchangeLiquidityRule: RuleDefinition<
 				kind: "exchange-liquidity",
 				protocol: payload.protocol,
 				marketId: payload.marketId,
+				tvlUSD: payload.suppliedUSD,
+				driftPercent: data.driftPercent,
 			},
 		} as Alert<ExchangeAlertPayload>;
 	},
