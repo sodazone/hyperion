@@ -164,4 +164,49 @@ describe("Exchange Liquidity Rule", () => {
 			driftPercent: -0.15,
 		});
 	});
+
+	it("prevents alert flapping by calculating drift against the last alerted TVL", async () => {
+		const ctx = makeCtx({ driftThresholdDrop: 0.15, driftThresholdSpike: 0.5 });
+
+		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Drop to $80k (-20%). Exceeds the 15% drop threshold.
+		event = mockExchangeEvent({ suppliedUSD: 80_000 });
+		let result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+
+		// Compared to 80k, this is a +25% spike (below the 50% spike threshold).
+		event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(false);
+
+		// Since it calculates from lastAlertedTvl (80k), drift is 0%, preventing spam.
+		event = mockExchangeEvent({ suppliedUSD: 80_000 });
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(false);
+	});
+
+	it("accumulates 'slow bleeds' and alerts when cumulative drift exceeds the threshold", async () => {
+		const ctx = makeCtx({ driftThresholdDrop: 0.15 });
+
+		let event = mockExchangeEvent({ suppliedUSD: 100_000 });
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Drop to $90k (-10%). Below the 15% threshold.
+		event = mockExchangeEvent({ suppliedUSD: 90_000 });
+		let result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(false);
+
+		// Drop further to $82k.
+		event = mockExchangeEvent({ suppliedUSD: 82_000 });
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+		expect(result.data?.driftPercent).toBeCloseTo(-0.18, 4);
+	});
 });

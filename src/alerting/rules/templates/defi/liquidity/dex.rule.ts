@@ -61,18 +61,20 @@ export const ExchangeLiquidityRule: RuleDefinition<
 			lastAlertedTvl: currentTvl,
 		}) as MarketState;
 
-		const previousTvl = marketState.lastTvl;
+		const baselineTvl = marketState.lastAlertedTvl;
 		marketState.lastTvl = currentTvl;
 
 		const minTvl = config.minTvlUSD ?? ExchangeLiquidityRule.defaults.minTvlUSD;
 
 		if (currentTvl < minTvl) {
+			marketState.lastAlertedTvl = currentTvl;
+
 			state.set(scope, STATE_KEY, marketState);
 			return { matched: false };
 		}
 
 		const tickDrift =
-			previousTvl > 0 ? (currentTvl - previousTvl) / previousTvl : 0;
+			baselineTvl > 0 ? (currentTvl - baselineTvl) / baselineTvl : 0;
 
 		const dropThreshold =
 			config.driftThresholdDrop ??
