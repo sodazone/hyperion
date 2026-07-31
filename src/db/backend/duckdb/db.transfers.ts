@@ -46,41 +46,52 @@ export function createTransfersAnalytics({
 		const blockHash = safe(origin.blockHash);
 		const txHash = safe(origin.txHash);
 
-		const sentAt = new Date(origin.timestamp ?? Date.now()).toISOString();
-		const recvAt = new Date(
-			destination?.timestamp ?? origin.timestamp ?? Date.now(),
-		).toISOString();
+		const parseDate = (val: any) => {
+			const d = new Date(val ?? Date.now());
+			return Number.isNaN(d.getTime())
+				? new Date().toISOString()
+				: d.toISOString();
+		};
+
+		const sentAt = parseDate(origin.timestamp);
+		const recvAt = parseDate(destination?.timestamp ?? origin.timestamp);
 
 		const fromAddress = safe(p.from.address);
 		const toAddress = safe(p.to.address);
 
+		await conn.run("BEGIN TRANSACTION");
+
 		try {
 			for (const asset of p.assets ?? []) {
-				const decimals = asset.decimals ?? 0;
-
+				const decimals = Number(asset.decimals) || 0;
 				const rawAmount = asset.amount;
-				const amount =
-					typeof rawAmount === "bigint"
-						? Number(rawAmount) / 10 ** decimals
-						: Number(rawAmount) / 10 ** decimals;
+
+				let amount = 0;
+				if (
+					typeof rawAmount === "bigint" ||
+					typeof rawAmount === "number" ||
+					typeof rawAmount === "string"
+				) {
+					amount = Number(rawAmount) / 10 ** decimals;
+				}
+
+				if (!Number.isFinite(amount)) amount = 0;
 
 				const amountUsd = safeNumber(asset.amountUsd, 0);
 
 				await conn.run(
-					`
-          INSERT INTO transfers (
-            correlation_id, transfer_type,
-            origin_domain, destination_domain,
-            origin_protocol, destination_protocol,
-            block_height, block_hash, tx_hash,
-            ts, sent_at, recv_at,
-            from_address, to_address,
-            asset_id, asset_symbol, asset_decimals,
-            amount, amount_usd
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::TIMESTAMP, ?::TIMESTAMP, ?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT DO NOTHING
-          `,
+					`INSERT INTO transfers (
+					correlation_id, transfer_type,
+					origin_domain, destination_domain,
+					origin_protocol, destination_protocol,
+					block_height, block_hash, tx_hash,
+					ts, sent_at, recv_at,
+					from_address, to_address,
+					asset_id, asset_symbol, asset_decimals,
+					amount, amount_usd
+				)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::TIMESTAMP, ?::TIMESTAMP, ?::TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)
+				ON CONFLICT DO NOTHING`,
 					[
 						safe(correlationId),
 						isXC ? "xc" : "ic",
@@ -112,14 +123,18 @@ export function createTransfersAnalytics({
 			) => {
 				if (!rows.length) return;
 
-				const placeholders = rows
-					.map((r) => `(${r.map(() => "?").join(",")})`)
-					.join(",");
+				const CHUNK_SIZE = 100;
+				for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+					const chunk = rows.slice(i, i + CHUNK_SIZE);
+					const placeholders = chunk
+						.map((r) => `(${r.map(() => "?").join(",")})`)
+						.join(",");
 
-				await conn.run(
-					`INSERT INTO ${table} (${columns.join(",")}) VALUES ${placeholders} ON CONFLICT DO NOTHING`,
-					rows.flat(),
-				);
+					await conn.run(
+						`INSERT INTO ${table} (${columns.join(",")}) VALUES ${placeholders} ON CONFLICT DO NOTHING`,
+						chunk.flat(),
+					);
+				}
 			};
 
 			if (Array.isArray(p.from.tags) && p.from.tags.length)
@@ -140,17 +155,23 @@ export function createTransfersAnalytics({
 				await insertBulk(
 					"address_category",
 					["address", "category"],
-					p.from.categories.map((c) => [fromAddress, Number(c)]),
+					p.from.categories.map((c) => [fromAddress, Number(c) || 0]),
 				);
 
 			if (Array.isArray(p.to.categories) && p.to.categories.length)
 				await insertBulk(
 					"address_category",
 					["address", "category"],
-					p.to.categories.map((c) => [toAddress, Number(c)]),
+					p.to.categories.map((c) => [toAddress, Number(c) || 0]),
 				);
+
+			await conn.run("COMMIT");
 		} catch (error) {
-			console.error("Error during ingestTransfer:", event, error);
+			await conn.run("ROLLBACK").catch((rollbackErr) => {
+				console.error("Failed to rollback transaction:", rollbackErr);
+			});
+
+			console.error("Error during ingestTransfer execution:", event, error);
 			throw error;
 		}
 	}
