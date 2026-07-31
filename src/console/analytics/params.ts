@@ -15,11 +15,6 @@ export const NETWORK_OPTIONS = [
 		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2034/icon.svg",
 	},
 	{
-		label: "Moonbeam",
-		value: "urn:ocn:polkadot:2004",
-		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2004/icon.svg",
-	},
-	{
 		label: "Bifrost",
 		value: "urn:ocn:polkadot:2030",
 		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2030/icon.svg",
