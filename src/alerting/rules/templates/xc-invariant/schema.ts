@@ -7,10 +7,6 @@ const IssuanceNetworks = [
 		name: "Polkadot",
 	},
 	{
-		id: "urn:ocn:polkadot:2004",
-		name: "Moonbeam",
-	},
-	{
 		id: "urn:ocn:polkadot:2006",
 		name: "Astar",
 	},
@@ -31,23 +27,12 @@ const IssuanceSubscriptionMap = {
 		"hyperion:astar-hydration_xcm",
 		"hyperion:hydration-astar_xcm",
 		"hyperion:bifrost-hydration_xcm",
-		"hyperion:moonbeam-hydration_xcm",
-		"hyperion:hydration-moonbeam_xcm",
-	],
-	"urn:ocn:polkadot:2004": [
-		"hyperion:polkadot-moonbeam_xcm",
-		"hyperion:hydration-moonbeam_xcm",
-		"hyperion:moonbeam-bifrost_xcm",
-		"hyperion:moonbeam-hydration_xcm",
-		"hyperion:astar-moonbeam_xcm",
-		"hyperion:moonbeam-astar_xcm",
 	],
 	"urn:ocn:polkadot:1000": [
 		"hyperion:polkadot-hydration_xcm",
 		"hyperion:hydration-polkadot_xcm",
 		"hyperion:polkadot-bifrost_xcm",
 		"hyperion:bifrost-polkadot_xcm",
-		"hyperion:polkadot-moonbeam_xcm",
 		"hyperion:ethereum-polkadot_snowbridge",
 		"hyperion:kusama-polkadot_xcm",
 	],
@@ -55,16 +40,12 @@ const IssuanceSubscriptionMap = {
 		"hyperion:bifrost-hydration_xcm",
 		"hyperion:polkadot-bifrost_xcm",
 		"hyperion:bifrost-polkadot_xcm",
-		"hyperion:moonbeam-bifrost_xcm",
-		"hyperion:bifrost-moonbeam_xcm",
 		"hyperion:bifrost-astar_xcm",
 		"hyperion:astar-bifrost_xcm",
 	],
 	"urn:ocn:polkadot:2006": [
 		"hyperion:astar-hydration_xcm",
 		"hyperion:hydration-astar_xcm",
-		"hyperion:astar-moonbeam_xcm",
-		"hyperion:moonbeam-astar_xcm",
 		"hyperion:polkadot-astar_xcm",
 		"hyperion:astar-bifrost_xcm",
 		"hyperion:bifrost-astar_xcm",
@@ -93,10 +74,6 @@ const IssuanceSubscriptions = [
 		name: "XCM Polkadot → Astar",
 	},
 	{
-		id: "hyperion:polkadot-moonbeam_xcm",
-		name: "XCM Polkadot → Moonbeam",
-	},
-	{
 		id: "hyperion:hydration-polkadot_xcm",
 		name: "XCM Hydration → Polkadot",
 	},
@@ -105,28 +82,8 @@ const IssuanceSubscriptions = [
 		name: "XCM Hydration → Astar",
 	},
 	{
-		id: "hyperion:hydration-moonbeam_xcm",
-		name: "XCM Hydration → Moonbeam",
-	},
-	{
-		id: "hyperion:moonbeam-bifrost_xcm",
-		name: "XCM Moonbeam → Bifrost",
-	},
-	{
-		id: "hyperion:moonbeam-hydration_xcm",
-		name: "XCM Moonbeam → Hydration",
-	},
-	{
-		id: "hyperion:moonbeam-astar_xcm",
-		name: "XCM Moonbeam → Astar",
-	},
-	{
 		id: "hyperion:astar-bifrost_xcm",
 		name: "XCM Astar → Bifrost",
-	},
-	{
-		id: "hyperion:astar-moonbeam_xcm",
-		name: "XCM Astar → Moonbeam",
 	},
 	{
 		id: "hyperion:bifrost-polkadot_xcm",
@@ -135,10 +92,6 @@ const IssuanceSubscriptions = [
 	{
 		id: "hyperion:bifrost-astar_xcm",
 		name: "XCM Bifrost → Astar",
-	},
-	{
-		id: "hyperion:bifrost-moonbeam_xcm",
-		name: "XCM Bifrost → Moonbeam",
 	},
 	{
 		id: "hyperion:ethereum-polkadot_snowbridge",
