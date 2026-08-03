@@ -1,34 +1,52 @@
 import z from "zod";
 import { level } from "../../common/schema";
 
-const supportedNetworks = {
-	label: "Networks",
-	options: [
-		/*{
-			label: "Bifrost",
-			value: "urn:ocn:polkadot:2030",
-		},*/
-		{
-			label: "Hydration",
-			value: "urn:ocn:polkadot:2034",
-		},
-		{
-			label: "Moonbeam",
-			value: "urn:ocn:ethereum:1284",
-		},
-		{
-			label: "Polkadot Asset Hub",
-			value: "urn:ocn:polkadot:1000",
-		},
-	],
-	multiple: true,
-	help: "Applies to all networks by default. If specified, only selected networks will be monitored.",
-};
+export type FeatureCategory = "dex" | "lending" | "lst";
+
+interface NetworkDefinition {
+	label: string;
+	value: string;
+	supports: FeatureCategory[];
+}
+
+const ALL_NETWORKS: NetworkDefinition[] = [
+	{
+		label: "Hydration",
+		value: "urn:ocn:polkadot:2034",
+		supports: ["dex", "lending"],
+	},
+	{
+		label: "Bifrost",
+		value: "urn:ocn:polkadot:2030",
+		supports: ["lst"],
+	},
+	{
+		label: "Polkadot Asset Hub",
+		value: "urn:ocn:polkadot:1000",
+		supports: ["dex"],
+	},
+	{
+		label: "Acala",
+		value: "urn:ocn:polkadot:2000",
+		supports: ["dex", "lst"],
+	},
+];
+
+function getSupportedNetworks(category: FeatureCategory) {
+	return {
+		label: "Networks",
+		options: ALL_NETWORKS.filter((net) => net.supports.includes(category)).map(
+			({ label, value }) => ({ label, value }),
+		),
+		multiple: true,
+		help: "Applies to all supported networks by default. If specified, only selected networks will be monitored.",
+	};
+}
 
 export const schemas = {
 	dex: z.object({
 		level,
-		networks: z.array(z.string()).optional().meta(supportedNetworks),
+		networks: z.array(z.string()).optional().meta(getSupportedNetworks("dex")),
 		driftThresholdDrop: z.number().min(0).max(1).meta({
 			label: "Drop Threshold",
 			decimals: true,
@@ -49,7 +67,10 @@ export const schemas = {
 	}),
 	lending: z.object({
 		level,
-		networks: z.array(z.string()).optional().meta(supportedNetworks),
+		networks: z
+			.array(z.string())
+			.optional()
+			.meta(getSupportedNetworks("lending")),
 		minSolvencyRatio: z.number().min(0).meta({
 			label: "Minimum Solvency Ratio",
 			decimals: true,
@@ -63,9 +84,22 @@ export const schemas = {
 			help: "Alert if capital utilization (borrowed funds / supplied funds) exceeds this ceiling.",
 		}),
 	}),
+	liquidStaking: z.object({
+		level,
+		networks: z.array(z.string()).optional().meta(getSupportedNetworks("lst")),
+		minExchangeRate: z.number().positive().optional().meta({
+			label: "Minimum Exchange Rate",
+			help: "Alerts if the protocol exchange rate drops below this threshold.",
+		}),
+		maxExchangeRate: z.number().positive().optional().meta({
+			label: "Maximum Exchange Rate",
+			help: "Alerts if the protocol exchange rate exceeds this threshold.",
+		}),
+	}),
 };
 
 export type Configs = {
 	dex: z.infer<typeof schemas.dex>;
 	lending: z.infer<typeof schemas.lending>;
+	liquidStaking: z.infer<typeof schemas.liquidStaking>;
 };
