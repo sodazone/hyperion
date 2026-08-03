@@ -132,8 +132,8 @@ export function Dashboard({
 
 			{/* Staking Liquidity Protocols */}
 			<div
-				x-ref="slpLiquidity"
-				hx-get="/console/dashboard/fragments/slp-liquidity"
+				x-ref="liquidStaking"
+				hx-get="/console/dashboard/fragments/liquid-staking"
 				hx-trigger="load, refresh"
 				hx-target="this"
 				hx-include="#dashboard-filters"

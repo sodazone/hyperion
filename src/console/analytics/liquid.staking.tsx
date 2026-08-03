@@ -108,12 +108,12 @@ type Volume = {
 
 export async function LiquidStakingFragment(
 	ctx: PageContext,
-	req: Bun.BunRequest<"/console/dashboard/fragments/slp-liquidity">,
+	req: Bun.BunRequest<"/console/dashboard/fragments/liquid-staking">,
 ) {
 	const { network, bucket, lookback, periodLabel } =
 		parseDashboardParamsForDefi(req);
 
-	const rows = await ctx.db.analytics.slpLiquiditySeries({
+	const rows = await ctx.db.analytics.liquidStakingSeries({
 		network,
 		bucket,
 		lookback,
