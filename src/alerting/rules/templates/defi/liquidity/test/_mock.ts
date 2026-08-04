@@ -42,12 +42,14 @@ export function mockExchangeEvent(
 		category?: string;
 		suppliedUSD?: number;
 		chainURN?: string;
+		timestamp?: number;
 	} = {},
 ): DefiLiquidityEvent {
 	return {
 		type: (overrides.type ?? "defi-liquidity") as any,
 		origin: {
 			chainURN: overrides.chainURN ?? "urn:ocn:polkadot:1000",
+			timestamp: overrides.timestamp,
 		},
 		payload: {
 			category: overrides.category ?? "exchange",
