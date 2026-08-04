@@ -77,7 +77,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("rate-drop");
-		expect(result.data?.details).toContain("shifted by -8.00%");
+		expect(result.data?.details).toContain("drift of -8.00%");
 	});
 
 	it("fires on sudden exchange rate spike drift", async () => {
@@ -93,7 +93,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("rate-spike");
-		expect(result.data?.details).toContain("shifted by 12.00%");
+		expect(result.data?.details).toContain("drift of 12.00%");
 	});
 
 	it("prevents alert flapping by tracking drift against last alerted rate", async () => {

@@ -51,9 +51,11 @@ export const schemas = {
 		...createDriftSchema({
 			metricName: "TVL",
 			dropHelp:
-				"Alerts if TVL drops by this much in one update. Set lower to catch exploits early.",
+				"Alerts if TVL drops rapidly relative to the TWAP baseline. Set lower to catch exploits early.",
 			spikeHelp:
-				"Alerts if TVL spikes by this much in one update. Set higher to filter out normal whale deposits.",
+				"Alerts if TVL spikes rapidly relative to the TWAP baseline. Set higher to filter out normal whale deposits.",
+			drawdownHelp:
+				"Alerts if TVL suffers a sustained cumulative drawdown over 24 hours.",
 		}),
 		minTvlUSD: z.number().min(0).meta({
 			label: "Minimum Liquidity Floor",
@@ -84,19 +86,21 @@ export const schemas = {
 		level,
 		networks: z.array(z.string()).optional().meta(getSupportedNetworks("lst")),
 		minExchangeRate: z.number().positive().optional().meta({
+			decimals: true,
 			label: "Minimum Exchange Rate",
 			help: "Alerts if the protocol exchange rate drops below this threshold.",
 		}),
 		maxExchangeRate: z.number().positive().optional().meta({
+			decimals: true,
 			label: "Maximum Exchange Rate",
 			help: "Alerts if the protocol exchange rate exceeds this threshold.",
 		}),
 		...createDriftSchema({
 			metricName: "exchange rate",
-			dropHelp:
-				"Alerts if the exchange rate drops suddenly. Set lower to catch slashing events or pool de-pegs early.",
-			spikeHelp:
-				"Alerts if the exchange rate spikes unexpectedly in a single update.",
+			dropHelp: "Alerts on rapid exchange rate drops relative to TWAP.",
+			spikeHelp: "Alerts on rapid exchange rate spikes relative to TWAP.",
+			drawdownHelp:
+				"Alerts if exchange rate suffers a sustained drawdown over 24 hours.",
 		}),
 	}),
 };

@@ -146,7 +146,10 @@ describe("Exchange Liquidity Rule", () => {
 			protocol: "uniswap-v3",
 			marketId: "eth-usdc",
 		});
-		const matchData = { driftPercent: -0.15 };
+		const matchData: { driftPercent: number; reason: "instant-drop" } = {
+			driftPercent: -0.15,
+			reason: "instant-drop",
+		};
 
 		const alert = await ExchangeLiquidityRule.alertTemplate?.(
 			event,
@@ -160,6 +163,7 @@ describe("Exchange Liquidity Rule", () => {
 			kind: "exchange-liquidity",
 			protocol: "uniswap-v3",
 			marketId: "eth-usdc",
+			reason: "instant-drop",
 			tvlUSD: 85_000,
 			driftPercent: -0.15,
 		});

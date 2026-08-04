@@ -11,7 +11,12 @@ export interface LiquidStakingAlertPayload extends AlertPayload {
 	kind: "liquid-staking-health";
 	protocol: string;
 	marketId: string;
-	reason: "min-rate" | "max-rate" | "rate-drop" | "rate-spike";
+	reason:
+		| "min-rate"
+		| "max-rate"
+		| "rate-drop"
+		| "rate-spike"
+		| "cumulative-drawdown";
 	details: string;
 	exchangeRate: number;
 }
@@ -24,7 +29,7 @@ export const LiquidStakingHealthRule: RuleDefinition<
 	id: RULE_NAME,
 	title: "Liquid Staking Health",
 	description:
-		"Monitors minimum/maximum threshold breaches and sudden rate drops or spikes for liquid staking protocols.",
+		"Monitors exchange rate bounds, TWAP drift, and sustained cumulative drawdown.",
 	schema: schemas.liquidStaking,
 	defaults: {},
 	cooldownMs: COOL_DOWN_MS,
@@ -83,13 +88,22 @@ export const LiquidStakingHealthRule: RuleDefinition<
 				scope,
 				key: STATE_KEY,
 				currentValue: exchangeRate,
+				timestamp: event.origin.timestamp,
 				dropThreshold: config.driftThresholdDrop,
 				spikeThreshold: config.driftThresholdSpike,
+				cumulativeDrawdownThreshold: config.cumulativeDrawdownThreshold,
+				trailingWindowMs: 86_400_000, // 24h
 			});
 
 			if (delta.matched) {
-				matchedReason = delta.direction === "drop" ? "rate-drop" : "rate-spike";
-				details = `rate shifted by ${(delta.driftPercent * 100).toFixed(2)}% (current: ${exchangeRate.toFixed(4)})`;
+				if (delta.direction === "cumulative-drawdown") {
+					matchedReason = "cumulative-drawdown";
+					details = `24h drawdown of ${(Math.abs(delta.driftPercent) * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
+				} else {
+					matchedReason =
+						delta.direction === "drop" ? "rate-drop" : "rate-spike";
+					details = `TWAP drift of ${(delta.driftPercent * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
+				}
 			}
 		}
 
@@ -113,6 +127,7 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			"max-rate": "Max Rate",
 			"rate-drop": "Exchange Rate Drop",
 			"rate-spike": "Exchange Rate Spike",
+			"cumulative-drawdown": "Drawdown",
 		};
 
 		return {
