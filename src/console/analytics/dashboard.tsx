@@ -140,18 +140,13 @@ export function Dashboard({
 			></div>
 
 			{/* Crosschain Reserves */}
-			<div className="pane flex flex-col p-4 space-y-4">
-				<h3 className="text-zinc-200 text-sm font-semibold">
-					Crosschain Reserves
-				</h3>
-				<div
-					x-ref="xcReserves"
-					hx-get="/console/dashboard/fragments/xc-solvency"
-					hx-trigger="load, refresh"
-					hx-target="this"
-					hx-include="#dashboard-filters"
-				></div>
-			</div>
+			<div
+				x-ref="xcReserves"
+				hx-get="/console/dashboard/fragments/xc-solvency"
+				hx-trigger="load, refresh"
+				hx-target="this"
+				hx-include="#dashboard-filters"
+			></div>
 
 			{/* Latest Alerts */}
 			<div className="flex flex-col p-4 space-y-4">
