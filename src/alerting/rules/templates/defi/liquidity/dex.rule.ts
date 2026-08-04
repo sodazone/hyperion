@@ -1,7 +1,7 @@
 import type { Alert, AlertPayload } from "@/db";
 import { formatNumberSI } from "@/utils/amounts";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
-import { makeNetworks } from "../../common/helpers";
+import { evaluateDelta, makeNetworks } from "../../common";
 import { type Configs, schemas } from "./schema";
 
 const RULE_NAME = "exchange-liquidity";
@@ -13,11 +13,6 @@ export interface ExchangeAlertPayload extends AlertPayload {
 	marketId: string;
 	tvlUSD: number;
 	driftPercent: number;
-}
-
-interface MarketState {
-	lastTvl: number;
-	lastAlertedTvl: number;
 }
 
 export const ExchangeLiquidityRule: RuleDefinition<
@@ -53,53 +48,30 @@ export const ExchangeLiquidityRule: RuleDefinition<
 
 		const payload = event.payload;
 		const currentTvl = payload.suppliedUSD;
-
 		const scope = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}`;
 
-		const marketState = (state.get(scope, STATE_KEY) ?? {
-			lastTvl: currentTvl,
-			lastAlertedTvl: currentTvl,
-		}) as MarketState;
+		const result = evaluateDelta({
+			state,
+			scope,
+			key: STATE_KEY,
+			currentValue: currentTvl,
+			dropThreshold:
+				config.driftThresholdDrop ??
+				ExchangeLiquidityRule.defaults.driftThresholdDrop,
+			spikeThreshold:
+				config.driftThresholdSpike ??
+				ExchangeLiquidityRule.defaults.driftThresholdSpike,
+			minFloor: config.minTvlUSD ?? ExchangeLiquidityRule.defaults.minTvlUSD,
+		});
 
-		const baselineTvl = marketState.lastAlertedTvl;
-		marketState.lastTvl = currentTvl;
-
-		const minTvl = config.minTvlUSD ?? ExchangeLiquidityRule.defaults.minTvlUSD;
-
-		if (currentTvl < minTvl) {
-			marketState.lastAlertedTvl = currentTvl;
-
-			state.set(scope, STATE_KEY, marketState);
+		if (!result.matched) {
 			return { matched: false };
 		}
 
-		const tickDrift =
-			baselineTvl > 0 ? (currentTvl - baselineTvl) / baselineTvl : 0;
-
-		const dropThreshold =
-			config.driftThresholdDrop ??
-			ExchangeLiquidityRule.defaults.driftThresholdDrop;
-		const spikeThreshold =
-			config.driftThresholdSpike ??
-			ExchangeLiquidityRule.defaults.driftThresholdSpike;
-
-		let shouldAlert = false;
-
-		if (tickDrift < 0 && Math.abs(tickDrift) >= dropThreshold) {
-			shouldAlert = true;
-		} else if (tickDrift > 0 && tickDrift >= spikeThreshold) {
-			shouldAlert = true;
-		}
-
-		if (shouldAlert) {
-			marketState.lastAlertedTvl = currentTvl;
-		}
-
-		state.set(scope, STATE_KEY, marketState);
-
-		return shouldAlert
-			? { matched: true, data: { driftPercent: tickDrift } }
-			: { matched: false };
+		return {
+			matched: true,
+			data: { driftPercent: result.driftPercent },
+		};
 	},
 
 	alertTemplate: (event, { config }, data) => {
@@ -113,7 +85,7 @@ export const ExchangeLiquidityRule: RuleDefinition<
 			timestamp: Date.now(),
 			level: config.level,
 			name: RULE_NAME,
-			remark: `TVL ${direction} ≥ ${(thresholdUsed * 100).toFixed(2)}%`,
+			remark: `TVL ${direction} ≥ ${((thresholdUsed ?? 0) * 100).toFixed(2)}%`,
 			networks: makeNetworks(event),
 			message: [
 				["t", `DEX TVL ${direction} on ${payload.protocol}`],

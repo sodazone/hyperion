@@ -1,17 +1,21 @@
 import type { Alert, AlertPayload } from "@/db";
 import type { DefiLiquidityEvent, RuleDefinition } from "../../../types";
-import { makeNetworks } from "../../common/helpers";
+import { evaluateDelta, makeNetworks } from "../../common";
 import { type Configs, schemas } from "./schema";
 
 const RULE_NAME = "liquid-staking-health";
-
+const STATE_KEY = "lst_exchange_rate";
 const COOL_DOWN_MS = 3_600_000;
 
 export interface LiquidStakingAlertPayload extends AlertPayload {
 	kind: "liquid-staking-health";
 	protocol: string;
 	marketId: string;
-	reason: "min-exchange-rate" | "max-exchange-rate";
+	reason:
+		| "min-exchange-rate"
+		| "max-exchange-rate"
+		| "rate-drop"
+		| "rate-spike";
 	details: string;
 	exchangeRate: number;
 }
@@ -24,13 +28,13 @@ export const LiquidStakingHealthRule: RuleDefinition<
 	id: RULE_NAME,
 	title: "Liquid Staking Health",
 	description:
-		"Monitors minimum and maximum exchange rate thresholds for liquid staking protocols.",
+		"Monitors minimum/maximum threshold breaches and sudden rate drops or spikes for liquid staking protocols.",
 	schema: schemas.liquidStaking,
 	defaults: {},
 	cooldownMs: COOL_DOWN_MS,
 	autoDependencies: [{ kind: "defi-liquidity" }],
 
-	matcher: async (event, { config }) => {
+	matcher: async (event, { config, id, global: { state } }) => {
 		if (
 			event.type !== "defi-liquidity" ||
 			event.payload.category !== "liquid-staking"
@@ -44,8 +48,6 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const { liquidStaking } = payload;
-
 		if (
 			config.networks?.length &&
 			!config.networks.includes(event.origin.chainURN)
@@ -53,7 +55,7 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			return { matched: false };
 		}
 
-		const { exchangeRate } = liquidStaking;
+		const { exchangeRate } = payload.liquidStaking;
 
 		if (exchangeRate === undefined || exchangeRate === null) {
 			return { matched: false };
@@ -62,6 +64,7 @@ export const LiquidStakingHealthRule: RuleDefinition<
 		let matchedReason: LiquidStakingAlertPayload["reason"] | null = null;
 		let details = "";
 
+		// 1. Static Threshold Checks
 		if (
 			config.minExchangeRate !== undefined &&
 			exchangeRate < config.minExchangeRate
@@ -74,6 +77,24 @@ export const LiquidStakingHealthRule: RuleDefinition<
 		) {
 			matchedReason = "max-exchange-rate";
 			details = `rate ${exchangeRate.toFixed(4)} > max threshold ${config.maxExchangeRate}`;
+		}
+
+		// 2. Dynamic Delta / Drift Checks
+		if (!matchedReason) {
+			const scope = `${RULE_NAME}:${id}:${payload.protocol}:${payload.marketId}`;
+			const delta = evaluateDelta({
+				state,
+				scope,
+				key: STATE_KEY,
+				currentValue: exchangeRate,
+				dropThreshold: config.driftThresholdDrop,
+				spikeThreshold: config.driftThresholdSpike,
+			});
+
+			if (delta.matched) {
+				matchedReason = delta.direction === "drop" ? "rate-drop" : "rate-spike";
+				details = `rate shifted by ${(delta.driftPercent * 100).toFixed(2)}% (current: ${exchangeRate.toFixed(4)})`;
+			}
 		}
 
 		if (!matchedReason) {
@@ -92,8 +113,10 @@ export const LiquidStakingHealthRule: RuleDefinition<
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
 		const headers: Record<LiquidStakingAlertPayload["reason"], string> = {
-			"min-exchange-rate": "Min Exch. Rate",
-			"max-exchange-rate": "Max Exch. Rate",
+			"min-exchange-rate": "Min Exch. Rate Breach",
+			"max-exchange-rate": "Max Exch. Rate Breach",
+			"rate-drop": "Exchange Rate Drop",
+			"rate-spike": "Exchange Rate Spike",
 		};
 
 		return {
