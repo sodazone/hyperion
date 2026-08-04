@@ -60,8 +60,8 @@ export function Dashboard({
 			</form>
 
 			{/* Charts */}
-			<div className="flex flex-col lg:flex-row space-y-4 lg:divide-x lg:divide-zinc-900">
-				<div className="flex flex-col flex-1 p-4 space-y-2">
+			<div className="pane flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:divide-x lg:divide-zinc-900">
+				<div className="flex flex-col flex-1 p-4 space-y-2 lg:grow">
 					<h3 className="text-zinc-200 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
@@ -140,7 +140,7 @@ export function Dashboard({
 			></div>
 
 			{/* Crosschain Reserves */}
-			<div className="flex flex-col p-4 space-y-4">
+			<div className="pane flex flex-col p-4 space-y-4">
 				<h3 className="text-zinc-200 text-sm font-semibold">
 					Crosschain Reserves
 				</h3>
