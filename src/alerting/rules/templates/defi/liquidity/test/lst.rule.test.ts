@@ -49,7 +49,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("min-rate");
-		expect(result.data?.details).toContain("rate 0.9800 < min threshold 1.02");
+		expect(result.data?.details).toContain("0.9800 < 1.02");
 	});
 
 	it("triggers when exchange rate breaches maximum static threshold", async () => {
@@ -61,7 +61,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("max-rate");
-		expect(result.data?.details).toContain("rate 1.1500 > max threshold 1.1");
+		expect(result.data?.details).toContain("1.1500 > 1.1");
 	});
 
 	it("fires on sudden exchange rate drop (slashing / pool de-peg drift)", async () => {
@@ -77,7 +77,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("rate-drop");
-		expect(result.data?.details).toContain("drift of -8.00%");
+		expect(result.data?.details).toContain("-8.00%");
 	});
 
 	it("fires on sudden exchange rate spike drift", async () => {
@@ -93,7 +93,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.reason).toBe("rate-spike");
-		expect(result.data?.details).toContain("drift of 12.00%");
+		expect(result.data?.details).toContain("12.00%");
 	});
 
 	it("prevents alert flapping by tracking drift against last alerted rate", async () => {
@@ -172,7 +172,7 @@ describe("Liquid Staking Health Rule", () => {
 
 		const matchData = {
 			reason: "min-rate" as const,
-			details: "rate 0.9500 < min threshold 1.0",
+			details: "0.9500 < 1.0",
 		};
 
 		const alert = await LiquidStakingHealthRule.alertTemplate?.(
@@ -188,7 +188,7 @@ describe("Liquid Staking Health Rule", () => {
 			protocol: "bifrost",
 			marketId: "vDOT",
 			reason: "min-rate",
-			details: "rate 0.9500 < min threshold 1.0",
+			details: "0.9500 < 1.0",
 			exchangeRate: 0.95,
 		});
 	});
