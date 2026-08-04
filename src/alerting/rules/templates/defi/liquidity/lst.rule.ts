@@ -71,13 +71,13 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			exchangeRate < config.minExchangeRate
 		) {
 			matchedReason = "min-rate";
-			details = `rate ${exchangeRate.toFixed(4)} < min threshold ${config.minExchangeRate}`;
+			details = `${exchangeRate.toFixed(4)} < ${config.minExchangeRate}`;
 		} else if (
 			config.maxExchangeRate !== undefined &&
 			exchangeRate > config.maxExchangeRate
 		) {
 			matchedReason = "max-rate";
-			details = `rate ${exchangeRate.toFixed(4)} > max threshold ${config.maxExchangeRate}`;
+			details = `${exchangeRate.toFixed(4)} > ${config.maxExchangeRate}`;
 		}
 
 		// 2. Dynamic Delta / Drift Checks
@@ -98,11 +98,11 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			if (delta.matched) {
 				if (delta.direction === "cumulative-drawdown") {
 					matchedReason = "cumulative-drawdown";
-					details = `24h drawdown of ${(Math.abs(delta.driftPercent) * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
+					details = `24h ${(Math.abs(delta.driftPercent) * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
 				} else {
 					matchedReason =
 						delta.direction === "drop" ? "rate-drop" : "rate-spike";
-					details = `TWAP drift of ${(delta.driftPercent * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
+					details = `TWAP ${(delta.driftPercent * 100).toFixed(2)}% (rate: ${exchangeRate.toFixed(4)})`;
 				}
 			}
 		}
@@ -123,10 +123,10 @@ export const LiquidStakingHealthRule: RuleDefinition<
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
 		const headers: Record<LiquidStakingAlertPayload["reason"], string> = {
-			"min-rate": "Min Rate",
-			"max-rate": "Max Rate",
-			"rate-drop": "Exchange Rate Drop",
-			"rate-spike": "Exchange Rate Spike",
+			"min-rate": "Rate",
+			"max-rate": "Rate",
+			"rate-drop": "Rate Drop",
+			"rate-spike": "Rate Spike",
 			"cumulative-drawdown": "Drawdown",
 		};
 
