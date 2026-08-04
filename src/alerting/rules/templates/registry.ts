@@ -1,5 +1,6 @@
 import { ExchangeLiquidityRule } from "./defi/liquidity/dex.rule";
 import { MoneyMarketHealthRule } from "./defi/liquidity/lending.rule";
+import { LiquidStakingHealthRule } from "./defi/liquidity/lst.rule";
 import { OpenGovRule } from "./opengov/rule";
 import { TransfersRule } from "./transfers/rule";
 import { WatchedRule } from "./watched/rule";
@@ -12,4 +13,5 @@ export const RulesRegistry = [
 	OpenGovRule,
 	MoneyMarketHealthRule,
 	ExchangeLiquidityRule,
+	LiquidStakingHealthRule,
 ];

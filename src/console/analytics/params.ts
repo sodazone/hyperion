@@ -24,6 +24,11 @@ export const NETWORK_OPTIONS = [
 		value: "urn:ocn:polkadot:2006",
 		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2006/icon.svg",
 	},
+	{
+		label: "Acala",
+		value: "urn:ocn:polkadot:2000",
+		icon: "https://cdn.jsdelivr.net/gh/sodazone/intergalactic-asset-metadata/v2/polkadot/2000/icon.svg",
+	},
 ];
 export const NETWORKS = NETWORK_OPTIONS.map((opt) => opt.value);
 

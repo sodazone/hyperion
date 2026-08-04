@@ -42,18 +42,49 @@ export function mockExchangeEvent(
 		category?: string;
 		suppliedUSD?: number;
 		chainURN?: string;
+		timestamp?: number;
 	} = {},
 ): DefiLiquidityEvent {
 	return {
 		type: (overrides.type ?? "defi-liquidity") as any,
 		origin: {
 			chainURN: overrides.chainURN ?? "urn:ocn:polkadot:1000",
+			timestamp: overrides.timestamp,
 		},
 		payload: {
 			category: overrides.category ?? "exchange",
 			protocol: overrides.protocol ?? "uniswap-v3",
 			marketId: overrides.marketId ?? "DOT-USDT-pool",
 			suppliedUSD: overrides.suppliedUSD ?? 100_000,
+		} as any,
+	};
+}
+
+export function mockLstEvent(
+	overrides: {
+		protocol?: string;
+		marketId?: string;
+		type?: string;
+		category?: string;
+		exchangeRate?: number | null;
+		chainURN?: string;
+	} = {},
+): DefiLiquidityEvent {
+	return {
+		type: (overrides.type ?? "defi-liquidity") as any,
+		origin: {
+			chainURN: overrides.chainURN ?? "urn:ocn:polkadot:2030",
+		},
+		payload: {
+			category: overrides.category ?? "liquid-staking",
+			protocol: overrides.protocol ?? "bifrost",
+			marketId: overrides.marketId ?? "vDOT",
+			liquidStaking:
+				overrides.exchangeRate === null
+					? undefined
+					: {
+							exchangeRate: overrides.exchangeRate ?? 1.05,
+						},
 		} as any,
 	};
 }

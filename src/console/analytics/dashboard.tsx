@@ -60,8 +60,8 @@ export function Dashboard({
 			</form>
 
 			{/* Charts */}
-			<div className="flex flex-col lg:flex-row space-y-4 lg:divide-x lg:divide-zinc-900">
-				<div className="flex flex-col flex-1 p-4 space-y-2">
+			<div className="pane flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:divide-x lg:divide-zinc-900">
+				<div className="flex flex-col flex-1 p-4 space-y-2 lg:grow">
 					<h3 className="text-zinc-200 text-sm font-semibold">
 						Exchange Flows (USD)
 					</h3>
@@ -132,26 +132,21 @@ export function Dashboard({
 
 			{/* Staking Liquidity Protocols */}
 			<div
-				x-ref="slpLiquidity"
-				hx-get="/console/dashboard/fragments/slp-liquidity"
+				x-ref="liquidStaking"
+				hx-get="/console/dashboard/fragments/liquid-staking"
 				hx-trigger="load, refresh"
 				hx-target="this"
 				hx-include="#dashboard-filters"
 			></div>
 
 			{/* Crosschain Reserves */}
-			<div className="flex flex-col p-4 space-y-4">
-				<h3 className="text-zinc-200 text-sm font-semibold">
-					Crosschain Reserves
-				</h3>
-				<div
-					x-ref="xcReserves"
-					hx-get="/console/dashboard/fragments/xc-solvency"
-					hx-trigger="load, refresh"
-					hx-target="this"
-					hx-include="#dashboard-filters"
-				></div>
-			</div>
+			<div
+				x-ref="xcReserves"
+				hx-get="/console/dashboard/fragments/xc-solvency"
+				hx-trigger="load, refresh"
+				hx-target="this"
+				hx-include="#dashboard-filters"
+			></div>
 
 			{/* Latest Alerts */}
 			<div className="flex flex-col p-4 space-y-4">

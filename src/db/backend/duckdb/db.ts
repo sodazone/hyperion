@@ -242,7 +242,7 @@ export class AnalyticsDB {
 		);
 	}
 
-	async slpLiquiditySeries(params: DefiQueryParams) {
+	async liquidStakingSeries(params: DefiQueryParams) {
 		const result = await this.conn.runAndReadAll(
 			Queries.defi.liquid_staking(params),
 		);

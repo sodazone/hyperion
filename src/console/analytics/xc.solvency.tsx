@@ -1,5 +1,5 @@
 import type { CrosschainSolvencyRow } from "@/db/backend/duckdb/types";
-import { render } from "@/server/render";
+import { empty, render } from "@/server/render";
 import { formatNumberSI } from "@/utils/amounts";
 import { CopyButton } from "../components/btn.copy";
 import { NetworkName } from "../components/network.icon";
@@ -93,24 +93,27 @@ export async function CrosschainSolvencyFragment(
 	);
 
 	if (rows.length === 0) {
-		return render(
-			<div className="px-4 py-6 text-sm text-zinc-500">No data yet.</div>,
-		);
+		return empty;
 	}
 
 	return render(
-		<div
-			x-data={`pagination({totalItems: ${rows.length}, perPage: ${ROWS_PER_PAGE}})`}
-			className="space-y-4"
-		>
-			<div className="flex flex-col divide-y divide-zinc-900">
-				{rows.map((r, index) => (
-					<div key={r.asset_id} x-show={`isVisible(${index + 1})`}>
-						<SolvencyCard row={r} />
-					</div>
-				))}
+		<div className="pane flex flex-col p-4 space-y-4">
+			<h3 className="text-zinc-200 text-sm font-semibold">
+				Crosschain Reserves
+			</h3>
+			<div
+				x-data={`pagination({totalItems: ${rows.length}, perPage: ${ROWS_PER_PAGE}})`}
+				className="space-y-4"
+			>
+				<div className="flex flex-col divide-y divide-zinc-900">
+					{rows.map((r, index) => (
+						<div key={r.asset_id} x-show={`isVisible(${index + 1})`}>
+							<SolvencyCard row={r} />
+						</div>
+					))}
+				</div>
+				<PaginationControls />
 			</div>
-			<PaginationControls />
 		</div>,
 	);
 }

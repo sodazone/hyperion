@@ -154,7 +154,7 @@ export async function MoneyMarketHealthFragment(
 	);
 
 	return render(
-		<div className="flex flex-col p-4 space-y-4">
+		<div className="pane flex flex-col p-4 space-y-4">
 			<h3 className="text-zinc-200 text-sm font-semibold">Lending Overview</h3>
 			<div className="space-y-6">
 				<div className="flex flex-col gap-6 px-2">

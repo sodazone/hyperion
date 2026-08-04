@@ -146,7 +146,10 @@ describe("Exchange Liquidity Rule", () => {
 			protocol: "uniswap-v3",
 			marketId: "eth-usdc",
 		});
-		const matchData = { driftPercent: -0.15 };
+		const matchData: { driftPercent: number; reason: "instant-drop" } = {
+			driftPercent: -0.15,
+			reason: "instant-drop",
+		};
 
 		const alert = await ExchangeLiquidityRule.alertTemplate?.(
 			event,
@@ -160,6 +163,7 @@ describe("Exchange Liquidity Rule", () => {
 			kind: "exchange-liquidity",
 			protocol: "uniswap-v3",
 			marketId: "eth-usdc",
+			reason: "instant-drop",
 			tvlUSD: 85_000,
 			driftPercent: -0.15,
 		});
@@ -208,5 +212,81 @@ describe("Exchange Liquidity Rule", () => {
 
 		expect(result.matched).toBe(true);
 		expect(result.data?.driftPercent).toBeCloseTo(-0.18, 4);
+	});
+
+	it("alerts on cumulative drawdown across multi-step drains without triggering instant drop alerts", async () => {
+		const ctx = makeCtx({
+			driftThresholdDrop: 0.15, // 15% instant TWAP drop threshold
+			cumulativeDrawdownThreshold: 0.2, // 20% cumulative drawdown threshold
+		});
+
+		const NOW = Date.now();
+		const FIVE_MINS = 5 * 60 * 1000;
+
+		// Step 1 (t=0): Establish initial $100k baseline
+		let event = mockExchangeEvent({ suppliedUSD: 100_000, timestamp: NOW });
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Step 2 (t=+5m): Drop to $92k (TWAP drift = -8.0%). Below both thresholds.
+		event = mockExchangeEvent({
+			suppliedUSD: 92_000,
+			timestamp: NOW + FIVE_MINS,
+		});
+		let result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Step 3 (t=+10m): Drop to $86k (TWAP drift ~-9.4%). Cumulative drawdown = -14%. Below 20%.
+		event = mockExchangeEvent({
+			suppliedUSD: 86_000,
+			timestamp: NOW + FIVE_MINS * 2,
+		});
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Step 4 (t=+15m): Drop to $78k (TWAP drift ~-12.7% < 15%).
+		// Cumulative drawdown from $100k = -22.0% (exceeds 20% threshold!).
+		event = mockExchangeEvent({
+			suppliedUSD: 78_000,
+			timestamp: NOW + FIVE_MINS * 3,
+		});
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+		expect(result.data?.reason).toBe("cumulative-drawdown");
+		expect(result.data?.driftPercent).toBeCloseTo(-0.22, 2);
+
+		// Step 5 (t=+16m): TVL remains at $78k. Re-anchoring prevents duplicate alerts.
+		event = mockExchangeEvent({
+			suppliedUSD: 78_000,
+			timestamp: NOW + FIVE_MINS * 3 + 60_000,
+		});
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+		expect(result.matched).toBe(false);
+
+		// Step 6a (t=+21m): Drop to $72k (TWAP drift ~-7.7% < 15%).
+		event = mockExchangeEvent({
+			suppliedUSD: 72_000,
+			timestamp: NOW + FIVE_MINS * 4,
+		});
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Step 6b (t=+26m): Drop to $67k (TWAP drift ~-9.7% < 15%).
+		event = mockExchangeEvent({
+			suppliedUSD: 67_000,
+			timestamp: NOW + FIVE_MINS * 5,
+		});
+		await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		// Step 6c (t=+31m): Drop to $62k (TWAP drift ~-11.0% < 15%).
+		// Cumulative drawdown relative to re-anchored $78k baseline = -20.51% (exceeds 20%!).
+		event = mockExchangeEvent({
+			suppliedUSD: 62_000,
+			timestamp: NOW + FIVE_MINS * 6,
+		});
+		result = await ExchangeLiquidityRule.matcher(event, ctx as any);
+
+		expect(result.matched).toBe(true);
+		expect(result.data?.reason).toBe("cumulative-drawdown");
+		expect(result.data?.driftPercent).toBeCloseTo(-0.2051, 2);
 	});
 });
