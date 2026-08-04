@@ -1,14 +1,9 @@
 import z from "zod";
 
-interface DriftSchemaOptions {
-	metricName?: string;
-	dropHelp?: string;
-	spikeHelp?: string;
-}
-
-export function createDriftSchema(options: DriftSchemaOptions = {}) {
+export function createDriftSchema(
+	options: { metricName?: string; dropHelp?: string; spikeHelp?: string } = {},
+) {
 	const metric = options.metricName ?? "value";
-
 	return {
 		driftThresholdDrop: z
 			.number()
@@ -21,7 +16,7 @@ export function createDriftSchema(options: DriftSchemaOptions = {}) {
 				unit: "%",
 				help:
 					options.dropHelp ??
-					`Alerts if ${metric} drops by this percentage in one update. Set lower to catch exploits early.`,
+					`Alerts if ${metric} drops relative to the TWAP baseline.`,
 			}),
 		driftThresholdSpike: z
 			.number()
@@ -34,13 +29,14 @@ export function createDriftSchema(options: DriftSchemaOptions = {}) {
 				unit: "%",
 				help:
 					options.spikeHelp ??
-					`Alerts if ${metric} spikes by this percentage in one update.`,
+					`Alerts if ${metric} spikes relative to the TWAP baseline.`,
 			}),
 	};
 }
 
-export interface DeltaState {
-	lastValue: number;
+export interface TwapDeltaState {
+	twap: number;
+	lastTimestamp: number;
 	lastAlertedValue: number;
 }
 
@@ -52,15 +48,18 @@ export interface EvaluateDeltaOptions {
 	scope: string;
 	key: string;
 	currentValue: number;
+	timestamp?: number;
 	dropThreshold?: number;
 	spikeThreshold?: number;
 	minFloor?: number;
+	twapWindowMs?: number;
 }
 
 export interface DeltaResult {
 	matched: boolean;
 	driftPercent: number;
 	direction?: "drop" | "spike";
+	twap: number;
 }
 
 export function evaluateDelta(options: EvaluateDeltaOptions): DeltaResult {
@@ -69,27 +68,38 @@ export function evaluateDelta(options: EvaluateDeltaOptions): DeltaResult {
 		scope,
 		key,
 		currentValue,
+		timestamp = Date.now(),
 		dropThreshold,
 		spikeThreshold,
 		minFloor,
+		twapWindowMs = 300_000, // 5 minutes
 	} = options;
 
 	const deltaState = (state.get(scope, key) ?? {
-		lastValue: currentValue,
+		twap: currentValue,
+		lastTimestamp: timestamp,
 		lastAlertedValue: currentValue,
-	}) as DeltaState;
+	}) as TwapDeltaState;
 
-	const baseline = deltaState.lastAlertedValue;
-	deltaState.lastValue = currentValue;
-
-	// Ignore evaluation if value is under the minimum floor
 	if (minFloor !== undefined && currentValue < minFloor) {
+		deltaState.twap = currentValue;
+		deltaState.lastTimestamp = timestamp;
 		deltaState.lastAlertedValue = currentValue;
 		state.set(scope, key, deltaState);
-		return { matched: false, driftPercent: 0 };
+		return { matched: false, driftPercent: 0, twap: currentValue };
 	}
 
-	const driftPercent = baseline > 0 ? (currentValue - baseline) / baseline : 0;
+	// Time-weighted decay factor α = 1 - e^(-Δt / τ)
+	const dt = Math.max(0, timestamp - deltaState.lastTimestamp);
+	const alpha = dt > 0 ? 1 - Math.exp(-dt / twapWindowMs) : 0;
+
+	const baselineTwap = deltaState.twap;
+
+	deltaState.twap = alpha * currentValue + (1 - alpha) * deltaState.twap;
+	deltaState.lastTimestamp = timestamp;
+
+	const driftPercent =
+		baselineTwap > 0 ? (currentValue - baselineTwap) / baselineTwap : 0;
 
 	let matched = false;
 	let direction: "drop" | "spike" | undefined;
@@ -112,9 +122,10 @@ export function evaluateDelta(options: EvaluateDeltaOptions): DeltaResult {
 
 	if (matched) {
 		deltaState.lastAlertedValue = currentValue;
+		deltaState.twap = currentValue;
 	}
 
 	state.set(scope, key, deltaState);
 
-	return { matched, driftPercent, direction };
+	return { matched, driftPercent, direction, twap: baselineTwap };
 }

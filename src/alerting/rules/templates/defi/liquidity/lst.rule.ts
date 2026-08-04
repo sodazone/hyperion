@@ -11,11 +11,7 @@ export interface LiquidStakingAlertPayload extends AlertPayload {
 	kind: "liquid-staking-health";
 	protocol: string;
 	marketId: string;
-	reason:
-		| "min-exchange-rate"
-		| "max-exchange-rate"
-		| "rate-drop"
-		| "rate-spike";
+	reason: "min-rate" | "max-rate" | "rate-drop" | "rate-spike";
 	details: string;
 	exchangeRate: number;
 }
@@ -69,13 +65,13 @@ export const LiquidStakingHealthRule: RuleDefinition<
 			config.minExchangeRate !== undefined &&
 			exchangeRate < config.minExchangeRate
 		) {
-			matchedReason = "min-exchange-rate";
+			matchedReason = "min-rate";
 			details = `rate ${exchangeRate.toFixed(4)} < min threshold ${config.minExchangeRate}`;
 		} else if (
 			config.maxExchangeRate !== undefined &&
 			exchangeRate > config.maxExchangeRate
 		) {
-			matchedReason = "max-exchange-rate";
+			matchedReason = "max-rate";
 			details = `rate ${exchangeRate.toFixed(4)} > max threshold ${config.maxExchangeRate}`;
 		}
 
@@ -113,8 +109,8 @@ export const LiquidStakingHealthRule: RuleDefinition<
 	alertTemplate: (event, { config }, data) => {
 		const payload = event.payload;
 		const headers: Record<LiquidStakingAlertPayload["reason"], string> = {
-			"min-exchange-rate": "Min Exch. Rate Breach",
-			"max-exchange-rate": "Max Exch. Rate Breach",
+			"min-rate": "Min Rate",
+			"max-rate": "Max Rate",
 			"rate-drop": "Exchange Rate Drop",
 			"rate-spike": "Exchange Rate Spike",
 		};
