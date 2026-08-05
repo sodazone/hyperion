@@ -88,19 +88,21 @@ export const schemas = {
 		minExchangeRate: z.number().positive().optional().meta({
 			decimals: true,
 			label: "Minimum Exchange Rate",
-			help: "Alerts if the protocol exchange rate drops below this threshold.",
+			help: "The absolute lowest acceptable protocol exchange rate. Input as a decimal value (e.g., 1.05 means 1.05 underlying assets per 1 LST). An alert triggers immediately if the live exchange rate drops below this floor.",
 		}),
 		maxExchangeRate: z.number().positive().optional().meta({
 			decimals: true,
 			label: "Maximum Exchange Rate",
-			help: "Alerts if the protocol exchange rate exceeds this threshold.",
+			help: "The absolute highest acceptable protocol exchange rate. Input as a decimal value (e.g., 2.15 means 2.15 underlying assets per 1 LST). An alert triggers immediately if the live exchange rate exceeds this ceiling.",
 		}),
 		...createDriftSchema({
 			metricName: "exchange rate",
-			dropHelp: "Alerts on rapid exchange rate drops relative to TWAP.",
-			spikeHelp: "Alerts on rapid exchange rate spikes relative to TWAP.",
+			dropHelp:
+				"Triggers an alert if the exchange rate drops sharply within a short window compared to its Time-Weighted Average Price (TWAP). Input as a decimal fraction (e.g., 0.05 for a 5% sudden drop).",
+			spikeHelp:
+				"Triggers an alert if the exchange rate spikes sharply within a short window compared to its Time-Weighted Average Price (TWAP). Input as a decimal fraction (e.g., 0.1 for a 10% sudden increase).",
 			drawdownHelp:
-				"Alerts if exchange rate suffers a sustained drawdown over 24 hours.",
+				"Triggers an alert if the exchange rate experiences a sustained decline relative to its rolling 24-hour peak. Input as a decimal fraction (e.g., 0.15 for a 15% sustained drawdown). Helps identify slow, continuous drain.",
 		}),
 	}),
 };
